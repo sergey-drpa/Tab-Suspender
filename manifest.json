@@ -1,0 +1,111 @@
+{
+    "manifest_version": 2, 
+	"name": "__MSG_extName__",
+	"short_name": "Tab Suspender",
+    "version": "1.3.7",
+
+    "description": "__MSG_extDescription__",
+    "default_locale": "en",
+				   
+																																					   
+    "icons": {
+        "16": "img/icon16.png",
+        "32": "img/icon32.png",
+        "64": "img/icon64.png",
+		"128": "img/icon128.png"
+    },
+    
+	 "browser_action": {
+        "default_icon": "img/icon16.png",
+        "default_title": "Tab Suspender",
+		"default_popup": "popup.html"
+    }, 
+    "options_page": "fancy-settings/source/index.html",
+    "background": {"page": "background.html"},
+    "incognito": "split",
+	"offline_enabled": true,
+    "minimum_chrome_version": "54",
+    "permissions": [
+		"tabs",
+		"notifications",
+		"<all_urls>",
+		"unlimitedStorage",
+        "contextMenus",
+        "storage"
+		],
+    "optional_permissions": [
+    ],
+	"content_scripts": [
+    {
+		"matches": ["https://*/*","http://*/*", "<all_urls>"],
+		"js": ["lib/h2c.js","inject.js"],
+		"run_at": "document_end",
+		"all_frames" : false
+    }
+	],
+    "web_accessible_resources": ["*.html", "*.js", "*.css", "/img/*.png", "img/*.ico"],
+	"content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+    "commands": {
+        "suspend-current": {
+            "suggested_key": {
+              "default": "Alt+S",
+              "mac": "Command+Shift+S",
+              "windows": "Alt+S",
+              "chromeos": "Alt+S",
+              "linux": "Alt+S"
+            },
+            "description": "Suspend Current Tab"
+        },
+        "suspend-all-other": {
+            "suggested_key": {
+              "default": "Alt+O",
+              "mac": "Command+Shift+O",
+              "windows": "Alt+O",
+              "chromeos": "Alt+O",
+              "linux": "Alt+O"
+            },
+            "description": "Suspend All Other Tabs"
+        },
+        "suspend-all-window": {
+            "suggested_key": {
+              "default": "Alt+W",
+              "mac": "Command+Shift+W",
+              "windows": "Alt+W",
+              "chromeos": "Alt+W",
+              "linux": "Alt+W"
+            },
+            "description": "Suspend All Window"
+        },
+        "unsuspend-current-window": {
+            "suggested_key": {
+              "default": "Alt+U",
+              "mac": "Command+Shift+U",
+              "windows": "Alt+U",
+              "chromeos": "Alt+U",
+              "linux": "Alt+U"
+            },
+            "description": "Unsuspend Current Window"
+        },
+        "unsuspend-current-tab": {
+            "description": "Unsuspend Currnet Tab"
+        },
+		"unsuspend-all-tabs": {
+			"description": "Unsuspend All Tabs"
+		},
+		"add-to-white-list": {
+			"description": "Add to Whitelist..."
+		},
+		"remove-from-white-list": {
+			"description": "Remove from Whitelist"
+		},
+        "ignore-current-tab": {
+            "description": "Ignore Current Tab"
+        },
+        "remove-current-tab-from-ignore": {
+            "description": "Remove Current Tab From Ignore"
+        },
+        "suspend-or-unsuspend-current-tab": {
+          "description": "Suspend or Unsuspend Current Tab (in one HotKey)"
+        }
+    }
+}

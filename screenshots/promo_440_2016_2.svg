@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="440"
+   height="280"
+   id="svg3842"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   inkscape:export-filename="F:\tmp\promo_440_vector.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="promo_440_2016_2.svg">
+  <defs
+     id="defs3844">
+    <linearGradient
+       id="linearGradient3880">
+      <stop
+         style="stop-color:#aeff36;stop-opacity:0.09947644;"
+         offset="0"
+         id="stop3882" />
+      <stop
+         style="stop-color:#aeff36;stop-opacity:1;"
+         offset="1"
+         id="stop3884" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3880"
+       id="radialGradient3886"
+       cx="228.81653"
+       cy="874.59161"
+       fx="228.81653"
+       fy="874.59161"
+       r="216.99852"
+       gradientTransform="matrix(0.65773989,0,0,0.53883559,80.143454,417.81542)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="-54.280583"
+     inkscape:cy="134.54478"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showborder="true"
+     inkscape:snap-to-guides="false"
+     inkscape:window-width="1858"
+     inkscape:window-height="1058"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3847">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-772.36218)">
+    <path
+       style="fill:url(#radialGradient3886);fill-opacity:1;stroke:#000000;stroke-width:1.3;stroke-opacity:0.22727273000000001;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 4.6004628,771.39012 c -8.9097135,0 -16.0739958,6.90026 -16.0739958,15.48162 l 0,251.98076 c 0,8.5814 7.1642823,15.4817 16.0739958,15.4817 l 433.7960972,0 c 8.90973,0 16.07402,-6.9003 16.07402,-15.4817 l 0,-251.98076 c 0,-8.58136 -7.16429,-15.48162 -16.07402,-15.48162 l -433.7960972,0 z M 229.56915,848.60383 c 25.85223,0 46.80962,20.185 46.80962,45.08448 0,24.8995 -20.95739,45.0845 -46.80962,45.0845 -25.85224,0 -46.80963,-20.185 -46.80963,-45.0845 0,-24.89948 20.95739,-45.08448 46.80963,-45.08448 z"
+       id="rect5828"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:51.00255966000000300px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.20799997999999990;stroke-opacity:0.29090908;font-family:Sans;stroke-miterlimit:5;stroke-dasharray:none"
+       x="56.570995"
+       y="912.11676"
+       id="text4370"
+       sodipodi:linespacing="125%"
+       transform="scale(0.90254249,1.1079811)"><tspan
+         sodipodi:role="line"
+         id="tspan4372"
+         x="56.570995"
+         y="912.11676"
+         style="font-size:51.00255966000000300px;line-height:125%;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.20799997999999990;stroke-opacity:0.29090908;font-family:Cooper Black;-inkscape-font-specification:Cooper Black;stroke-miterlimit:5;stroke-dasharray:none">Tab Suspender</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,154 @@
+﻿{
+  "extName":
+  {
+    "message": "Tab Suspender",
+    "description": "Tab Suspender: Many Tabs Manager"
+  },
+  "extTitle":
+  {
+    "message": "Tab Suspender",
+    "description": "Tab Suspender: Many Tabs Manager"
+  },
+  "extDescription":
+  {
+    "message": "Автоматически приостанавливает неактивные вкладки и экономит до 80% памяти, снижать нагрузку на ваше устройство и батарею.",
+    "description": "MAX 128: Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat."
+  },
+  "rateIt":
+  {
+    "message": "Приостановщик вкладок(Tab Suspender)",
+    "description": "Rate it, please."
+  },
+  "autoCloseTabsSwitch":
+  {
+    "message": "Закрывать вкладки автоматически",
+    "description": "Close Tabs Automatically"
+  },
+  "autoSuspendSliderValue":
+  {
+    "message": "Будет усыплять вкладки после $1 неактивности",
+    "description": "Will suspend tab after $1 of inactivity"
+  },
+  "autoSuspendInterval":
+  {
+    "message": "Интервал усыпления владок",
+    "description": "Auto-Suspend Interval"
+  },
+  "recycleAfterSliderValue":
+  {
+    "message": "Будет закрывать вкладки после $1их неактивности",
+    "description": "Will close tabs after $1 of inactivity"
+  },
+  "recycleKeepSliderValue":
+  {
+    "message": "...и если открытых вкладок больше $1",
+    "description": "Will close tabs if there are more than $1 tabs"
+  },
+
+  "wizard_recycleAfterSliderValue":
+  {
+    "message": "Suspender может закрывать вкладки после <b>$1</b> неактивности вкладки",
+    "description": "Suspender can close tabs after <b>$1</b> of tab inactivity"
+  },
+  "wizard_recycleKeepSliderValue":
+  {
+    "message": "...и только когда открытых вкладок больше <b>$1</b>",
+    "description": "...and only when window have more than <b>$1</b> opened tabs"
+  },
+
+  "pageIsInWhitelist":
+  {
+    "message": "Эта страница находится в Белом списке",
+    "description": "Page is in Whilelist"
+  },
+  "removeFromWhilelist":
+  {
+    "message": "Удалить из Белого списка",
+    "description": "Remove from Whitelist"
+  },
+  "pauseSuspender":
+  {
+    "message": "Приостановить расширение на некоторое время...",
+    "description": "Stop Tab Suspender for a while..."
+  },
+  "resumeSuspender":
+  {
+    "message": "Отменить паузу и включить расширение",
+    "description": "Cancel timer and activate Tab Suspender."
+  },
+  "pauseSuspenderFor10M":
+  {
+    "message": "Приостановить расширение на 10 минут.",
+    "description": "Stop Tab Suspender for 10 minutes."
+  },
+  "pauseSuspenderFor1H":
+  {
+    "message": "Приостановить расширение на 1 час.",
+    "description": "Stop Tab Suspender for 1 hour."
+  },
+  "pauseSuspenderFor5H":
+  {
+    "message": "Приостановить расширение на 5 часов.",
+    "description": "Stop Tab Suspender for 5 hours."
+  },
+
+
+
+  "addToWhitelist":
+  {
+    "message": "Добавить сайт в Белый список, чтобы не усыплять этот сайт в будущем.",
+    "description": "Add to Whitelist to NOT suspend this site in future."
+  },
+  "suspendCurrentTab":
+  {
+    "message": "Немедленно усыпить текущую вкладку.",
+    "description": "Immediately suspend current tab."
+  },
+  "suspendCurrentWindow":
+  {
+    "message": "Немедленно усыпить все вкладки в текущем окне.",
+    "description": "Immediately suspend all tabs at current window."
+  },
+  "suspendAll":
+  {
+    "message": "Немедленно усыпить все остальные вкладки за исключением текущей.",
+    "description": "Immediately suspend all tabs except current tab."
+  },
+
+  "unsuspend":
+  {
+    "message": "Разморозить вкладку.",
+    "description": "Unsuspend tab."
+  },
+  "unsuspendAllWindow":
+  {
+    "message": "Мгновенно размораживает все вкладки в текущем окне.",
+    "description": "Immediately unsuspend all tabs at current window."
+  },
+  "unsuspendAll":
+  {
+    "message": "Мгновенно размораживает все вкладки.",
+    "description": "Immediately unsuspend all tabs."
+  },
+
+  "ignoreCurrentTab":
+  {
+    "message": "Игнорировать текущую вкладку от заморозки (Настройка будет сброшена после перезагрузки браузера, если требуется постоянное исключение сайта используйте Белый список).",
+    "description": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist)."
+  },
+  "suspendHistory":
+  {
+    "message": "Открыть историю замороженных вкладок.",
+    "description": "Open suspended tabs history."
+  },
+  "changeHotkeys":
+  {
+    "message": "Настойка/Установка горячих клавиш для быстрого доступа к функциям.",
+    "description": "Setup/Change hotkeys for fast access to Tab Suspender functions."
+  },
+  "allSettings":
+  {
+    "message": "Открыть полные настойки...",
+    "description": "Open full settings page."
+  }
+}

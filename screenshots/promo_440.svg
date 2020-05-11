@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="440"
+   height="280"
+   id="svg3842"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   inkscape:export-filename="F:\Users\drapa\Dropbox\Удалить\AutomaticTabsCleanerSuspender_src\screenshots\promo_440_vector.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="Новый документ 4">
+  <defs
+     id="defs3844" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="182.49844"
+     inkscape:cy="178.5"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showborder="true"
+     inkscape:snap-to-guides="false"
+     inkscape:window-width="1854"
+     inkscape:window-height="1058"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3847">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-772.36218)">
+    <path
+       style="fill:#aeff36;fill-opacity:1;stroke:#000000;stroke-width:0.99703175;stroke-opacity:0.11818183"
+       d="m 18.436016,775.86218 c -8.279761,0 -14.9375001,6.65774 -14.9375001,14.9375 l 0,243.12502 c 0,8.2797 6.6577391,14.9375 14.9375001,14.9375 l 403.125004,0 c 8.27976,0 14.9375,-6.6578 14.9375,-14.9375 l 0,-243.12502 c 0,-8.27976 -6.65774,-14.9375 -14.9375,-14.9375 l -403.125004,0 z m 209.062504,74.5 c 24.02439,0 43.5,19.47561 43.5,43.5 0,24.02439 -19.47561,43.5 -43.5,43.5 -24.02439,0 -43.5,-19.47561 -43.5,-43.5 0,-24.02439 19.47561,-43.5 43.5,-43.5 z"
+       id="rect5828"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:39.68705368px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.99217635;stroke-opacity:0.11818183;font-family:Sans"
+       x="76.397583"
+       y="992.69592"
+       id="text4370"
+       sodipodi:linespacing="125%"
+       transform="scale(1.0078853,0.99217638)"><tspan
+         sodipodi:role="line"
+         id="tspan4372"
+         x="76.397583"
+         y="992.69592"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.99217635;stroke-opacity:0.11818183;font-family:Cooper Black;-inkscape-font-specification:Cooper Black">Tab Suspender</tspan></text>
+  </g>
+</svg>

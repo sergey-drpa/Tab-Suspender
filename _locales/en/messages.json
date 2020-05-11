@@ -1,0 +1,154 @@
+{
+  "extName":
+  {
+    "message": "Tab Suspender",
+    "description": "Clear Tab Suspender"
+  },
+  "extTitle":
+  {
+    "message": "Tab Suspender",
+    "description": "Tab Suspender"
+  },
+  "extDescription":
+  {
+    "message": "Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat.",
+    "description": "MAX 128: Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat."
+  },
+  "rateIt":
+  {
+    "message": "Rate it, please.",
+    "description": "Rate it, please."
+  },
+  "autoCloseTabsSwitch":
+  {
+    "message": "",
+    "description": "Close Tabs Automatically"
+  },
+  "autoSuspendSliderValue":
+  {
+    "message": "Will suspend tab after $1 of inactivity",
+    "description": "Will suspend tab after $1 of inactivity"
+  },
+  "autoSuspendInterval":
+  {
+    "message": "",
+    "description": "Auto-Suspend Interval"
+  },
+  "recycleAfterSliderValue":
+  {
+    "message": "",
+    "description": "Сan close tabs after $1 of tab inactivity"
+  },
+  "recycleKeepSliderValue":
+  {
+    "message": "",
+    "description": "Will close tabs if there are more than $1 tabs"
+  },
+
+  "wizard_recycleAfterSliderValue":
+  {
+    "message": "Suspender can close tabs after <b>$1</b> of tab inactivity",
+    "description": "Suspender will close tabs after <b>$1</b> of tab inactivity"
+  },
+  "wizard_recycleKeepSliderValue":
+  {
+    "message": "...and only when window have more than <b>$1</b> opened tabs",
+    "description": "...and only when there are more than <b>$1</b> opened tabs"
+  },
+
+  "pageIsInWhitelist":
+  {
+    "message": "",
+    "description": "Page is in Whilelist"
+  },
+  "removeFromWhilelist":
+  {
+    "message": "",
+    "description": "Remove from Whitelist"
+  },
+  "pauseSuspender":
+  {
+    "message": "Stop Tab Suspender for a while...",
+    "description": "Stop Tab Suspender for a while..."
+  },
+  "resumeSuspender":
+  {
+    "message": "Cancel timer and activate Tab Suspender.",
+    "description": "Cancel timer and activate Tab Suspender."
+  },
+  "pauseSuspenderFor10M":
+  {
+    "message": "Stop Tab Suspender for 10 minutes.",
+    "description": "Stop Tab Suspender for 10 minutes."
+  },
+  "pauseSuspenderFor1H":
+  {
+    "message": "Stop Tab Suspender for 1 hour.",
+    "description": "Stop Tab Suspender for 1 hour."
+  },
+  "pauseSuspenderFor5H":
+  {
+    "message": "Stop Tab Suspender for 5 hours.",
+    "description": "Stop Tab Suspender for 5 hours."
+  },
+
+
+
+  "addToWhitelist":
+  {
+    "message": "Add to Whitelist to NOT suspend this site in future.",
+    "description": "Add to Whitelist to NOT suspend this site in future."
+  },
+  "suspendCurrentTab":
+  {
+    "message": "Immediately suspend current tab.",
+    "description": "Immediately suspend current tab."
+  },
+  "suspendCurrentWindow":
+  {
+    "message": "Immediately suspend all tabs at current window.",
+    "description": "Immediately suspend all tabs at current window."
+  },
+  "suspendAll":
+  {
+    "message": "Immediately suspend all tabs except current tab.",
+    "description": "Immediately suspend all tabs except current tab."
+  },
+
+  "unsuspend":
+  {
+    "message": "Unsuspend tab.",
+    "description": "Unsuspend tab."
+  },
+  "unsuspendAllWindow":
+  {
+    "message": "Immediately unsuspend all tabs at current window.",
+    "description": "Immediately unsuspend all tabs at current window."
+  },
+  "unsuspendAll":
+  {
+    "message": "Immediately unsuspend all tabs.",
+    "description": "Immediately unsuspend all tabs."
+  },
+
+  "ignoreCurrentTab":
+  {
+    "message": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).",
+    "description": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist)."
+  },
+  "suspendHistory":
+  {
+    "message": "Open suspended tabs history.",
+    "description": "Open suspended tabs history."
+  },
+  "changeHotkeys":
+  {
+    "message": "Setup/Change hotkeys for fast access to Tab Suspender functions.",
+    "description": "Setup/Change hotkeys for fast access to Tab Suspender functions."
+  },
+  "allSettings":
+  {
+    "message": "Open full settings page.",
+    "description": "Open full settings page."
+  }
+}

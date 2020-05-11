@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!--
+/*
+ * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, 
+ * be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy.
+ * Zadorozhniy.Sergey@gmail.com
+ */
+-->
+<html>
+<head>
+	<link id="faviconLink" type="image/x-icon" rel="shortcut icon" href="img/icon16_off.png">
+	<script type="text/javascript" src="park.js" ></script>
+	<meta name="viewport" content="initial-scale=1">
+	<style>
+	
+	html, body {
+		height: 100%;
+	}
+	
+	img.restore {
+		/* display: none!important; Temporarly */
+		top: 50%;
+		bottom: 50%;
+		left: 50%;
+		right: 50%;
+		margin-left: -128px;
+		margin-top: -128px;
+		position: fixed;
+		z-index:1000;
+		cursor:pointer;
+		opacity: 0.7;
+	}
+	
+	img.restore.h1024 {
+		margin-left: -98px;
+		margin-top: -98px;
+	}
+
+	img.restore.h800 {
+		margin-left: -80px;
+		margin-top: -80px;
+	}
+	
+	img.restore.h600 {
+		margin-left: -64px;
+		margin-top: -64px;
+	}
+	
+	.wait-for-render {
+		display: none;
+	}
+
+	img:hover.restore.inprogress,
+	.restore.inprogress {
+		opacity: 0.0;
+	}
+
+	.screen.inprogress {
+		transition: all 1s ease-out;
+		opacity: 1.0;
+	}
+
+	img:hover.restore {
+		opacity: 1.0;
+	}
+
+	img.screen {
+		opacity: 0.5; 
+		margin: 0; 
+		padding: 0; 
+		vertical-align: top;
+		user-drag: none;
+		user-select: none;
+		-webkit-user-drag: none;
+		transform-origin: top left;
+	}
+	
+	#title_div {
+		position: absolute;
+		text-align: center;
+		width: 100%;
+		font-size: 20px;
+		font-family: sans-serif;
+		top: 27px;
+		z-index: 0;
+	}
+	
+	.title {
+		font-family: Trebuchet MS;
+		font-size: 14px;
+		line-height: 15px;
+		font-weight: bold;
+		color: #79bcff/*#1dcfeb*/;
+		padding-left: 3px;
+		cursor: pointer;
+		text-decoration: none;
+		-webkit-font-smoothing: antialiased;
+		margin-right: 3px;
+	}
+	
+	.title:hover {
+		color: #6bb0ff !important;
+	}
+	
+	.label {
+		position: absolute;
+		bottom: 0px;
+		right: 0px;
+		z-index: 1000;
+		background-color: white;
+		border-radius: 5px 0px 0px 0px;
+		padding-left: 3px;
+		border-left: 1px #999 solid;
+		border-top: 1px #999 solid;
+		padding-top: 3px;
+	}
+	
+	#nativeUrl {
+		background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 300%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 300%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 400%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 );
+		position: absolute;
+		top: -27px;
+		left: 106px;
+		right:106px;
+		height: 26px;
+		z-index: 100000;
+		color: #555;
+		border-radius: 0px 0px 11px 11px;
+		border-bottom: 1px rgba(70,70,70,0.4) solid;
+		border-left: 1px rgba(176,176,176,1) solid;
+		border-right: 1px rgba(176,176,176,1) solid;
+		z-index: 10000000000;
+	}
+	
+	.always-visible #nativeUrlButton {
+		display: none;
+	}
+	
+	.always-visible #nativeUrl {
+		top: 0px;
+		opacity: 0;
+		transition: opacity 3s cubic-bezier(0.21, 0.01, 0, 0.96);
+		background-position: -26px;
+	}
+	.always-visible .page-link {
+		opacity: 0;
+		transition: opacity 3s cubic-bezier(0.21, 0.01, 0, 0.96);
+	}
+	
+	.always-visible #nativeUrl:hover {
+		opacity: 1;		
+		transition: opacity 1s cubic-bezier(0.21, 0.01, 0, 0.96);
+		background-position:0px;
+	}
+	.always-visible:hover .page-link {
+		opacity: 1;
+		transition: opacity 1s cubic-bezier(0.21, 0.01, 0, 0.96);
+	}
+
+	#nativeUrl.visible, .visible .page-link {
+		opacity: 1;
+	}
+	
+	#pauseIcon {
+		left: 7px;
+		top: 5px;
+		width: 14px;
+		height: 14px;
+		position: relative;
+	}
+	
+	#nativeUrlSpan {
+		left: 11px;
+		top: 2px;
+		position: relative;
+		font-size: 14px;
+		font-family: inherit;
+	}
+	
+	#nativeUrlButton:hover {
+		background: -moz-linear-gradient(top, rgba(240,240,240,1) 50%, rgba(255,255,255,0) 150%) !important; /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, rgba(240,240,240,1) 50%,rgba(255,255,255,0) 150%) !important; /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, rgba(240,240,240,1) 50%,rgba(255,255,255,0) 150%) !important; /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */">
+	}
+
+	/* Alterantive restore button */
+	.topRestore {
+		position: absolute;
+		top: -61px;
+		width: 85%;
+		height: 103px;
+		background: #d4eaff75;/*#d4eaff9e;*//*#79bcff38;*/
+		border-radius: calc(85%) / 80px;
+		left: calc(15%/2);
+		z-index: 1000000000;
+		cursor: pointer;
+		transition: background-color 0.7s ease-out;/*cubic-bezier(0.21, 0.01, 0, 0.96);*/
+	}
+	.topRestore:hover {
+		background: #79bcff6e;
+		transition: background-color 0.4s cubic-bezier(0.21, 0.01, 0, 0.96); /*0.3s ease-in-out;*/
+	}
+	.topRestore.inprogress, .topRestore.inprogress:hover {
+		background: #ffffff00 !important;
+		/*top: -114px;*/
+		transition: background 0.1s ease 0s !important;
+	}
+	/*.topRestore:after {
+		content: "Restore";
+		left: calc(50% - 87px/2);
+		position: absolute;
+		top: 67%;
+		font-size: 24px;
+		color: #4c6cb56b;
+		font-weight: bold;
+		transition: opacity 0.7s ease-out;
+		opacity: 0;
+	}*/
+	iframe { 
+		visibility: hidden
+	}
+	.topRestore:after {
+		content: " ";
+		width: 24px;
+		height: 24px;
+		background-image: url(/img/restore2-2_24.png);
+		left: calc(50% - 24px/2);
+		position: absolute;
+		bottom: 3px;
+		font-size: 24px;
+		color: #4c6cb56b;
+		font-weight: bold;
+		transition: opacity 0.7s ease-out;
+		opacity: 0.3;
+	}
+	.topRestore:hover:after{
+		transition: opacity 0.4s cubic-bezier(0.21, 0.01, 0, 0.96);
+		opacity: 1;
+	}
+	.topRestore.inprogress:after, .topRestore.inprogress:hover:after{
+		transition: opacity 0.1s ease-out !important;
+		opacity: 0 !important;
+	}
+
+
+	</style>
+</head>
+<body id="body" style="margin: 0; padding: 0; overflow: hidden;">
+	<div id="title_div" style="display: none;">
+		<a id="titleImg" href="#"><img id="favicon" style="width: 16px; height: 16px;"></a>
+		<a id="title" href="" style="color: #428bca;"></a>
+	</div>
+	<div id="topRestore" class="topRestore" style="display: none;" title="Click to resore..."></div>
+	<div class="label">
+		<a id="link" target="_blank" rel="noopener" href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" class="title">Tab Suspender<span style="font-size: 12px">&copy;</span></a>
+	</div>
+	
+	<div id="nativeUrl">
+	
+		<div id="nativeUrlButton" title="Page link." style="
+			width: 34px;
+			height: 12px;
+			position: absolute;
+			border-bottom: 1px #999 solid;
+			border-left: 1px #999 solid;
+			border-right: 1px #999 solid;
+			border-radius: 0px 0px 4px 4px;
+			top: 26px;
+			left: 50%;
+			right: 50%;
+			cursor: pointer;
+			margin-left: -17px;
+			background: -moz-linear-gradient(top, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 150%); /* FF3.6-15 */
+			background: -webkit-linear-gradient(top, rgba(255,255,255,1) 50%,rgba(255,255,255,0) 150%); /* Chrome10-25,Safari5.1-6 */
+			background: linear-gradient(to bottom, rgba(255,255,255,1) 50%,rgba(255,255,255,0) 150%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+			text-align: center;
+    		line-height: 12px;
+    		font-size: 7px;
+			user-select: none;">
+			<div title="Page link." style="
+				display: none;
+				width: 24px;
+				height: 1px;
+				border-bottom: 1px #79bcff solid;
+				border-top: 1px #79bcff solid;
+				top: 4px;
+				left: 5px;
+				position: absolute;"></div>
+			INFO
+		</div>
+	
+		<div class="page-link" style="
+			overflow: hidden;
+			white-space: nowrap;
+			height: 26px;
+			right: 10px;
+			position: absolute;
+			left: 0px;">
+			<img id="pauseIcon" src="/img/pause.png" title="Suspended page link.">
+			<span id="nativeUrlSpan" ></span>
+		</div>
+	</div>
+	<div id="screenDiv" title="Click to Restore..." style="height: 100%; cursor: pointer;">
+		<img id="screen" class="screen">
+	</div>
+
+	<img src="/img/restore2-2_256.png" style="display: none;" id="resoteImg" title="Restore..." class="restore wait-for-render" width="256" height="256">
+</body>
+</html>

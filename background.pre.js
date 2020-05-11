@@ -1,0 +1,1 @@
+trackErrors('background', false);

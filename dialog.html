@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+
+<head>
+  <link type="text/css" rel="stylesheet" href="dialog.css">
+  <title>Add Site to Whitelist</title>
+</head>
+
+<body>
+<div class='overlay'></div>
+<div id="" class='atcs-site-dialog'>
+  <header class="dialog-header">
+    <h1><img style="padding-right: 15px; width: 16px; height: 16px;" src="img/icon16.png" />Add site to Whitelist</h1>
+  </header>
+  <div class="dialog-content">
+    <p>Tab Suspender won't run on any pages matching:</p>
+    <input id="pattern" class="pattern" readonly="true" disabled="true"/>
+    <div class="sliders">
+      <span id="siteSliderSpan">
+		<span class="slider-span">Site:</span>
+        <input id="siteSlider" type="range" min="0" value="0" max="1">
+      </span>
+      <span id="pageSliderSpan">
+        <span class="slider-span">Page:</span>
+        <input id="pageSlider" type="range" min="0" value="0" max="1">
+      </span>
+    </div>
+  </div>
+  <div class="btn-group cf">
+    <button class="atcsbtn btn-cancel" id="cancelButton">Cancel</button>
+    <button class="atcsbtn btn-danger" id="addButton">Add to Whitelist</button>
+  </div>
+</div>
+<script src='dialog.js'></script>
+</body>
+
+</html>
