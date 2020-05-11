@@ -2861,7 +2861,6 @@
 	{
 		console.log("DB Cleanup started...");
 		//setTimeout(function(){
-			//debugger;
 
 			var usedSessionIds = {};
 
