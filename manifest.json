@@ -1,25 +1,25 @@
 {
-    "manifest_version": 2, 
+    "manifest_version": 2,
 	"name": "__MSG_extName__",
 	"short_name": "Tab Suspender",
-    "version": "1.3.7",
+    "version": "1.3.9",
 
     "description": "__MSG_extDescription__",
     "default_locale": "en",
-				   
-																																					   
+
+
     "icons": {
         "16": "img/icon16.png",
         "32": "img/icon32.png",
         "64": "img/icon64.png",
 		"128": "img/icon128.png"
     },
-    
+
 	 "browser_action": {
         "default_icon": "img/icon16.png",
         "default_title": "Tab Suspender",
 		"default_popup": "popup.html"
-    }, 
+    },
     "options_page": "fancy-settings/source/index.html",
     "background": {"page": "background.html"},
     "incognito": "split",
@@ -27,8 +27,10 @@
     "minimum_chrome_version": "54",
     "permissions": [
 		"tabs",
-		"notifications",
-		"<all_urls>",
+        "activeTab",
+        "https://*/*",
+        "http://*/*",
+        "notifications",
 		"unlimitedStorage",
         "contextMenus",
         "storage"
@@ -37,7 +39,7 @@
     ],
 	"content_scripts": [
     {
-		"matches": ["https://*/*","http://*/*", "<all_urls>"],
+		"matches": ["https://*/*","http://*/*"],
 		"js": ["lib/h2c.js","inject.js"],
 		"run_at": "document_end",
 		"all_frames" : false

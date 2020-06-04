@@ -16,6 +16,7 @@
 	var debugPatterns = false;
 	var debugInit = false;
 	var debugScreenCache = false;
+	const debugDBCleanup = true;
 
 	/*try
 	{
@@ -29,7 +30,7 @@
 		'timeout': 30 * 60,
 		//'tick': 1, // seconds [Hidden]
 		'pinned': true,
-		'isCloseTabsOn': false,
+		'isCloseTabsOn': true,
 		'ignoreAudible': true,
 		'limitOfOpenedTabs': 20,
 		'closeTimeout': 60*60,
@@ -2862,19 +2863,26 @@
 		console.log("DB Cleanup started...");
 		//setTimeout(function(){
 
+		// schedule next cleanup in next days
+		setTimeout(cleanupDB, 1000*60*60*24);
+
 			var usedSessionIds = {};
+			var usedTabIds = {};
 
-            t5.query({}, function (tabs) {
-                for (var i in tabs)
-                    if (tabs.hasOwnProperty(i))
-                        if (tabs[i].url.indexOf(extUrl) == 0) {
-                            var sessionId = parseUrlParam(tabs[i].url, 'sessionId');
-                            if (sessionId != null)
-                                usedSessionIds[sessionId] = true;
-                        }
+			t5.query({}, function (tabs) {
+					for (var i in tabs)
+							if (tabs.hasOwnProperty(i))
+									if (tabs[i].url.indexOf(extUrl) == 0) {
+											var sessionId = parseUrlParam(tabs[i].url, 'sessionId');
+											const tabId = parseUrlParam(tabs[i].url, 'tabId');
+											if (sessionId != null)
+													usedSessionIds[sessionId] = true;
+											if(tabId != null)
+												usedTabIds[tabId] = sessionId;
+									}
 
-				usedSessionIds[parseInt(window.TSSessionId)] = true;
-                usedSessionIds[parseInt(window.previousTSSessionId)] = true;
+			usedSessionIds[parseInt(window.TSSessionId)] = true;
+      usedSessionIds[parseInt(window.previousTSSessionId)] = true;
 
                 /*database.readTransaction(function(tx) {
                     tx.executeSql(
@@ -2904,12 +2912,12 @@
                         sql_error);
                 }, sql_error, null);*/
 
-
-                database.getAll({
+			const currentDate = new Date();
+      database.getAll({
 					IDB:
 						{
 							table: 'screens',
-							index: "PK",
+							index: ADDED_ON_INDEX_NAME,
 							predicate: "getAllKeys",
 							predicateResultLogic: function (result)
 							{
@@ -2917,20 +2925,34 @@
 								var filterdSessionKeysArray = Object.keys(usedSessionIds);
 								console.log(filterdSessionKeysArray);
 								/* [sessionId NOT IN] IMPLEMENTATION */
-                                		var isScreenActual;
-			                         for(var i=0;i<result.length;i++)
-			                         {
-			                          	isScreenActual = false;
-			                           	for (var j = 0; j < filterdSessionKeysArray.length; j++)
-					                         if (result[i][1] == filterdSessionKeysArray[j])
-					                         {
-					                         	isScreenActual = true;
-					                              break;
-					                         }
+                 var isScreenActual;
+								 for(var i=0;i<result.length;i++)
+								 {
+										isScreenActual = false;
+									 /*if(usedSessionIds[result[i][1]]){
+										 isScreenActual = true;
+									 }*/
 
-			                          	if(!isScreenActual)
-			                          		filtredResult.push(result[i]);
-			                      	}
+									 if(usedSessionIds[result[i][1]]){
+									 	 if(usedTabIds[result[i][0]]) {
+											 isScreenActual = true;
+										 } else if (Math.abs(new Date() - result[i][2]) > 1000*60*60*24*14 /* > Two weeks */) {
+											 isScreenActual = false;
+										 } else {
+											 isScreenActual = true;
+										 }
+									 }
+
+										/*for (var j = 0; j < filterdSessionKeysArray.length; j++)
+										 if (result[i][1] == filterdSessionKeysArray[j])
+										 {
+											isScreenActual = true;
+													break;
+										 }*/
+
+										if(!isScreenActual)
+											filtredResult.push(result[i]);
+								}
 
 								return filtredResult;
 							}
@@ -2943,31 +2965,37 @@
 
 				}, function (resultsRowsArray)
 				{
-					if(resultsRowsArray != null)
-						for(var i=0;i<resultsRowsArray.length;i++)
-						{
-							var callDelete = function(curI)
-							{
+					if(resultsRowsArray != null) {
+						if(debugDBCleanup) {
+							console.log(`ScreensToCleanup: ${resultsRowsArray.length}`);
+						}
+						for (var i = 0; i < resultsRowsArray.length; i++) {
+							var callDelete = function (curI) {
 								setTimeout(function () {
+
+									if(debugDBCleanup) {
+										console.log(`Cleanup: ${resultsRowsArray[curI]}`);
+									}
 
 									database.executeDelete({
 										IDB:
-										{
-                                            table: 'screens',
-                                            index: 'PK',
-											params: [resultsRowsArray[curI][0], resultsRowsArray[curI][1]]
-										},
+											{
+												table: 'screens',
+												index: 'PK',
+												params: [resultsRowsArray[curI][0], resultsRowsArray[curI][1]]
+											},
 										WebSQL:
-										{
-											query: 'delete from screens where sessionId = ?',
-											params: [resultsRowsArray[curI].sessionId]
-										}
+											{
+												query: 'delete from screens where sessionId = ?',
+												params: [resultsRowsArray[curI].sessionId]
+											}
 									});
 								}, 2000 * curI);
 							}
 
 							callDelete(i);
 						}
+					}
 				});
             });
 
@@ -2989,6 +3017,34 @@
 		}, 1740*1000  /*30*1000*/);
 
 		//}, DELAY_BEFORE_DB_CLEANUP)
+	}
+
+	function getScreenRecord(tabId, sessionId) {
+		currentDB.queryIndex(
+			{
+				IDB:
+					{
+						table: 'screens',
+						index: 'PK'
+					},
+				WebSQL:
+					{
+						/*query: 'select screen from screens where id = ? and sessionId = ?'*/
+					},
+				params: [parseInt(tabId), parseInt(sessionId)]},
+			function(fields)
+			{
+				if(fields == null)
+				{
+					callback(null);
+					return;
+				}
+
+				if(debugScreenCache)
+					console.log("getScreen result: ", Date.now());
+				callback(fields['screen'], fields['pixRat'] || 1);
+			}
+		);
 	}
 
 

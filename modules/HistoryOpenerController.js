@@ -60,7 +60,7 @@ HistoryOpenerController.prototype.onNewTab = function(tab)
     if(tab.openerTabId != null)
         chrome.tabs.get(tab.openerTabId, function(oTab){
             if(self.isHistory(oTab.url))
-                self.markTabFromHistory(tab.id, tab.url);
+                self.markTabFromHistory(tab.id, tab.url || tab.pendingUrl);
         });
 }
 

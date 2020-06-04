@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, 
+ * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances,
  * be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy.
  * Zadorozhniy.Sergey@gmail.com
  */
 
 /**
  *
- */ 
+ */
 function WhiteList (settings)
 {
 	"use strict";
-	
+
 	this.persistKey = 'exceptionPatternsV2';
 	this.settings = settings;
-	
+
 	var patternsString = settings.get("exceptionPatternsV2");
 	if(patternsString != null)
 	{
-		var localExceptionPatterns = patternsString.split(/[,\s]/);					
+		var localExceptionPatterns = patternsString.split(/[,\s]/);
 		if(localExceptionPatterns != null)
 		{
 			this.patternList = [];
@@ -34,7 +34,7 @@ function WhiteList (settings)
 	}
 	else
 		this.patternList = [];
-	
+
 	this.setupBackwardCompatibility();
 }
 
@@ -44,15 +44,15 @@ function WhiteList (settings)
 WhiteList.prototype.isURIException = function(url)
 {
 	"use strict";
-	
+
 	var filterException = false;
-	
-	try 
+
+	try
 	{
 		url = this.trimUrl(url);
 		if(url == null)
 			return false;
-				
+
 		if(this.findAffectdPatternIndexByUrl(url) != null)
 			filterException = true;
 	}
@@ -60,17 +60,17 @@ WhiteList.prototype.isURIException = function(url)
 	{
 		return false;
 	}
-	
+
 	return filterException;
 }
 
 /**
  *
  */
-WhiteList.prototype.createPatternObject = function(pattern) 
+WhiteList.prototype.createPatternObject = function(pattern)
 {
 	"use strict";
-	
+
 	if(!this.isWrongPattern(pattern))
 	{
 		var regExp = this.createRegExp(pattern);
@@ -85,26 +85,27 @@ WhiteList.prototype.createPatternObject = function(pattern)
 /**
  *
  */
-WhiteList.prototype.addPattern = function(pattern) 
+WhiteList.prototype.addPattern = function(pattern)
 {
 	"use strict";
-	
+
 	var patternObject;
 	if( pattern != null && (patternObject=this.createPatternObject(pattern)) != null)
 	{
 		this.patternList.push(patternObject);
 		this.persist();
-		
+
 		if(debug == true)
 				console.log("WhiteList: added pattern "+pattern);
-				
+
 		chrome.notifications.create("userInfo",
 			{
 				type: 'basic',
 				iconUrl: 'img/icon16.png',
 				title: "Added to Whitelist",
 				message: pattern
-			}
+			},
+			function(id) { console.log("Last error:", chrome.runtime.lastError); }
 		);
 	}
 	else if(debug == true)
@@ -114,10 +115,10 @@ WhiteList.prototype.addPattern = function(pattern)
 /**
  *
  */
-WhiteList.prototype.isWrongPattern = function(pattern) 
+WhiteList.prototype.isWrongPattern = function(pattern)
 {
 	"use strict";
-	
+
 	if(pattern == "" || pattern == "*")
 		return true;
 	return false;
@@ -126,32 +127,32 @@ WhiteList.prototype.isWrongPattern = function(pattern)
 /**
  *
  */
-WhiteList.prototype.removePatternsAffectUrl = function(url) 
+WhiteList.prototype.removePatternsAffectUrl = function(url)
 {
 	"use strict";
-	
+
 	url = this.trimUrl(url);
 	if(url == null)
 		return false;
-		
+
 	var affected = false;
 	var i;
 	var removedPatterns = [];
     while((i=this.findAffectdPatternIndexByUrl(url)) != null)
 	{
 		affected = true;
-		
+
 		if(debug == true)
 			console.log("WhiteList: Removed pattern "+this.patternList[i].pattern);
-		
+
 		removedPatterns.push(this.patternList[i].pattern);
 		this.patternList.splice(i,1);
 	}
-	
+
 	if(affected)
 	{
 		this.persist();
-		
+
 		chrome.notifications.create("userInfo",
 			{
 				type: 'basic',
@@ -169,7 +170,7 @@ WhiteList.prototype.removePatternsAffectUrl = function(url)
 WhiteList.prototype.persist = function()
 {
 	"use strict";
-	
+
 	var patterns = [];
 	for(var i in this.patternList)
 		patterns.push(this.patternList[i].pattern);
@@ -183,14 +184,14 @@ WhiteList.prototype.persist = function()
 WhiteList.prototype.trimUrl = function(url)
 {
 	"use strict";
-	
+
 	/* Acceptable protocols: */
 	if(url.substring(0,7) == "http://")
 		return url.substring(7);
 	else if(url.substring(0,8) == "https://")
 		return url.substring(8);
 	else
-		return null;	
+		return null;
 }
 
 /**
@@ -199,7 +200,7 @@ WhiteList.prototype.trimUrl = function(url)
 WhiteList.prototype.findAffectdPatternIndexByUrl = function(url)
 {
 	"use strict";
-	
+
 	for(var i=0; i<this.patternList.length ;i++)
 	{
 		if(this.patternList[i] != null )
@@ -207,7 +208,7 @@ WhiteList.prototype.findAffectdPatternIndexByUrl = function(url)
 			try
 			{
 				var result = this.patternList[i].regExp.exec(url);
-				
+
 				if(result != null)
 					return i;
 			}
@@ -218,7 +219,7 @@ WhiteList.prototype.findAffectdPatternIndexByUrl = function(url)
 			}
 		}
 	}
-	
+
 	return null;
 }
 
@@ -228,14 +229,14 @@ WhiteList.prototype.findAffectdPatternIndexByUrl = function(url)
 WhiteList.prototype.setupBackwardCompatibility = function()
 {
 	"use strict";
-	
+
 	// Load and prepare Very Old exclusion list
-	
+
 	var oldPatternsString = this.settings.get('exceptionPatterns');
 	var oldPatternsStringConvertedToV2 = '';
 	if(oldPatternsString != null && oldPatternsString != '')
 	{
-		var oldExceptionPatterns = oldPatternsString.split(/[,\s]/);			
+		var oldExceptionPatterns = oldPatternsString.split(/[,\s]/);
 		if(oldExceptionPatterns != null)
 		{
 			for(var i=0; i<oldExceptionPatterns.length ;i++)
@@ -257,8 +258,8 @@ WhiteList.prototype.setupBackwardCompatibility = function()
 		}
 		this.settings.set('exceptionPatterns', null);
 	}
-			
-	
+
+
 	if(oldPatternsStringConvertedToV2 != null && oldPatternsStringConvertedToV2 != '')
 	{
 		//var patternsString = this.settings.get('exceptionPatternsV2');
@@ -273,8 +274,8 @@ WhiteList.prototype.setupBackwardCompatibility = function()
 WhiteList.prototype.createRegExp = function(pattern)
 {
 	"use strict";
-	
-	try 
+
+	try
 	{
 		pattern = pattern.replace(/\./g, '\\.');
 		pattern = pattern.replace(/\*/g, '.*');

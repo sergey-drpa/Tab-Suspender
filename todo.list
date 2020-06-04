@@ -1,0 +1,4 @@
+- Make GA optional in config page.
++ Make periodically cleanup
++ Fix history
++ Fix Store policy permissions

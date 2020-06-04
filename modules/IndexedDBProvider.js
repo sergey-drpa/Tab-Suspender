@@ -6,6 +6,9 @@
 
 "use strict";
 
+const SCREENS_DB_NAME = 'screens';
+const ADDED_ON_INDEX_NAME = 'addedOnIndex';
+
 /**
  *
  */
@@ -223,18 +226,26 @@ IndexedDBProvider.prototype.open = function(options)
 {
     "use strict";
 
-    var openRequest = window.indexedDB.open("TSDB",1);
+    var openRequest = window.indexedDB.open("TSDB",5);
 
     openRequest.onupgradeneeded = function(e)
     {
         var thisDB = e.target.result;
+        const tx = e.target.transaction;
 
         if(options == null || options.skipSchemaCreation == false)
         {
-            if (!thisDB.objectStoreNames.contains("screens"))
+            if (!thisDB.objectStoreNames.contains(SCREENS_DB_NAME))
             {
-                var objectStore = thisDB.createObjectStore('screens', {keyPath: ['id', 'sessionId']});
+                var objectStore = thisDB.createObjectStore(SCREENS_DB_NAME, {keyPath: ['id', 'sessionId']});
                 objectStore.createIndex("PK", ['id', 'sessionId'], {unique: true});
+            }
+
+            const screens = tx.objectStore(SCREENS_DB_NAME);
+            if(!screens.indexNames.contains(ADDED_ON_INDEX_NAME)) {
+              console.log(`Start ${ADDED_ON_INDEX_NAME} index creation`);
+              screens.createIndex(ADDED_ON_INDEX_NAME, ['id', 'sessionId', 'added_on'], {unique: true});
+              console.log(`Completed ${ADDED_ON_INDEX_NAME} index creation`);
             }
         }
     };

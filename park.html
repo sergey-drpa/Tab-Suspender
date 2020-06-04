@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 /*
- * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, 
+ * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances,
  * be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy.
  * Zadorozhniy.Sergey@gmail.com
  */
@@ -12,11 +12,11 @@
 	<script type="text/javascript" src="park.js" ></script>
 	<meta name="viewport" content="initial-scale=1">
 	<style>
-	
+
 	html, body {
 		height: 100%;
 	}
-	
+
 	img.restore {
 		/* display: none!important; Temporarly */
 		top: 50%;
@@ -30,7 +30,7 @@
 		cursor:pointer;
 		opacity: 0.7;
 	}
-	
+
 	img.restore.h1024 {
 		margin-left: -98px;
 		margin-top: -98px;
@@ -40,12 +40,12 @@
 		margin-left: -80px;
 		margin-top: -80px;
 	}
-	
+
 	img.restore.h600 {
 		margin-left: -64px;
 		margin-top: -64px;
 	}
-	
+
 	.wait-for-render {
 		display: none;
 	}
@@ -65,16 +65,16 @@
 	}
 
 	img.screen {
-		opacity: 0.5; 
-		margin: 0; 
-		padding: 0; 
+		opacity: 0.5;
+		margin: 0;
+		padding: 0;
 		vertical-align: top;
 		user-drag: none;
 		user-select: none;
 		-webkit-user-drag: none;
 		transform-origin: top left;
 	}
-	
+
 	#title_div {
 		position: absolute;
 		text-align: center;
@@ -84,7 +84,7 @@
 		top: 27px;
 		z-index: 0;
 	}
-	
+
 	.title {
 		font-family: Trebuchet MS;
 		font-size: 14px;
@@ -97,11 +97,11 @@
 		-webkit-font-smoothing: antialiased;
 		margin-right: 3px;
 	}
-	
+
 	.title:hover {
 		color: #6bb0ff !important;
 	}
-	
+
 	.label {
 		position: absolute;
 		bottom: 0px;
@@ -114,7 +114,7 @@
 		border-top: 1px #999 solid;
 		padding-top: 3px;
 	}
-	
+
 	#nativeUrl {
 		background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 300%); /* FF3.6-15 */
 		background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 300%); /* Chrome10-25,Safari5.1-6 */
@@ -133,24 +133,26 @@
 		border-right: 1px rgba(176,176,176,1) solid;
 		z-index: 10000000000;
 	}
-	
+
 	.always-visible #nativeUrlButton {
 		display: none;
 	}
-	
+
 	.always-visible #nativeUrl {
 		top: 0px;
-		opacity: 0;
+		/* opacity: 0;  Now page-link BAR always visible */
+		opacity: 1;
 		transition: opacity 3s cubic-bezier(0.21, 0.01, 0, 0.96);
 		background-position: -26px;
 	}
 	.always-visible .page-link {
-		opacity: 0;
+		/* opacity: 0;  Now page-link BAR always visible */
+		opacity: 1;
 		transition: opacity 3s cubic-bezier(0.21, 0.01, 0, 0.96);
 	}
-	
+
 	.always-visible #nativeUrl:hover {
-		opacity: 1;		
+		opacity: 1;
 		transition: opacity 1s cubic-bezier(0.21, 0.01, 0, 0.96);
 		background-position:0px;
 	}
@@ -162,7 +164,7 @@
 	#nativeUrl.visible, .visible .page-link {
 		opacity: 1;
 	}
-	
+
 	#pauseIcon {
 		left: 7px;
 		top: 5px;
@@ -170,15 +172,15 @@
 		height: 14px;
 		position: relative;
 	}
-	
+
 	#nativeUrlSpan {
 		left: 11px;
-		top: 2px;
+		top: 3px;
 		position: relative;
 		font-size: 14px;
 		font-family: inherit;
 	}
-	
+
 	#nativeUrlButton:hover {
 		background: -moz-linear-gradient(top, rgba(240,240,240,1) 50%, rgba(255,255,255,0) 150%) !important; /* FF3.6-15 */
 		background: -webkit-linear-gradient(top, rgba(240,240,240,1) 50%,rgba(255,255,255,0) 150%) !important; /* Chrome10-25,Safari5.1-6 */
@@ -218,7 +220,7 @@
 		transition: opacity 0.7s ease-out;
 		opacity: 0;
 	}*/
-	iframe { 
+	iframe {
 		visibility: hidden
 	}
 	.topRestore:after {
@@ -256,9 +258,9 @@
 	<div class="label">
 		<a id="link" target="_blank" rel="noopener" href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" class="title">Tab Suspender<span style="font-size: 12px">&copy;</span></a>
 	</div>
-	
+
 	<div id="nativeUrl">
-	
+
 		<div id="nativeUrlButton" title="Page link." style="
 			width: 34px;
 			height: 12px;
@@ -290,7 +292,7 @@
 				position: absolute;"></div>
 			INFO
 		</div>
-	
+
 		<div class="page-link" style="
 			overflow: hidden;
 			white-space: nowrap;
