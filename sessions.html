@@ -3,8 +3,10 @@
 <head>
 	<title>TS Sessions Manager</title>
 	<link type="text/css" rel="stylesheet" href="session.css">
-    <link rel="stylesheet" href="/lib/bootstrap-4.3.1-dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABV0lEQVR4Xo3OPW4TQRiH8efdfWf2w5uFUEAKx+QMdOncwCW4A5WvgVxwAKRcAG4Q0UBFDYIiZGUsQHjXyGZjZW0PKazVGsnS/KSR5l/Mo5HxeJyKSI6n9Xo9G41GDTs6HA7fpmn6lAPKsqK4LnDOEScxeX70CnjRBhaLZVz/XYEACMKO0Do9HbRjOv1+jw4VAgaP+/gqioIuNcZircWXseb/gLaB+aJh1Ww55GbVIL3Bs4s3Hy+NhmSJvtY7bWA6K5nXtxyy2TicsSdxsD2RQJj8/HGt2vlBL7JEcjgAAmh7r0sVDYOAMAwBiKzhQdbD17fEohIE7BCGAVEU4csYg04mxdeqKs8EcHr/+OHxo8w7oCECpMARwOX7zy/Pn5w9x9O7D18uFKh3hyTJblQVX86B0nG73iAi+Npst/uB2Z96+emqQugQOlv29q+7B8K+HOgDgp/f/wD89mT6kxQvpwAAAABJRU5ErkJggg==" />
+	<link rel="stylesheet" href="/lib/bootstrap-4.3.1-dist/css/bootstrap.min.css"
+				integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="icon" type="image/png"
+				href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABV0lEQVR4Xo3OPW4TQRiH8efdfWf2w5uFUEAKx+QMdOncwCW4A5WvgVxwAKRcAG4Q0UBFDYIiZGUsQHjXyGZjZW0PKazVGsnS/KSR5l/Mo5HxeJyKSI6n9Xo9G41GDTs6HA7fpmn6lAPKsqK4LnDOEScxeX70CnjRBhaLZVz/XYEACMKO0Do9HbRjOv1+jw4VAgaP+/gqioIuNcZircWXseb/gLaB+aJh1Ww55GbVIL3Bs4s3Hy+NhmSJvtY7bWA6K5nXtxyy2TicsSdxsD2RQJj8/HGt2vlBL7JEcjgAAmh7r0sVDYOAMAwBiKzhQdbD17fEohIE7BCGAVEU4csYg04mxdeqKs8EcHr/+OHxo8w7oCECpMARwOX7zy/Pn5w9x9O7D18uFKh3hyTJblQVX86B0nG73iAi+Npst/uB2Z96+emqQugQOlv29q+7B8K+HOgDgp/f/wD89mT6kxQvpwAAAABJRU5ErkJggg==" />
 	<script type="text/javascript" src="utils.js"></script>
 	<script type="text/javascript" src="previewTile.js"></script>
 	<script type="text/javascript" src="/modules/errorsProcessing.js"></script>
@@ -12,15 +14,13 @@
 </head>
 <body>
 <p style="text-align: center">
-	<a id="link" target="_blank" title="Rate it, please." href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews" class="ts_title">
+	<a id="link" target="_blank" title="Rate it, please."
+		 href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews"
+		 class="ts_title">
 		Tab Suspender
 	</a>
 </p>
-<!--p style="text-align: center; position: fixed; right: 15px; top: 5px;">
-	<a target="_blank" href="#" class="propose_feature">
-		Suggest a feature...
-	</a>
-</p-->
+
 <p style="font-size: 19px; font-weight: 700; text-align: center;">
 	Session Manager (Experimental)
 </p>
@@ -29,17 +29,7 @@
 
 </div>
 
-<!--br/><br/><br/><br/>
-<p style="font-size: 19px; font-weight: 700; text-align: center;">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADJ0lEQVQ4T32TW0xTSRjH/3PKaQ+lUm6lXOQWE+MaEC9JjUoIKsGH1VUfFPHyIjGswaiJD5robvCeeEmMl8QLutl1zSaYGM0KuoYseGlFxSyRFNqQFQRqS0vpoVB6OzPH9KhVEuO8TGbm//993zczH8F3xtLuFbM48JcooxXPS1uFb0nJtzYbLU7TXe0vN/2cqyg9xcC7xoZZGi0471O/vWgp+ff/rz3TADeeOA1RHhfM+L3amdwFo8EIQjhQJsHn9yIQ9EuyLLeqWKCmfUG7GAPFAdc63i+KhNmD/ncTBg3PITSvGd2wICMjG2+dPeChRZKgA5dAMB7weWXQuZbSR24FcKnNrQMftdltvtzlJiMqZ6dAp0lA75Qd2/vqkSfMxMncEzjddws2rgPGzEw4PP0D5tJ/ihTAhcfDx0ZGgweLC3SoXpjxJTFCwCDj4vtr2J1Tp5S+o/MsBpNeQ+ZoxB8aq1UAZ9oGnaIYztpRnon8VI0iPPdnC9atWIzCHMMn4MdqB3xhbB5aC2NaHjyio4WcauvPikpwqpiM/ZVfxO2dPdh76ia2rS5H/aZVEDR8HFTVuRPJORxc3uFB0tDybi4jkjVdy2H3spRp0brsQ9je0Ij66krUrq+In/306hBU2WNwiy4vaXhoTZuK8F61CjhalfrpiWPpEoAQHLn6NzZWmTCnMDsOWPX8MBLzvfCI7j6lsD13bG8kxkq2zNdiSX7sDj6aY/PPx2/h8sGtcXOXM4Rdrn1Iz9Rg1O/6SwHUNfXUSpQ16gWgYWUyZgicYghFojh+/RGO7lyjrCNMxsYXVzCR3osoC4YoDZTHP1LNH2/uS5T+WJDCoaZUi4W5atgG3BgaETFrvg5tXhtuj5oREfwQhASMB8Vmy7yW1XHAht9eZgWj3D3KZJPEZJjyeLiMzbCrnyGBCODViUjWJcE/OSkHghP/Ea1YYZ5jnpjWCxuamlSekbwDlOFXymQ1K2pFarEN0QhDMDwFJkthWSbXOxY1139uqGmAsrKy2Xq9vjKk0hVKuSU/MH2ikRb3ZWGSjattnteJ9lAXpfSpw+HotlqtkRjkAxLZUeytWy1bAAAAAElFTkSuQmCC">
-Closed Tabs History (last 150 tabs):</p>
-<hr>
-<br/><br/><br/><br/>
-<div id="closeContainer" class="container">
-	<div id="closeDiv" class="row">
-	</div>
-</div-->
-<br/><br/>
+<br /><br />
 
 <script type="text/javascript" src="sessions.js"></script>
 

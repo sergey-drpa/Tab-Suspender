@@ -2,105 +2,118 @@
 <html>
 
 <head>
-  <link type="text/css" rel="stylesheet" href="wizard.css">
-  <link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.css" type="text/css" rel="stylesheet" />
-  <link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.skinHTML5.css" type="text/css" rel="stylesheet" />
-  <script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/vendor/jquery-1.11.1.min.js"></script>
-  <!--script type="text/javascript" src="fancy-settings/source/lib/store.js"></--script-->
-  <script type="text/javascript" src="modules/errorsProcessing.js"></script>
-  <script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/ion-rangeSlider/ion.rangeSlider.min.js"></script>
-  <script type="text/javascript" src="lib/h2c.js"></script>
-  <title>Tab Suspender Wizard</title>
+	<link type="text/css" rel="stylesheet" href="wizard.css">
+	<link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.css" type="text/css" rel="stylesheet" />
+	<link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.skinHTML5.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/vendor/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="modules/errorsProcessing.js"></script>
+	<script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/ion-rangeSlider/ion.rangeSlider.min.js"></script>
+	<script type="text/javascript" src="lib/h2c.js"></script>
+	<title>Tab Suspender Wizard</title>
 </head>
 
 <body>
 <div class='overlay'></div>
 <div id="" class='atcs-site-dialog'>
-  <header class="dialog-header">
-    <h1><img style="padding-right: 10px; width: 16px; height: 16px;" src="img/icon16.png" />
-      <span id="wizardTitle">Welcome to Tab Suspender Wizard &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<header class="dialog-header">
+		<h1><img style="padding-right: 10px; width: 16px; height: 16px;" src="img/icon16.png" />
+			<span id="wizardTitle">Welcome to Tab Suspender Wizard &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <span style="font-size: 10px;">( step 1 of 3 )</span>
       </span>
-    </h1>
-  </header>
-  <div class="dialog-content-main">
-    <div step="1" class="dialog-content active-step" style="padding-top: 61px !important;">
-      <p class="header" style="margin-bottom: 10px; font-size: 15px !important;">
-        <span style="color: #558eab;">Tab Suspender</span>
-        - allows you to not worry about the huge number of opened tabs and their memory!
-      </p>
-      <ul>
-        <li>
-          <p class="" style="margin-bottom: 5px">click <span style="font-weight: bold;font-size: 11px; text-decoration: underline;">NEXT</span> to configure basic settings.</p>
-        </li>
-        <li>
-          <p class="" style="">or <span style="font-weight: bold;font-size: 11px; text-decoration: underline;">SKIP</span> to use predefined configuration.</p>
-        </li>
-      </ul>
-    </div>
-    <div step="2" class="dialog-content" style="display: none;">
-      <p class="header" style="height: 40px; margin-top: 40px !important;">After what idle amount of time you want to move each unused tab to sleep?</p>
-      <div style="width: 60%; margin: auto;">
-        <input type="hidden" id="timeoutInput" class="js-range-slider-suspend-timeout" value="900" />
-      </div>
-    </div>
-    <div step="3" class="dialog-content" style="display: none;">
-      <p class="header" style="margin-bottom: 0px;">Do you want to allow Tab Suspender to look for most rarely used or forgotten tabs and smoothly close them automatically?</p>
-      <!--p class="header" style="">Do you want to close idle/unused tabs automatically?</p-->
-      <p style="font-size: 11px !important; margin-top: 11px; color: #aaa; font-weight: 100 !important; padding-left: 0px;">Helps not to think about closing 
-	  <a class="unused-tabs tooltip" href="" style="position: relative;">
-		unused tabs 
-		<span id="tooltip-span" style="display:none; /*position: absolute; */ left: -155px; top: 15px; width: 502px; height: 99px; /*background-image: radial-gradient(#fff 0%, #fff 60%, transparent 100%);*/">
-			<img src="/img/tabs-count-overhead.png" style=" -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 1% , rgba(0,0,0,1) 97%,transparent); height: 66px;     position: absolute; left: 93px; top: 15px;"/>
+		</h1>
+	</header>
+	<div class="dialog-content-main">
+		<div step="1" class="dialog-content active-step" style="padding-top: 61px !important;">
+			<p class="header" style="margin-bottom: 10px; font-size: 15px !important;">
+				<span style="color: #558eab;">Tab Suspender</span>
+				- allows you to not worry about the huge number of opened tabs and their memory!
+			</p>
+			<ul>
+				<li>
+					<p class="" style="margin-bottom: 5px">click <span
+						style="font-weight: bold;font-size: 11px; text-decoration: underline;">NEXT</span> to configure basic
+						settings.</p>
+				</li>
+				<li>
+					<p class="" style="">or <span
+						style="font-weight: bold;font-size: 11px; text-decoration: underline;">SKIP</span> to use predefined
+						configuration.</p>
+				</li>
+			</ul>
+		</div>
+		<div step="2" class="dialog-content" style="display: none;">
+			<p class="header" style="height: 40px; margin-top: 40px !important;">After what idle amount of time you want to
+				move each unused tab to sleep?</p>
+			<div style="width: 60%; margin: auto;">
+				<input type="hidden" id="timeoutInput" class="js-range-slider-suspend-timeout" value="900" />
+			</div>
+		</div>
+		<div step="3" class="dialog-content" style="display: none;">
+			<p class="header" style="margin-bottom: 0px;">Do you want to allow Tab Suspender to look for most rarely used or
+				forgotten tabs and smoothly close them automatically?</p>
+			<p
+				style="font-size: 11px !important; margin-top: 11px; color: #aaa; font-weight: 100 !important; padding-left: 0px;">
+				Helps you not to think about closing
+				<a class="unused-tabs tooltip" href="" style="position: relative; font-weight: bold;">
+					unused tabs
+					<span id="tooltip-span"
+								style="display:none; /*position: absolute; */ left: -155px; top: 15px; width: 502px; height: 99px; /*background-image: radial-gradient(#fff 0%, #fff 60%, transparent 100%);*/">
+			<img src="/img/tabs-count-overhead.png"
+					 style=" -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 1% , rgba(0,0,0,1) 97%,transparent); height: 66px;     position: absolute; left: 93px; top: 15px;" />
 		</span>
-	  </a> manually.</p>
-      <p class="header">
-        <label><input type="radio" name="closeRadio" class="closeRadio yes" value="yes">Yes</label>
-        <label><input type="radio" name="closeRadio" class="closeRadio no" value="no">No</label>
-      </p>
-	  <div class="">
-		
-	  </div>
-      <div class="close-sliders hidden">
+				</a> manually.</p>
+			<p class="header">
+				<label><input type="radio" name="closeRadio" class="closeRadio no" value="no">No</label>
+				<label><input type="radio" name="closeRadio" class="closeRadio yes" value="yes">Yes</label>
+			</p>
+			<div class="">
 
-        <span style="height: 4px; display: block;"><!--Period of time after which unused tab will be automatically closed:--></span>
-        <div style="    width: 60%; margin: auto;" class="irs-greeen">
-          <input type="hidden" class="js-range-slider-recicle-after" value="1800" />
-          <input type="hidden" class="js-range-slider-recicle-keep" value="25" />
-        </div>
+			</div>
+			<div class="close-sliders hidden">
 
-        <span style="height: 0px; display: block;"><!--Select how many tabs will be keeped opened:--></span>
-        <div style="width: 69%; margin: auto;" class="irs-yellow" >
+				<span style="height: 4px; display: block;"><!--Period of time after which unused tab will be automatically closed:--></span>
+				<div style="    width: 60%; margin: auto;" class="irs-greeen">
+					<input type="hidden" class="js-range-slider-recicle-after" value="1800" />
+					<input type="hidden" class="js-range-slider-recicle-keep" value="25" />
+				</div>
 
-        </div>
-      </div>
-    </div>
-    <div step="4" class="dialog-content" style="display: none;">
-      <div style="float:left; width: 285px;">
-          <p class="header" style="margin-bottom: 10px; !important;">Complete!</p>
-          <p class="header" style="margin-bottom: 10px; !important;"> Tab Suspender, now, starts automatically suspend first unused tabs after <span id="resultTimeoutValue" style="text-decoration: underline; color: #48d648;">${}</span> from this moment.</p>
-        <p style="margin-bottom: 10px">If you want to suspend tabs earlier, you can suspend any tab by click button as shown on the screenshot:</p>
-      </div>
-      <div style="float:left; width: 130px;">
-          <img id="menuHelpImage" style="height: 217px;" src="/img/suspendTabScreenWithHand.png">
-      </div>
-    </div>
-    <!--div step="4" class="dialog-content" style="display: none;">
-      <p class="header">How would you like to restore suspended pages?</p>
-      <p>
-        <label><input type="radio" name="closeRadio" class="restoreRadio no" checked="checked">On mouse Hover (<span style="font-size: 12px;">under blue circle</span>)</label><br/>
-        <label><input type="radio" name="closeRadio" class="restoreRadio no">On mouse Click (<span style="font-size: 12px;">on blue circle</span>)</label><br/>
-        <label><input type="radio" name="closeRadio" class="restoreRadio yes">Automatically (<span style="font-size: 12px;">when tab become active</span>)</label>
-      </p>
-    </div-->
-  </div>
-  <div class="btn-group cf">
-    <button class="atcsbtn active btn-cancel" id="defaultsButton">Skip / Use Defults</button>
-    <button class="atcsbtn btn-cancel" id="previousButton">< Back</button>
-    <button class="atcsbtn active btn-danger" id="nextButton">Next ></button>
-    <button class="atcsbtn btn-danger" id="finishButton">Finish</button>
-    <button class="atcsbtn btn-danger" id="closeButton">Close</button>
-  </div>
+				<span style="height: 0px; display: block;"><!--Select how many tabs will be keeped opened:--></span>
+				<div style="width: 69%; margin: auto;" class="irs-yellow">
+
+				</div>
+			</div>
+		</div>
+		<div step="4" class="dialog-content" style="display: none;">
+			<div style="float:left; width: 285px;">
+				<p class="header" style="margin-bottom: 10px; !important;">Complete!</p>
+				<p class="header" style="margin-bottom: 10px; !important;"> Tab Suspender, now, starts automatically suspend
+					first unused tabs after <span id="resultTimeoutValue"
+																				style="text-decoration: underline; color: #48d648;">${}</span> from this moment.
+				</p>
+				<p style="margin-bottom: 10px">If you want to suspend tabs earlier, you can suspend any tab by click button as
+					shown on the screenshot:</p>
+			</div>
+			<div style="float:left; width: 130px;">
+				<img id="menuHelpImage" style="height: 217px;" src="/img/suspendTabScreenWithHand.png">
+			</div>
+			<div>
+				<label class="tab-button-link"
+							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica; margin-top: -3px; height: 0px;"
+							 title="">
+					<input id="debugCheckbox" type="checkbox" name="vehicle"
+								 style="margin-right: 0px; margin-left: 3px; vertical-align: sub;">
+					Help Tab Suspender improve quality and send error reports
+				</label>
+			</div>
+		</div>
+	</div>
+	<div class="btn-group cf">
+		<button class="atcsbtn active btn-cancel" id="defaultsButton">Skip / Use Defults</button>
+		<button class="atcsbtn btn-cancel" id="previousButton">< Back</button>
+		<button class="atcsbtn active btn-danger" id="nextButton">Next ></button>
+		<button class="atcsbtn btn-danger" id="finishButton">Finish</button>
+		<button class="atcsbtn btn-danger" id="closeButton">Close</button>
+	</div>
 </div>
 <script src='wizard.js'></script>
 <script type="text/javascript" src="inject.js"></script>

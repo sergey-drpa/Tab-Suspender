@@ -1,34 +1,21 @@
 .overlay {
-  position: fixed;
-  top: 0%;
-  left: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: #555;
-  z-index: 1000;
-  opacity: .60;
+    position: fixed;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: #555;
+    z-index: 1000;
+    opacity: .60;
 }
-/*.wrapper {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 400px;
-  height: 200px;
-  margin-left: -200px;
-  margin-top: -100px;
-  text-align: center;
-  background-color:#FFFFFF;
-  border-radius: 3px;
-  z-index: 11000000000;
-}*/
 
 .irs-single {
     top: -5px !important;
 
 }
 
-  .atcs-site-dialog {
-    
+.atcs-site-dialog {
+
     /* wrapper */
     position: fixed;
     top: 0px;
@@ -36,7 +23,7 @@
     left: 0px;
     right: 0px;
     z-index: 11000000000;
-    
+
     overflow: hidden !important;
     width: 95% !important;
     max-width: 500px !important;
@@ -50,8 +37,8 @@
     display: block !important;
     line-height: normal !important;
 
-    
-    /* initial */			
+
+    /* initial */
     position: absolute !important;
     height: -webkit-fit-content !important;
     color: black !important;
@@ -59,71 +46,75 @@
     border-style: solid !important;
     border-color: initial !important;
     border-image: initial !important;
-  }
-  .atcs-site-dialog h1 {
-      /*font-size: 20px !important;
-      font-weight: normal !important;*/
-      margin: 0 !important;
-      color: #fff !important;
-      font: 20px 'Roboto', Arial, sans-serif !important;
-  }
-  .atcs-site-dialog p {
-      font-size: 14px !important;
-      font: 14px 'Roboto', Arial, sans-serif !important;
-  }
+}
 
-  .atcs-site-dialog p.header {
-      font-size: 13px !important;
-      font: 13px 'Roboto', Arial, sans-serif !important;
-      font-weight: bold !important;
-      margin-top: 0 !important;
-      /*margin-bottom: 0 !important;*/
-  }
-  .atcs-site-dialog .dialog-header {
-      padding: 12px 20px !important;
-      padding-top: 13px !important;
-      background-color: #ffc426 !important;
-      height: auto !important;
-      position: relative !important;
-      min-width: inherit !important;
-  }
-  .atcs-site-dialog .dialog-content {
-      padding: 20px 40px !important;
-      color: #555 !important;
-      background-color: #fff !important;
-      /*display: none;*/
-      top: 0;
-      left: 0;
-      position: absolute !important;
-      box-sizing: border-box;
-      width: 100%;
-    }
+.atcs-site-dialog h1 {
+    /*font-size: 20px !important;
+    font-weight: normal !important;*/
+    margin: 0 !important;
+    color: #fff !important;
+    font: 20px 'Roboto', Arial, sans-serif !important;
+}
 
-  .atcs-site-dialog .dialog-content.active-step {
-      /*display: block;*/
-  }
+.atcs-site-dialog p {
+    font-size: 14px !important;
+    font: 14px 'Roboto', Arial, sans-serif !important;
+}
 
-  .atcs-site-dialog .dialog-content /*p:last-of-type*/, .atcs-site-dialog .dialog-content p:only-child {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-      font: 14px 'Roboto', Arial, sans-serif !important;
-  }
-  
-  .atcs-site-dialog .btn-group {
-        padding: 9px 10px !important;
-        text-align: right !important;
-        background-color: #e6e9ed !important;
-  }
+.atcs-site-dialog p.header {
+    font-size: 13px !important;
+    font: 13px 'Roboto', Arial, sans-serif !important;
+    font-weight: bold !important;
+    margin-top: 0 !important;
+    /*margin-bottom: 0 !important;*/
+}
 
-  .dialog-content-main {
-      height: 260px;
-      position: relative;
-      background-color: #fff;
-  }
-  
-  .atcsbtn {
+.atcs-site-dialog .dialog-header {
+    padding: 12px 20px !important;
+    padding-top: 13px !important;
+    background-color: #ffc426 !important;
+    height: auto !important;
+    position: relative !important;
+    min-width: inherit !important;
+}
+
+.atcs-site-dialog .dialog-content {
+    padding: 20px 40px !important;
+    color: #555 !important;
+    background-color: #fff !important;
+    /*display: none;*/
+    top: 0;
+    left: 0;
+    position: absolute !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.atcs-site-dialog .dialog-content.active-step {
+    /*display: block;*/
+}
+
+.atcs-site-dialog .dialog-content /*p:last-of-type*/, .atcs-site-dialog .dialog-content p:only-child {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font: 14px 'Roboto', Arial, sans-serif !important;
+}
+
+.atcs-site-dialog .btn-group {
+    padding: 9px 10px !important;
+    text-align: right !important;
+    background-color: #e6e9ed !important;
+}
+
+.dialog-content-main {
+    height: 260px;
+    position: relative;
+    background-color: #fff;
+}
+
+.atcsbtn {
     padding: 10px 15px !important;
-    cursor: pointer !important;  
+    cursor: pointer !important;
     color: #555 !important;
     border-width: 1px !important;
     border-style: solid !important;
@@ -132,62 +123,65 @@
     text-transform: none !important;
     font: 13.3px Arial, sans-serif !important;
     box-shadow: none !important;
-    margin: 0px  !important;
+    margin: 0px !important;
     margin-left: 6px !important;
     display: none;
-  }
+}
 
-  .atcsbtn.active {
-      display: inline-block;
-  }
-  
-  .btn-danger {
+.atcsbtn.active {
+    display: inline-block;
+}
+
+.btn-danger {
     color: #fff !important;
-      border-color: #73aae2 !important;
-      background-color: #71b2f3 !important;  }
-  .btn-danger:hover {
-      background-color: #79bcff !important; /* d 5% */
-  }
-    
-  .btn-cancel {
+    border-color: #73aae2 !important;
+    background-color: #71b2f3 !important;
+}
+
+.btn-danger:hover {
+    background-color: #79bcff !important; /* d 5% */
+}
+
+.btn-cancel {
     color: #666 !important;
     border-color: #ddd !important;
-  }
-  .btn-cancel:hover {
-      background-color: #f3f3f3 !important; /* d 5% */
-  }
-  
-  
-  /*****************Content**********************/
-  
-  .pattern{
+}
+
+.btn-cancel:hover {
+    background-color: #f3f3f3 !important; /* d 5% */
+}
+
+
+/*****************Content**********************/
+
+.pattern {
     margin-top: 3px !important;
     width: 100%;
-  }
-  
-  .sliders {
-    margin-top: 33px;    
-  }
-  
-  .slider-span{
+}
+
+.sliders {
+    margin-top: 33px;
+}
+
+.slider-span {
     display: table-cell;
     vertical-align: middle;
-  }
-  
-  .slider-span.page{
+}
+
+.slider-span.page {
     padding-left: 15px;
-  }
-  
-  #siteSlider, #pageSlider {
+}
+
+#siteSlider, #pageSlider {
     width: 175px;
-  }
+}
 
-  .hidden, .hidden div {
-      display: none;
-  }
+.hidden, .hidden div {
+    display: none;
+}
 
 
-  /* Slider */
+/* Slider */
 .close-sliders .irs-single {
     color: #000 !important;
     background: #fff !important;
@@ -195,19 +189,21 @@
 }
 
 .unused-tabs:hover span {
-    display: block!important;
-	z-index: 1000000;
+    display: block !important;
+    z-index: 1000000;
 }
 
 .tooltip {
-    text-decoration:none;
-    position:relative;
+    text-decoration: none;
+    position: relative;
 }
+
 .tooltip span {
-    display:none;
+    display: none;
 }
+
 .tooltip:hover span {
-    display:block;
-    position:fixed;
-    overflow:hidden;
+    display: block;
+    position: fixed;
+    overflow: hidden;
 }

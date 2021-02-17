@@ -1,85 +1,93 @@
-"use strict";
+'use strict';
 
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-131779988-1']);
 _gaq.push(['_trackPageview']);
 
-function trackErrors (pageName /* For example 'popup' */, buttons /* true/false */) {
-    /*************************
-     *   Google Analytics    *
-     *************************/
-    try
-    {
-        (function ()
-        {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = 'modules/ga.js'; //'https://ssl.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+let sendErrorsStorageKey = 'store.tabSuspenderSettings.sendErrors';
 
-            _gaq.push(['_setAccount', 'UA-131779988-1']);
-            _gaq.push(['_trackPageview']);
+let isSendErrorsEnabled = () => window.localStorage.getItem(sendErrorsStorageKey) === 'true' || window.localStorage.getItem(sendErrorsStorageKey) == null;
 
-            window.addEventListener("error", function (a, b, c, d)
-            {
-                console.log('Error catched: ', JSON.stringify(a.error));
-                trackError(a.error);
-            });
-        })();
+// eslint-disable-next-line no-redeclare,no-unused-vars
+function trackErrors(pageName /* For example 'popup' */, buttons /* true/false */) {
+	/*************************
+	 *   GA							     *
+	 *************************/
 
-        var lastClick = {time: 0};
+	var trackError = window.trackError = function(error) {
+		if (isSendErrorsEnabled()) {
+			_gaq.push(['_trackEvent', 'Error', pageName, JSON.stringify(error)]);
+		}
+	};
+	window.trackView = function(viewName) {
+		if (isSendErrorsEnabled()) {
+			_gaq.push(['_trackPageview', viewName]);
+		}
+	};
 
-        var trackButtonClick = function (e)
-        {
-            var id = null;
-            if (e.target.id != null && e.target.id !== '')
-                id = e.target.id;
-            else if (e.target.className != null && e.target.className !== '')
-                id = e.target.className;
+	if (isSendErrorsEnabled()) {
+		try {
+			(function() {
+				let ga = document.createElement('script');
+				ga.type = 'text/javascript';
+				ga.async = true;
+				ga.src = 'lib/ga.js';
+				let s = document.getElementsByTagName('script')[0];
+				s.parentNode.insertBefore(ga, s);
 
-            if (id != null)
-            {
-                if (lastClick.id !== id && Date.now() - lastClick.time > 1000)
-                {
-                    lastClick = {time: Date.now(), 'id': id};
-                    _gaq.push(['_trackEvent', pageName, 'clicked', id]);
-                    lastClick.id = id;
-                    lastClick.time = Date.now();
-                }
-            }
+				_gaq.push(['_setAccount', 'UA-131779988-1']);
+				_gaq.push(['_trackPageview']);
 
-            console.log(e.target);
-        };
+				window.addEventListener('error', function(a) {
+					console.log('Error catched: ', JSON.stringify(a.error));
+					trackError(a.error);
+				});
+			})();
 
-        if(buttons) {
-            var buttons = document.querySelectorAll('div, a, input');
-            for (var i = 0; i < buttons.length; i++)
-            {
-                buttons[i].addEventListener('click', trackButtonClick);
-            }
-        }
-    } catch (e) {
-        console.error(e);
-    }
+			let lastClick = { time: 0 };
 
-    window.trackError = function (error){
-        _gaq.push(['_trackEvent', 'Error', pageName, JSON.stringify(error)]);
-    }
-    window.trackView = function (viewName){
-        _gaq.push(['_trackPageview', viewName]);
-    }
+			let trackButtonClick = function(e) {
+				let id = null;
+				if (e.target.id != null && e.target.id !== '')
+					id = e.target.id;
+				else if (e.target.className != null && e.target.className !== '')
+					id = e.target.className;
+
+				if (id != null) {
+					if (lastClick.id !== id && Date.now() - lastClick.time > 1000) {
+						lastClick = { time: Date.now(), 'id': id };
+						_gaq.push(['_trackEvent', pageName, 'clicked', id]);
+						lastClick.id = id;
+						lastClick.time = Date.now();
+					}
+				}
+
+				console.log(e.target);
+			};
+
+			if (buttons) {
+				let buttons = document.querySelectorAll('div, a, input');
+				for (let i = 0; i < buttons.length; i++) {
+					buttons[i].addEventListener('click', trackButtonClick);
+				}
+			}
+		} catch (e) {
+			console.error(e);
+		}
+	}
 }
 
 if (!('toJSON' in Error.prototype))
-    Object.defineProperty(Error.prototype, 'toJSON', {
-        value: function () {
-            var alt = {};
+	Object.defineProperty(Error.prototype, 'toJSON', {
+		value: function() {
+			let alt = {};
 
-            Object.getOwnPropertyNames(this).forEach(function (key) {
-                alt[key] = this[key];
-            }, this);
+			Object.getOwnPropertyNames(this).forEach(function(key) {
+				alt[key] = this[key];
+			}, this);
 
-            return alt;
-        },
-        configurable: true,
-        writable: true
-    });
+			return alt;
+		},
+		configurable: true,
+		writable: true
+	});

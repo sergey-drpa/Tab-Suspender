@@ -15,7 +15,7 @@
     /* margin-top: -13px; */
 }
 .irs-line {
-    height: 6px; 
+    height: 6px;
     top: 21px;
     background: #EEE;
     background: linear-gradient(to bottom, #DDD -50%, #FFF 150%); /* W3C */
@@ -34,7 +34,7 @@
     }
 
 .irs-bar {
-    height: 6px; 
+    height: 6px;
     top: 21px;
     border-top: 1px solid #428bca;
     border-bottom: 1px solid #428bca;
@@ -42,7 +42,7 @@
     background: linear-gradient(to top, rgba(66,139,202,1) 0%,rgba(127,195,232,1) 100%); /* W3C */
 }
     .irs-bar-edge {
-        height: 6px; 
+        height: 6px;
         top: 21px;
         width: 6px;
         border: 1px solid #428bca;
@@ -52,10 +52,10 @@
         border-radius: 16px 0 0 16px;
         -moz-border-radius: 16px 0 0 16px;
     }
-	
-	
+
+
 	/** GREEEN SKIN **/
-.irs-greeen .irs-bar {	
+.irs-greeen .irs-bar {
 	height: 6px;
     top: 21px;
     border-top: 1px solid #42ca5f;
@@ -83,7 +83,7 @@
     background: #fbfbfb00;
     border-radius: 3px;
     -moz-border-radius: 3px;
-    /* margin-left: 10px; */
+    margin-left: 35px;
     top: 0px;
     left: -30px !important;
 }
@@ -123,7 +123,7 @@
 .irs-slider {
     margin-left: 0px;
     top: 18px;
-    width: 12px; 
+    width: 12px;
     height: 12px;
     border: 1px solid #AAA;
     background: #DDD;

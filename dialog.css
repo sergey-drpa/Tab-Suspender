@@ -1,12 +1,12 @@
 .overlay {
-  position: fixed;
-  top: 0%;
-  left: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: #555;
-  z-index: 1000;
-  opacity: .40;
+    position: fixed;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: #555;
+    z-index: 1000;
+    opacity: .40;
 }
 
 .overlay.separateTab {
@@ -15,22 +15,9 @@
     filter: brightness(0.5) blur(1px);
     opacity: 1 !important;
 }
-/*.wrapper {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 400px;
-  height: 200px;
-  margin-left: -200px;
-  margin-top: -100px;
-  text-align: center;
-  background-color:#FFFFFF;
-  border-radius: 3px;
-  z-index: 11000000000;
-}*/
 
-  .atcs-site-dialog {
-    
+.atcs-site-dialog {
+
     /* wrapper */
     position: fixed;
     top: 0px;
@@ -38,7 +25,7 @@
     left: 0px;
     right: 0px;
     z-index: 11000000000;
-    
+
     overflow: hidden !important;
     width: 95% !important;
     max-width: 500px !important;
@@ -52,8 +39,8 @@
     display: block !important;
     line-height: normal !important;
 
-    
-    /* initial */			
+
+    /* initial */
     position: absolute !important;
     height: -webkit-fit-content !important;
     color: black !important;
@@ -61,35 +48,40 @@
     border-style: solid !important;
     border-color: initial !important;
     border-image: initial !important;
-  }
-  .atcs-site-dialog h1 {
-      font-size: 16px !important;
-      font-weight: normal !important;
-      margin: 0 !important;
-      color: #fff !important;
-      font: 16px 'Roboto', Arial, sans-serif !important;
-  }
-  .atcs-site-dialog p {
-      font-size: 14px !important;
-      font: 14px 'Roboto', Arial, sans-serif !important;
-  }
-  .atcs-site-dialog .dialog-header {
-      padding: 12px 20px !important;
-      background-color: #68a3de !important;
-      height: auto !important;
-      position: relative !important;
-      min-width: inherit !important;
-  }
-  .atcs-site-dialog .dialog-content {
-      padding: 30px 20px !important;
-      color: #555 !important;
-      background-color: #fff !important;
-    }
-  .atcs-site-dialog .dialog-content p:last-of-type, .atcs-site-dialog .dialog-content p:only-child {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-      font: 14px 'Roboto', Arial, sans-serif !important;
-  }
+}
+
+.atcs-site-dialog h1 {
+    font-size: 16px !important;
+    font-weight: normal !important;
+    margin: 0 !important;
+    color: #fff !important;
+    font: 16px 'Roboto', Arial, sans-serif !important;
+}
+
+.atcs-site-dialog p {
+    font-size: 14px !important;
+    font: 14px 'Roboto', Arial, sans-serif !important;
+}
+
+.atcs-site-dialog .dialog-header {
+    padding: 12px 20px !important;
+    background-color: #68a3de !important;
+    height: auto !important;
+    position: relative !important;
+    min-width: inherit !important;
+}
+
+.atcs-site-dialog .dialog-content {
+    padding: 30px 20px !important;
+    color: #555 !important;
+    background-color: #fff !important;
+}
+
+.atcs-site-dialog .dialog-content p:last-of-type, .atcs-site-dialog .dialog-content p:only-child {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    font: 14px 'Roboto', Arial, sans-serif !important;
+}
 
 .atcs-site-dialog .btn-group {
     padding: 9px 10px !important;
@@ -108,47 +100,50 @@
     text-transform: none !important;
     font: 13.3px Arial, sans-serif !important;
     box-shadow: none !important;
-    margin: 0px  !important;
+    margin: 0px !important;
     margin-left: 6px !important
 }
 
 .btn-danger {
     color: #fff !important;
     border-color: #73aae2 !important;
-    background-color: #71b2f3 !important;  }
+    background-color: #71b2f3 !important;
+}
+
 .btn-danger:hover {
     background-color: #79bcff !important; /* d 5% */
-  }
+}
 
-  .btn-cancel {
+.btn-cancel {
     color: #666 !important;
     border-color: #ddd !important;
-  }
-  .btn-cancel:hover {
-      background-color: #f3f3f3 !important; /* d 5% */
-  }
-  
-  
-  /*****************Content**********************/
-  
-  .pattern{
+}
+
+.btn-cancel:hover {
+    background-color: #f3f3f3 !important; /* d 5% */
+}
+
+
+/*****************Content**********************/
+
+.pattern {
     margin-top: 3px !important;
     width: 100%;
-  }
-  
-  .sliders {
-    margin-top: 33px;    
-  }
-  
-  .slider-span{
+}
+
+.sliders {
+    margin-top: 33px;
+}
+
+.slider-span {
     display: table-cell;
     vertical-align: middle;
-  }
-  
-  .slider-span.page{
+}
+
+.slider-span.page {
     padding-left: 15px;
-  }
-  
-  #siteSlider, #pageSlider {
+}
+
+#siteSlider, #pageSlider {
     width: 175px;
-  }
+}

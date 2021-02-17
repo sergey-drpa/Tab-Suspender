@@ -7,76 +7,67 @@
 /**
  *
  */
-function HistoryOpenerController (browser)
-{
-    "use strict";
+function HistoryOpenerController() {
+	'use strict';
 
-    this.historyPages = {};
-    this.parkUrl = chrome.extension.getURL('park.html');
+	this.historyPages = {};
+	this.parkUrl = chrome.extension.getURL('park.html');
 }
 
 /**
  *
  */
-HistoryOpenerController.prototype.collectInitialTabState = function(tab)
-{
-    if(this.isHistory(tab.url))
-        this.historyPages[tab.id] = true;
-}
+HistoryOpenerController.prototype.collectInitialTabState = function(tab) {
+	if (this.isHistory(tab.url))
+		this.historyPages[tab.id] = true;
+};
 
 /**
  *
  */
-HistoryOpenerController.prototype.onTabUpdate = function(tabId, changeInfo)
-{
-    if(changeInfo.url != null)
-        if(this.isHistory(changeInfo.url))
-            this.historyPages[tabId] = true;
-        else
-            if(this.historyPages[tabId] != null)
-            {
-                if(changeInfo.url.indexOf(this.parkUrl) == 0)
-                    this.markTabFromHistory(tabId, changeInfo.url);
+HistoryOpenerController.prototype.onTabUpdate = function(tabId, changeInfo) {
+	if (changeInfo.url != null)
+		if (this.isHistory(changeInfo.url))
+			this.historyPages[tabId] = true;
+		else if (this.historyPages[tabId] != null) {
+			if (changeInfo.url.indexOf(this.parkUrl) == 0)
+				this.markTabFromHistory(tabId, changeInfo.url);
 
-                delete this.historyPages[tabId];
-            }
+			delete this.historyPages[tabId];
+		}
 
-}
+};
 
 /**
  *
  */
-HistoryOpenerController.prototype.markTabFromHistory = function(tabId, url)
-{
-    chrome.tabs.update(tabId, {url: url+"#fromHistory"});
-}
+HistoryOpenerController.prototype.markTabFromHistory = function(tabId, url) {
+	chrome.tabs.update(tabId, { url: url + '#fromHistory' });
+};
 
 /**
  *
  */
-HistoryOpenerController.prototype.onNewTab = function(tab)
-{
-    var self = this;
-    if(tab.openerTabId != null)
-        chrome.tabs.get(tab.openerTabId, function(oTab){
-            if(self.isHistory(oTab.url))
-                self.markTabFromHistory(tab.id, tab.url || tab.pendingUrl);
-        });
-}
+HistoryOpenerController.prototype.onNewTab = function(tab) {
+	let self = this;
+	if (tab.openerTabId != null)
+		chrome.tabs.get(tab.openerTabId, function(oTab) {
+			if (self.isHistory(oTab.url))
+				self.markTabFromHistory(tab.id, tab.url || tab.pendingUrl);
+		});
+};
 
 /**
  *
  */
-HistoryOpenerController.prototype.onRemoveTab = function(tabId)
-{
-    if(this.historyPages[tabId] != null)
-        delete this.historyPages[tabId];
-}
+HistoryOpenerController.prototype.onRemoveTab = function(tabId) {
+	if (this.historyPages[tabId] != null)
+		delete this.historyPages[tabId];
+};
 
 /**
  *
  */
-HistoryOpenerController.prototype.isHistory = function(tabUrl)
-{
-    return tabUrl.indexOf('chrome://history/') == 0;
-}
+HistoryOpenerController.prototype.isHistory = function(tabUrl) {
+	return tabUrl.indexOf('chrome://history/') == 0;
+};

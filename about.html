@@ -1,437 +1,426 @@
 <!DOCTYPE html>
-<!-- 
+<!--
 /*
- * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, 
+ * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances,
  * be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy.
  * Zadorozhniy.Sergey@gmail.com
- */ 
+ */
 -->
 <html>
 <head>
-    <title>Automatic Tabs Cleaner / Suspender</title>
-    <style>
-        body{font-size: 1.8em; font-family: Helvetica;}
-        dl{margin-right: auto; margin-left: auto; width: 28em;}
-        dt{margin-top: 0.8em;}
-        dd{color: #555;}
-    </style>
+	<title>Automatic Tabs Cleaner / Suspender</title>
+	<style>
+      body {
+          font-size: 1.8em;
+          font-family: Helvetica;
+      }
+
+      dl {
+          margin-right: auto;
+          margin-left: auto;
+          width: 28em;
+      }
+
+      dt {
+          margin-top: 0.8em;
+      }
+
+      dd {
+          color: #555;
+      }
+	</style>
 </head>
 <body>
-	<dl>
-If you like to use many open Tabs at once - this extension will help you and accelerate your browser and purge the memory.
-	
-Extension suspend, park, hibernate inactive tabs and save up to 80% of memory. 
+<dl>
+	If you like to use many open Tabs at once - this extension will help you and accelerate your browser and purge the
+	memory.
 
-Unloading tabs will free memory and reduce load on the device, saving battery and less heat.
-	
-This extension catches inactive, idle or forgotten tabs and suspend / park them with the freeing 80% memory, device resources and battery life.
+	Extension suspend, park, hibernate inactive tabs and save up to 80% of memory.
 
-When tab became a visible again, it would be automatically restored to initial.
+	Unloading tabs will free memory and reduce load on the device, saving battery and less heat.
 
-Also you can enable intellectual tab closing module, which holds count of tabs at the specified level.
+	This extension catches inactive, idle or forgotten tabs and suspend / park them with the freeing 80% memory, device
+	resources and battery life.
 
-Benefits:
-	
-	Speeds Up Chrome: 
-		Suspended tabs don't consuming 
-		processor resources.
-	
+	When tab became a visible again, it would be automatically restored to initial.
+
+	Also you can enable intellectual tab closing module, which holds count of tabs at the specified level.
+
+	Benefits:
+
+	Speeds Up Chrome:
+	Suspended tabs don't consuming
+	processor resources.
+
 	Minimize Memory Use:
-		Chrome consumes in 3-5 times less 
-		memory with suspended tabs 
-		against normal.
-	
+	Chrome consumes in 3-5 times less
+	memory with suspended tabs
+	against normal.
+
 	Automatic controls tab population:
-		Do not need to close unused tabs 
-		manually.
-			
-	0.5.0
-	
->>>>>>>>> Last Point:
-		1) 
-		[V]park.html:134
-		BrowserAttonControl:59
-		
-		[V]inject.js:223
+	Do not need to close unused tabs
+	manually.
 
-		2) ----
-		
-		Damaged Localization on Popup.html - replaced from browser page without __MSG_.. Need to restore using backups!
-		
-<<<<<<<<<
-		
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		!!!!!!!!!!!!!!!!!!!!!!!!!!! Solve problem with restore disappeared tabs when disable and then enable extension.
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	TODO'S:
 
-		
-		
-		USER-TODO: save last session and ask for restore after extension enabled again!
-		
-		[V]!!!USER-BUG:
-			park.js:1 Compiled inside:  1524676623819
-			park.js:2 getBackgroundPage:  1524676623820
-			park.js:2 onDOMContentLoaded:  1524676623830
-			park.js:1 onload:  1524676623841
-			park.js:3 getBackgroundPage Loaded:  1524676623848
-			park.js:5 bgpage.getStartDiscarted():  true
-			park.js:3 Continue Chaeck:  1524676623849
-			park.js:3 isTabMarkedForUnsuspend:  false
-			park.js:4 Get Screen:  1524676623851
-			chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/modules/IndexedDBProvider.js:85 Uncaught (in promise) DOMException: Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing.
-				at IndexedDBProvider.queryIndex (chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/modules/IndexedDBProvider.js:85:31)
-				at DBProvider.queryIndex (chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/modules/DBProvider.js:54:36)
-				at window.getScreen (chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/background.js:35:288)
-				at b (chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.js:4:116)
-				at chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.js:6:13
+	Damaged Localization on Popup.html - replaced from browser page without __MSG_.. Need to restore using backups!
+
+	<<<<<<<<<
 
 
-		!!! USER-BUG: при открытии браузера все фоновые вкладки не грузятся (суть дальше), а при переходе есть значок расширения синий круг, который работает только после нажатия F5.
-		Rework promo material with serious text and tesises.
-		BUG: Open New Tabs discarded option does not work!!
+	SECURITY: need to move f_t930,.,., from session storage
+	TODO-USER: i need option no auto close tab if automaticly suspend
+	BUG-USER: Add support for HiDPI displays!
+	TODO-USER: When open any localhost site, this extension try to get favicon even it's absent. See in console log:
+	inject.js:373 GET file:///favicon.ico net::ERR_FILE_NOT_FOUND
+	BUG-USER: suspended page from bookmark does not resotre!
 
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!SQL error: [object SQLTransaction][object SQLError]undefined SQLError {code: 5, message: "could not prepare statement (1 no such table: screens)"}code: 5message: "could not prepare statement (1 no such table: screens)"__proto__: SQLErrorCONSTRAINT_ERR: 6DATABASE_ERR: 1QUOTA_ERR: 4SYNTAX_ERR: 5TIMEOUT_ERR: 7TOO_LARGE_ERR: 3UNKNOWN_ERR: 0VERSION_ERR: 2code: (...)message: (...)constructor: ƒ SQLError()Symbol(Symbol.toStringTag): "SQLError"get code: ƒ ()get message: ƒ ()__proto__: Object
+	!!!!!!!!!!!!!!!!!!!!!!! Complete Localization !!!!!!!!!!!!!!!!!!
+	!! Addd page to https://add0n.com
+	[V]!!! Add option to not suspend tab with filled form!!!!!
+	!!! Fix add to whitelist for chrome.google.com domain: open dialog in new window.
 
-
-
-		SECURITY: need to move f_t930,.,., from session storage
-		TODO-USER: i need option no auto close tab if automaticly suspend
-		BUG-USER: Add support for HiDPI displays!
-		TODO-USER: When open any localhost site, this extension try to get favicon even it's absent. See in console log:      inject.js:373 GET file:///favicon.ico net::ERR_FILE_NOT_FOUND
-		BUG-USER: suspended page from bookmark does not resotre!
-
-		!!!!!!!!!!!!!!!!!!!!!!! Complete Localization !!!!!!!!!!!!!!!!!!
-		!! Addd page to https://add0n.com
-		[V]!!! Add option to not suspend tab with filled form!!!!!
-		!!! Fix add to whitelist for chrome.google.com domain: open dialog in new window.
-
-		!!! BUG with h2c when browser started and some tab on window wasnt activated but will call suspendFromInject window.innerWidth, window.innerHeight return wrong values => screensort has wrong size!!
+	!!! BUG with h2c when browser started and some tab on window wasnt activated but will call suspendFromInject
+	window.innerWidth, window.innerHeight return wrong values => screensort has wrong size!!
 
 
-		!!!!!!!! determine how to fix "var sortedWins = wins.sort(wins);"
-		!!!!!!!!!!!!!!!!!!!!!! Freeze h2c.js on https://www.facebook.com/wikipedia/ !!!!!!
-		!!!!!!!!!!!!!!! TODO: upload the Screen from parked page to save memory!!!
-		!!!!!!!!!!! TODO: remove Icon data from park href and move it into DB!
-			>>> Need more thougts because in this case if icon vil not available all tabs will be without icons
+	!!!!!!!! determine how to fix "var sortedWins = wins.sort(wins);"
+	!!!!!!!!!!!!!!! TODO: upload the Screen from parked page to save memory!!!
+	!!!!!!!!!!! TODO: remove Icon data from park href and move it into DB!
+	>>> Need more thougts because in this case if icon vil not available all tabs will be without icons
 
 
+	!!!!!!!!!!!!!!!!!! ://invalid problem!!!! //"park.html", "park.js", "img/new_page.ico", "/img/*.png", "dialog.html"
+	! Invocation of form runtime.connect(null, ) doesn't match definition runtime.connect(optional string extensionId,
+	optional object connectInfo)
+	>>> Loks like this problem occur only when force extension reload
+	!!!!!!!!! In Settings make button restore default settings and cleanup all settings/reset suspender!
+	!!!!!!! TODO: Invesigate
+	https://yandex.ru/maps/2/saint-petersburg/?ll=30.414844%2C60.004372&z=12&mode=search&text=molly&sll=30.414844%2C60.004372&sspn=0.372849%2C0.003782&sctx=ZAAAAAgBEAAaKAoSCVnaqbncUD5AEQZwqwdp901AEhIJwSUCAMDc5z8ROPBhbOXJyz8gACABIAIgAygFMAE4%2BYuinpTW%2BYw1QL2CBkgBVcH%2Bfz9YAGIjZGlyZWN0X2RvbnRfc2hvd19vbl9jaGFpbl9yZXF1ZXN0PTFiKGRpcmVjdF9kb250X3Nob3dfb25fcnVicmljX3dpdGhfYWR2ZXJ0PTFqAnJ1cAA%3D
+	*/
+	/* DOMException: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported. */
 
-		!!!!!!!!!!!!!!!!!! ://invalid problem!!!! //"park.html", "park.js", "img/new_page.ico", "/img/*.png", "dialog.html"
-		! Invocation of form runtime.connect(null, ) doesn't match definition runtime.connect(optional string extensionId, optional object connectInfo)
-			>>> Loks like this problem occur only when force extension reload
-		!!!!!!!!! In Settings make button restore default settings and cleanup all settings/reset suspender!
-		!!!!!!! TODO:	Invesigate https://yandex.ru/maps/2/saint-petersburg/?ll=30.414844%2C60.004372&z=12&mode=search&text=molly&sll=30.414844%2C60.004372&sspn=0.372849%2C0.003782&sctx=ZAAAAAgBEAAaKAoSCVnaqbncUD5AEQZwqwdp901AEhIJwSUCAMDc5z8ROPBhbOXJyz8gACABIAIgAygFMAE4%2BYuinpTW%2BYw1QL2CBkgBVcH%2Bfz9YAGIjZGlyZWN0X2RvbnRfc2hvd19vbl9jaGFpbl9yZXF1ZXN0PTFiKGRpcmVjdF9kb250X3Nob3dfb25fcnVicmljX3dpdGhfYWR2ZXJ0PTFqAnJ1cAA%3D					*/
-					/*  DOMException: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported. */
+	!!! Add info message about current page status (Page can/can't be suspended and why) like at
+	https://chrome.google.com/webstore/detail/tiny-suspender/bbomjaikkcabgmfaomdichgcodnaeecf
 
-		!!! Add info message about current page status (Page can/can't be suspended and why) like at https://chrome.google.com/webstore/detail/tiny-suspender/bbomjaikkcabgmfaomdichgcodnaeecf
-		
-		[V]!!! Dont suspend usaved Forms, need to determine what form is unsaved!!
-		
-		!!!USER-TODO: discard all tabs in all session and restore it option
-		
-		!!!Create help page when extension was installed.
-		
-		Add settings option: "Don't suspend tabs while offline"
-			>>> Needs "WebRequest" permission
+	[V]!!! Dont suspend usaved Forms, need to determine what form is unsaved!!
 
-		!! Add new lable on main Icon when new version installed.
-				
-		TODO-USER: avoid including suspended url to tab history because it's just a wasting of history.
+	!!!USER-TODO: discard all tabs in all session and restore it option
 
-		!TODO: make tab icon animation for ignored and pinned tab like screencastify for exception tab and ETC.
-	
-		!BUG: CRASHES PERIODICALLY ON LINUX!
-		![\]TODO: Add promotion like "Turn Off Light" right click menu and share, contribute and etc.
-	
-		TODO: BANNER + Saving CPU time and energy.
+	!!!Create help page when extension was installed.
 
-		TODO-USER: this auto restores tabs on startup automatically, and i don't see any option to turn this off. i wouldn't mind this so much if it actually restore tabs to their respective windows but it restores all the tabs into a single window instead.
+	Add settings option: "Don't suspend tabs while offline"
+	>>> Needs "WebRequest" permission
 
-		TODO: restore selected in any window tab insted mix it after update.
-		
-		TODO: Add different timeout settings for different site patterns.
-		
-		TODO-USER: (Impossible!!!) please add hotkey for unsuspend the current tab only
+	!! Add new lable on main Icon when new version installed.
 
-		TODO: whitelist check for repeatable pattenrs and left only one(clenup).
-		TODO: I need option no auto close tab if automaticly suspend
-		TODO: make slide up donation block rearly on suspended tabs.
+	TODO-USER: avoid including suspended url to tab history because it's just a wasting of history.
 
-==========================================================================================
-		Proposals
-==========================================================================================
-		1) When a tab is suspended, Chrome still manages it as a separate process with associated memory allocated. Although the memory utilisation drops, having lots of suspended tabs is still consuming substantial RAM from what I have observed. It would be useful to have a sequence of suspension steps with different time intervals associated to them. Something like: 1. Suspend tab (as today) - tab remains visible but whited out 2. Tab removed to list - tab is removed and placed as a thumbnail onto a dedicated tab owned and managed by Tab Suspender (this is where the process and memory saving would kick in to the greatest extent). 3. Archived - after an extended period (days, weeks or months) 'tab' is removed from the above list and forgotten altogether or buried in an archive list. Aside from the above suggestion, it would also be of benefit to be able to set the Tab Close interval to a much higher value than one day eg. x weeks or months. (I, like many others I am guessing, have tabs open in some browsers for over a year!)
-			Примечания разработчика Добавить примечание
-			A Google User	Looks like I was somewhat mistaken in my understanding of the way things are working. I was observing Chrome processes in the Windows Task Manager, but just discovered the Chrome Task Manager and see that the suspended tabs appear to be grouped into a small set of processes. From a UI perspective, I still would find it useful to have the longer-standing suspended tabs moved off to a thumbnail list though, to de-clutter the tab bar without losing them altogether. This may still also reduce memory utilisation of the shared process also. The suspended tabs I see now (10 of) are grouped into two processes consuming a total of 222MB of RAM - not to be sneezed at.
-==========================================================================================
+	!TODO: make tab icon animation for ignored and pinned tab like screencastify for exception tab and ETC.
+
+	!BUG: CRASHES PERIODICALLY ON LINUX!
+	![\]TODO: Add promotion like "Turn Off Light" right click menu and share, contribute and etc.
+
+	TODO: BANNER + Saving CPU time and energy.
+
+	TODO-USER: this auto restores tabs on startup automatically, and i don't see any option to turn this off. i wouldn't
+	mind this so much if it actually restore tabs to their respective windows but it restores all the tabs into a single
+	window instead.
+
+	TODO: restore selected in any window tab insted mix it after update.
+
+	TODO: Add different timeout settings for different site patterns.
+
+	TODO-USER: (Impossible!!!) please add hotkey for unsuspend the current tab only
+
+	TODO: whitelist check for repeatable pattenrs and left only one(clenup).
+	TODO: I need option no auto close tab if automaticly suspend
+	TODO: make slide up donation block rearly on suspended tabs.
+
+	==========================================================================================
+	Proposals
+	==========================================================================================
+	1) When a tab is suspended, Chrome still manages it as a separate process with associated memory allocated. Although
+	the memory utilisation drops, having lots of suspended tabs is still consuming substantial RAM from what I have
+	observed. It would be useful to have a sequence of suspension steps with different time intervals associated to them.
+	Something like: 1. Suspend tab (as today) - tab remains visible but whited out 2. Tab removed to list - tab is removed
+	and placed as a thumbnail onto a dedicated tab owned and managed by Tab Suspender (this is where the process and
+	memory saving would kick in to the greatest extent). 3. Archived - after an extended period (days, weeks or months)
+	'tab' is removed from the above list and forgotten altogether or buried in an archive list. Aside from the above
+	suggestion, it would also be of benefit to be able to set the Tab Close interval to a much higher value than one day
+	eg. x weeks or months. (I, like many others I am guessing, have tabs open in some browsers for over a year!)
+	Add comments:
+	A Google User Looks like I was somewhat mistaken in my understanding of the way things are working. I was observing
+	Chrome processes in the Windows Task Manager, but just discovered the Chrome Task Manager and see that the suspended
+	tabs appear to be grouped into a small set of processes. From a UI perspective, I still would find it useful to have
+	the longer-standing suspended tabs moved off to a thumbnail list though, to de-clutter the tab bar without losing them
+	altogether. This may still also reduce memory utilisation of the shared process also. The suspended tabs I see now (10
+	of) are grouped into two processes consuming a total of 222MB of RAM - not to be sneezed at.
+	==========================================================================================
 
 	1.3.3
-		Fixed Menu JS error.
-		Reworked History page.
-		Added Session Manager.
-		Fixed h2c screenshot
-			Width/Height logic.
+	Fixed Menu JS error.
+	Reworked History page.
+	Added Session Manager.
+	Fixed h2c screenshot
+	Width/Height logic.
 
 	1.2.9.4
-		Fixed suspended screenshot size
-			for Retina displays.
-		Added new HOTKEYs: 'Suspend
-			or Unsuspend Current Tab
-			(in one HotKey)' and others.
-		Reworked context menu with
-			checkboxes, added
-			separators.
+	Fixed suspended screenshot size
+	for Retina displays.
+	Added new HOTKEYs: 'Suspend
+	or Unsuspend Current Tab
+	(in one HotKey)' and others.
+	Reworked context menu with
+	checkboxes, added
+	separators.
 
 	1.2.9.3
-		Added ability to click 
-			anywhere to restore.
-		Auto adjust Restore button
-			size based on window
-			height.
-		
+	Added ability to click
+	anywhere to restore.
+	Auto adjust Restore button
+	size based on window
+	height.
+
 	1.2.9.0
-		Menu extended.
-		
+	Menu extended.
+
 	1.2.8.1
-		Fixed wizard in incognito
-			mode.
-		Native URL bar now shows on 
-			mouse hover.
-		
+	Fixed wizard in incognito
+	mode.
+	Native URL bar now shows on
+	mouse hover.
+
 	1.2.8
-		Fixed issue with all tabs 
-		icons do not load properly.
-		Performance improvement.
+	Fixed issue with all tabs
+	icons do not load properly.
+	Performance improvement.
 
 	1.2.7.2
-		Fixed empty screen without 
-			title.
-		Fixed bug with 'The database
-			connection is closing'.
-		Prevent from suspend tabs with
-			filled forms.
-		Added new style of restore
-			button: Top Menu (can be
-			changed in settings)
-		
+	Fixed empty screen without
+	title.
+	Fixed bug with 'The database
+	connection is closing'.
+	Prevent from suspend tabs with
+	filled forms.
+	Added new style of restore
+	button: Top Menu (can be
+	changed in settings)
+
 	1.2.7.1
-		Added setup wizard.
-		Added reset settings button.
-		Added settings for additional
-			CSS styles of suspended
-			page Screenshot.
+	Added setup wizard.
+	Added reset settings button.
+	Added settings for additional
+	CSS styles of suspended
+	page Screenshot.
 
 	1.2.7
-		Migration to IndexedDB.
-		Bug with double capture
-			on page loading,
-			improved capture logic.
-		Bug with icons do not loaded
-			but page already discarded
-			without icon.
-		Bug with DB is not initialized.
+	Migration to IndexedDB.
+	Bug with double capture
+	on page loading,
+	improved capture logic.
+	Bug with icons do not loaded
+	but page already discarded
+	without icon.
+	Bug with DB is not initialized.
 
 	1.2.6
-		Added settings related to
-			battery level.
-		Added new option "Open new
-			tabs discarded".
-		Fixed Whitelist lost focus.
-		Fixed problem with Zoomed
-			pages when preview
-			screen was over zoomed.
+	Added settings related to
+	battery level.
+	Added new option "Open new
+	tabs discarded".
+	Fixed Whitelist lost focus.
+	Fixed problem with Zoomed
+	pages when preview
+	screen was over zoomed.
 
 	1.2.5
-		Fixed bug with slow scrolling.
-		Fixed bugs.
+	Fixed bug with slow scrolling.
+	Fixed bugs.
 
 	1.1.6
-		Fixed bugs.
-		
+	Fixed bugs.
+
 	1.1.5
-		Fixed bugs.	
-		
+	Fixed bugs.
+
 	1.1.4
-		Bug fixes.
-		
+	Bug fixes.
+
 	1.1.3
-		Bug fixes.
+	Bug fixes.
 
 	1.1.2
-		Fixed bug with auto-reload on
-		tab activation.
-		Rework open from history page
-		logic.
+	Fixed bug with auto-reload on
+	tab activation.
+	Rework open from history page
+	logic.
 
 	1.1.1
-		Speedup load suspended tabs on
-			browser startup.
+	Speedup load suspended tabs on
+	browser startup.
 
 	1.1.0
-		Added support of native discard,
-			if suspended tab not used for
-			a long time - increased memory
-			save!
-		Reworked screens storage
-			- improved memory usage,
-			saves even more memory now!
-		Reworked screens storage
-			- screens not disappear
-			after browser restart.
-		Added option to start tabs
-			discarded on browser startup.
-		Added restore form data during
-			unsuspend.
-		Added settings allows to disable
-			suspender based on charging status.
+	Added support of native discard,
+	if suspended tab not used for
+	a long time - increased memory
+	save!
+	Reworked screens storage
+	- improved memory usage,
+	saves even more memory now!
+	Reworked screens storage
+	- screens not disappear
+	after browser restart.
+	Added option to start tabs
+	discarded on browser startup.
+	Added restore form data during
+	unsuspend.
+	Added settings allows to disable
+	suspender based on charging status.
 
 	0.6.0
-		Menu reworked.
-		Added settings for background
-			color of suspended page.
-		Bug on settings page slider fixed.
-		Tried to fix chrome://invalid
-			problem
-		
+	Menu reworked.
+	Added settings for background
+	color of suspended page.
+	Bug on settings page slider fixed.
+	Tried to fix chrome://invalid
+	problem
+
 	0.5.7
-		Settings page reload bug fixed.
-		Disk writes issue improved.
-		Suspend bug fixed.
-		
+	Settings page reload bug fixed.
+	Disk writes issue improved.
+	Suspend bug fixed.
+
 	0.5.5
-		Added menu tooltips.
-		
+	Added menu tooltips.
+
 	0.5.4
-		Returned 'Ignore Current Tab' 
-			menu item.
-		Added White List user interface 
-			(May ask for "notification" 
-			permission).
-		Removed 'http' prefix from 
-			White List tester.
+	Returned 'Ignore Current Tab'
+	menu item.
+	Added White List user interface
+	(May ask for "notification"
+	permission).
+	Removed 'http' prefix from
+	White List tester.
 
 	0.5.3
-		Removed 'Ignore Current Tab'
-			menu item.
-		Fixed recursive suspend from 
-			context menu.
-			
+	Removed 'Ignore Current Tab'
+	menu item.
+	Fixed recursive suspend from
+	context menu.
+
 	0.4.9.2
-		Recycle button improved.
-			
+	Recycle button improved.
+
 	0.4.9.1
-		Issue with pages without favicon.
-		Fine suspend interval slider on
-			All Settings.
-	
+	Issue with pages without favicon.
+	Fine suspend interval slider on
+	All Settings.
+
 	0.4.9
-	  	Suspend window menu item fix.
-		Icon does not processed as
-			well on some sites.
-		Auto update for old version
-		immediate updgrade absorber.
-	
+	Suspend window menu item fix.
+	Icon does not processed as
+	well on some sites.
+	Auto update for old version
+	immediate updgrade absorber.
+
 	0.4.8.3
-		Added hotkeys.
-		Added context menuon mouse 
-			right click(May ask for 
-			"contextMenus" permission).
-		Fixed immediate extension update.
-		Fixed cross OS font on popup.
+	Added hotkeys.
+	Added context menuon mouse
+	right click(May ask for
+	"contextMenus" permission).
+	Fixed immediate extension update.
+	Fixed cross OS font on popup.
 	0.4.8.2
-		Fixed pause issue.
+	Fixed pause issue.
 	0.4.8:
-		Huge performance optimization.
-		Added tab icons status animation.
-		Added Recycle function control 
-			on popup page.
-		Added history of suspended tabs.
-		Added native tab URL info at the 
-			top of parked page.
-		Added if user click refresh browser 
-			button on suspended tab - 
-			unsuspend tab.
-		Fixed wrong weight calculation on
-			tab close logic.
-		Audiable exception logic 
-			improved.
-		Restore tabs on startup only if 
-			according setting setted.
-		Fixed: tabs playing music have 
-			more points opposite tab
-			without music for 
-			'tab close' case only.
+	Huge performance optimization.
+	Added tab icons status animation.
+	Added Recycle function control
+	on popup page.
+	Added history of suspended tabs.
+	Added native tab URL info at the
+	top of parked page.
+	Added if user click refresh browser
+	button on suspended tab -
+	unsuspend tab.
+	Fixed wrong weight calculation on
+	tab close logic.
+	Audiable exception logic
+	improved.
+	Restore tabs on startup only if
+	according setting setted.
+	Fixed: tabs playing music have
+	more points opposite tab
+	without music for
+	'tab close' case only.
 	0.4.7:
-		Added audible option.
-		Added auto restore tabs after 
-			auto-update extension on
-			enable-disable action. 
-			(earlier lost all 
-			suspended tabs)
-		Added popup with slider for fast 
-			access to suspend-interval 
-			settings.
-		Improved auto-close tab logic.
-		Performance improvements++.
-		Added new functional buttons: 
-			"Suspend other tabs", 
-			"Restore All".
-		Added Pause Suspender function.
-		Added "Ignore current tab" option.
-		Added option to reload a tab 
-			when restoring, instead 
-			of just displaying the
-			cached version of the 
-			page.
-		Added option to restore tab by 
-			mouse click instead of mouse 
-			hover.
-		Fixed bug with unparked tab stuck 
-			in parked state.
-		Reworked exception list, added * 
-			support, now supports 
-			'subdomain.*' or 
-			'*.domain.com' 
-			patterns.
-		Add test interface for exception 
-			list testing.
-		
+	Added audible option.
+	Added auto restore tabs after
+	auto-update extension on
+	enable-disable action.
+	(earlier lost all
+	suspended tabs)
+	Added popup with slider for fast
+	access to suspend-interval
+	settings.
+	Improved auto-close tab logic.
+	Performance improvements++.
+	Added new functional buttons:
+	"Suspend other tabs",
+	"Restore All".
+	Added Pause Suspender function.
+	Added "Ignore current tab" option.
+	Added option to reload a tab
+	when restoring, instead
+	of just displaying the
+	cached version of the
+	page.
+	Added option to restore tab by
+	mouse click instead of mouse
+	hover.
+	Fixed bug with unparked tab stuck
+	in parked state.
+	Reworked exception list, added *
+	support, now supports
+	'subdomain.*' or
+	'*.domain.com'
+	patterns.
+	Add test interface for exception
+	list testing.
+
 	0.4.6:
-		- Fixed bug with tab suspend 
-		stops after some time.
-		- Added ability to suspend tab
-		manually.
-		- 'Very slow PC' options detects 
-		automatically - actual 
-		for ChromeOS.
-	
+	- Fixed bug with tab suspend
+	stops after some time.
+	- Added ability to suspend tab
+	manually.
+	- 'Very slow PC' options detects
+	automatically - actual
+	for ChromeOS.
+
 	0.4.5:
-		- UI fixes.
-		- Close tab logic improved.
+	- UI fixes.
+	- Close tab logic improved.
 
 	0.4.4:
-		- New option to exclude sites 
-		from being suspend.
-		- Fixed orthographical errors.
-		- Fixed Restore from History or 
-		OneTab plugin.
-		- Fixed generated favicons 
-		injection.
-		- Added mode for super-slow 
-		PC(for the case when the video 
-		slows down)
-		
-	0.4.3:
-		- Improved blinking of restore-
-		button.
-		- Added correct suspended 
-		favicons for pages without 
-		favicon.
-	
-    </dl>
-</body>
-<!--Keywords:
+	- New option to exclude sites
+	from being suspend.
+	- Fixed orthographical errors.
+	- Fixed Restore from History or
+	OneTab plugin.
+	- Fixed generated favicons
+	injection.
+	- Added mode for super-slow
+	PC(for the case when the video
+	slows down)
 
-	[Tab Unload], [Reduce Memory], Tab Clean, [Save Memory], Tab Control, Close Tab, [Many Open Tabs], [Memory Purge].
-	[and close tabs, by your decision.] -->
+	0.4.3:
+	- Improved blinking of restore-
+	button.
+	- Added correct suspended
+	favicons for pages without
+	favicon.
+
+</dl>
+</body>
 </html>

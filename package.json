@@ -1,0 +1,21 @@
+{
+  "name": "tab-suspender",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "html-minifier": "^4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "6.0.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-loader": "3.0.3",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "3.1.2",
+    "eslint-plugin-promise": "^4.3.1"
+  },
+  "$schema": "https://json.schemastore.org/package"
+}

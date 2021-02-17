@@ -7,149 +7,128 @@
 /**
  *
  */
-function WebSQlProvider (options)
-{
-    "use strict";
+function WebSQlProvider(options) {
+	'use strict';
 
-    this.db = null;
-    this.initialized = false;
+	this.db = null;
+	this.initialized = false;
 
-    var self = this;
-    this.initializedPromise = new Promise(function(resolve, reject) {
-        self.initialized = true;
-        resolve();
-    });
+	let self = this;
+	this.initializedPromise = new Promise(function(resolve, reject) {
+		self.initialized = true;
+		resolve();
+	});
 
-    this.open(options);
+	this.open(options);
 }
 
 /**
  *
  */
-WebSQlProvider.prototype.getAll = function(query, callback, errorCallback)
-{
-    "use strict";
+WebSQlProvider.prototype.getAll = function(query, callback, errorCallback) {
+	'use strict';
 
-    this.db.readTransaction(function(tx) {
-        tx.executeSql(
-            query.WebSQL.query, query.WebSQL.params,
-            function (t, results) {
-                var resultsRowsArray = [];
-                var len = results.rows.length;
-                for(var i=0;i<len;i++)
-                    resultsRowsArray.push(results.rows.item(i));
+	this.db.readTransaction(function(tx) {
+		tx.executeSql(
+			query.WebSQL.query, query.WebSQL.params,
+			function(t, results) {
+				let resultsRowsArray = [];
+				let len = results.rows.length;
+				for (let i = 0; i < len; i++)
+					resultsRowsArray.push(results.rows.item(i));
 
-                callback(resultsRowsArray);
-            },
-            errorCallback != null ? errorCallback : sql_error);
-    }, errorCallback != null ? errorCallback : sql_error, null);
-}
-
-/**
- *
- */
-WebSQlProvider.prototype.queryIndex = function(query, callback)
-{
-    "use strict";
-
-    this.db.readTransaction(function(tx) {
-        tx.executeSql(
-            query.WebSQL.query, query.params,
-            function (tx, results) {
-                var len = results.rows.length;
-                if (len > 0)
-                    callback(results.rows.item(0));
-                else
-                    callback(null);
-            },
-            function () {
-                callback(null);
-            },
-            function () {
-                callback(null);
-            },
-            null);
-    });
-
-}
-
-WebSQlProvider.prototype.queryIndexCount = function(query, callback)
-{
-    this.queryIndex(query, function(result){
-        if(result != null)
-        {
-            callback(Object.values(result)[0]);
-            return;
-        }
-
-        callback(result);
-    });
-}
+				callback(resultsRowsArray);
+			},
+			errorCallback != null ? errorCallback : sql_error);
+	}, errorCallback != null ? errorCallback : sql_error, null);
+};
 
 /**
  *
  */
-WebSQlProvider.prototype.executeDelete = function(query)
-{
-    "use strict";
+WebSQlProvider.prototype.queryIndex = function(query, callback) {
+	'use strict';
 
-    this.db.transaction(function (tx) {
-        tx.executeSql(
-            query.WebSQL.query, query.WebSQL.params,
-            function () {
-                //debugger;
-            },
-            sql_error);
-    });
-}
+	this.db.readTransaction(function(tx) {
+		tx.executeSql(
+			query.WebSQL.query, query.params,
+			function(tx, results) {
+				let len = results.rows.length;
+				if (len > 0)
+					callback(results.rows.item(0));
+				else
+					callback(null);
+			},
+			function() {
+				callback(null);
+			},
+			function() {
+				callback(null);
+			},
+			null);
+	});
+
+};
+
+WebSQlProvider.prototype.queryIndexCount = function(query, callback) {
+	this.queryIndex(query, function(result) {
+		if (result != null) {
+			callback(Object.values(result)[0]);
+			return;
+		}
+
+		callback(result);
+	});
+};
 
 /**
  *
  */
-WebSQlProvider.prototype.put = function(query)
-{
-    "use strict";
+WebSQlProvider.prototype.executeDelete = function(query) {
+	'use strict';
 
-    this.db.transaction(function(tx) {
-        tx.executeSql(
-            query.WebSQL.query, query.WebSQL.data,
-            null, sql_error);
-    }, sql_error, null);
-}
+	this.db.transaction(function(tx) {
+		tx.executeSql(
+			query.WebSQL.query, query.WebSQL.params,
+			function() {
+			},
+			sql_error);
+	});
+};
 
 /**
  *
  */
-WebSQlProvider.prototype.open = function(options)
-{
-    "use strict";
+WebSQlProvider.prototype.put = function(query) {
+	'use strict';
 
-    this.db = window.openDatabase(
-            'TSDB',           // dbName
-            '3.0',            // version
-            'TabSuspender database',  // description
-            300 * 1024 * 1024,  // estimatedSize in bytes
-            function(db) {
-                console.log("WebSql opened.");
-                if(options == null || options.skipSchemaCreation == false)
-                {
-                    db.transaction(function (tx)
-                    {
-                        tx.executeSql('CREATE TABLE IF NOT EXISTS ' +
-                            'screens (id INTEGER, sessionId INTEGER, added_on DATETIME, screen TEXT, PRIMARY KEY(id, sessionId))', null, null, sql_error);
-                        console.log("WebSql tables created.");
-                    }, sql_error, null);
-                }
-			}   // optional creationCallback
-        );
+	this.db.transaction(function(tx) {
+		tx.executeSql(
+			query.WebSQL.query, query.WebSQL.data,
+			null, sql_error);
+	}, sql_error, null);
+};
 
-    /* DB Update */
-    /*if(database.version == "2.0"){
-        database.changeVersion("2.0", "3.0", function(t){
-            debugger;
-            t.executeSql('drop TABLE screens', null, null, sql_error);
-            t.executeSql('CREATE TABLE IF NOT EXISTS ' +
-                'screens (id INTEGER, sessionId INTEGER, added_on DATETIME, screen BLOB, PRIMARY KEY(id, sessionId))', null, null, sql_error);
-        });
-    }*/
-}
+/**
+ *
+ */
+WebSQlProvider.prototype.open = function(options) {
+	'use strict';
+
+	this.db = window.openDatabase(
+		'TSDB',
+		'3.0',
+		'TabSuspender database',
+		300 * 1024 * 1024,
+		function(db) {
+			console.log('WebSql opened.');
+			if (options == null || options.skipSchemaCreation == false) {
+				db.transaction(function(tx) {
+					tx.executeSql('CREATE TABLE IF NOT EXISTS ' +
+						'screens (id INTEGER, sessionId INTEGER, added_on DATETIME, screen TEXT, PRIMARY KEY(id, sessionId))', null, null, sql_error);
+					console.log('WebSql tables created.');
+				}, sql_error, null);
+			}
+		}
+	);
+};

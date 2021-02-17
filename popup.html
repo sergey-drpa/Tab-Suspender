@@ -1,18 +1,18 @@
 <!--
 /*
- * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, 
+ * Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances,
  * be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy.
  * Zadorozhniy.Sergey@gmail.com
  */
 -->
-<html><head>
+<html>
+<head>
 	<title>Menu</title>
 	<link rel="stylesheet" href="/lib/el-checkbox/checkbox.css">
 	<link href="popup.css" type="text/css" rel="stylesheet" charset="utf-8">
 	<link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.css" type="text/css" rel="stylesheet">
 	<link href="lib/ion.rangeSlider-2.0.7/css/ion.rangeSlider.skinHTML5.css" type="text/css" rel="stylesheet">
-	<!--link href="lib/ion.rangeSlider-2.0.7/css/normalize.css" type="text/css" rel="stylesheet" /-->
-	
+
 	<script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/vendor/jquery-1.11.1.min.js"></script>
 	<script type="text/javascript" src="lib/ion.rangeSlider-2.0.7/js/ion-rangeSlider/ion.rangeSlider.min.js"></script>
 	<script type="text/javascript" src="fancy-settings/source/lib/store.js"></script>
@@ -20,98 +20,93 @@
 	<script type="text/javascript" src="popup.js"></script>
 </head>
 <body style="width: 300px;margin: 0px;font-family: Segoe UI;" class="en_US">
-	<div style="margin: 10px; margin-bottom: 0px;">
-		<div style="width: 300px;height: 27px;text-align: center;">
-			<a id="link" target="_blank" title="Rate it, please." href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews" class="title MSG_extTitle__"></a>
-			<span id="versionSpan" style="color: #ccc;font-size: 7px; cursor: default;">v1.2.9.1</span><span id="tabId"></span>
-			<!--a class="rate-button" target="_blank" href="" title="Rate it!">	
-				<img class="rate-img">
-			</a-->
-				
-		</div>
-		<hr style="
+<div style="margin: 10px; margin-bottom: 0px;">
+	<div style="width: 300px;height: 27px;text-align: center;">
+		<a id="link" target="_blank" title="Rate it, please."
+			 href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews"
+			 class="title MSG_extTitle__"></a>
+		<span id="versionSpan" style="color: #ccc;font-size: 7px; cursor: default;">v1.2.9.1</span><span id="tabId"></span>
+
+	</div>
+	<hr style="
 			margin-top: 0px;
 			border: none;
 			height: 1px;
 			background-color: #ccc;
-			margin-bottom: 7px;	
+			margin-bottom: 7px;
 			margin-left: 35px;
 			margin-right: 35px;
 		">
 
-		<!--div id="pageInWhiteListInfoBuble" style="display: none; height: 30px;margin-left: auto;margin-right: auto;background-color: rgba(60, 255, 102, 0.07); border: 1px solid rgb(120, 222, 128); border-radius: 37px;margin-bottom: 7px;">
-			<div style="color: #bbb;font-size: 12px;font-family: Trebuchet MS;cursor: default;margin-left: 39px;padding-top: 3px; line-height: 16px;" title="">Page is in Whitelist</div>
-			<div style="color: #999;font-size: 9px;font-family: Trebuchet MS;cursor: default;margin-left: 45px; line-height: 9px;"><a id="removePageFromWhitelist" href="" title="">Remove from Whitelist</a></div>
-		</div-->
-
-		
-		<div style="height: 20px; z-index: 1000; margin-right: -10px;">
-			<div style="width: 100%; line-height: 19px;">
-				<div class="tab-button checked">
-					<!--span class="tab-button-link" style="float: right;color: #999; font-size: 10px;" class="">Close Tabs Automatically</span>
-					<input id="recicleTab" type="checkbox" name="vehicle" value="Bike" style="float: right;"-->
-					<!--div style=""-->
-                        <label class="tab-button-link" style="float: right; color: #999; font-size: 10px; padding-left: 4px;" title="">Close Unused Tabs Automatically
-							<input id="recicleTab" type="checkbox" name="vehicle" style="float: right; margin-right: 0px; margin-left: 3px;">
-							<label class="checkbox" for="recicleTab" style="float: right; margin-right: 0px; margin-left: 1px;">Toggle</label>
-						</label>
-
-					<!--/div-->
-
-					<!--/label-->
-				</div>
+	<div style="height: 20px; z-index: 1000; margin-right: -10px;">
+		<div style="width: 100%; line-height: 19px;">
+			<div class="tab-button checked">
+				<label class="tab-button-link"
+							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica;" title="">Close
+					Unused Tabs Automatically
+					<input id="recicleTab" type="checkbox" name="vehicle"
+								 style="float: right; margin-right: 0px; margin-left: 3px;">
+					<label class="checkbox" for="recicleTab"
+								 style="float: right; margin-right: 0px; margin-left: 1px;">Toggle</label>
+				</label>
 			</div>
 		</div>
-			
-		<div class="recicle-section">		
-			<div id="slider" style="width: 221px;height: 74px;margin-left: 40px;" class="irs-greeen">
-				<div class="irs-greeen ">
-					<input type="text" class="js-range-slider-recicle-after" value="1800" />
-				</div>
-				<div class="irs-greeen ">
-					<input type="text" class="js-range-slider-recicle-keep" value="30" />
-				</div>
+	</div>
+
+	<div class="recicle-section">
+		<div id="slider" style="width: 252px;height: 74px;margin-left: 22px;" class="irs-greeen">
+			<div class="irs-greeen ">
+				<input type="text" class="js-range-slider-recicle-after" value="1800" />
+			</div>
+			<div class="irs-greeen ">
+				<input type="text" class="js-range-slider-recicle-keep" value="30" />
 			</div>
 		</div>
+	</div>
 
-		<div title="" style="width: fit-content; height: 36px; margin-left: auto; margin-right: auto; height: 20px; ">
-			<span style="color: #999; font-size: 13px; font-family: Trebuchet MS; cursor: default; text-shadow: 0.1px 0.1px #ccc; line-height: 18px;">Auto-Suspend Interval</span>
-		</div>
-		
-		<div id="slider" style="width: 208px;height: 59px;margin-left: 10px;padding-left: 28px;position: relative;" class="">
-			<div class="slider-blocker" style="display: none;">Paused</div>
-			<div class="slider-background"></div>
-			
-			<input type="text" class="js-range-slider" value="900" />
-			
-		</div>
-		
+	<div title="" style="width: fit-content; height: 36px; margin-left: auto; margin-right: auto; height: 20px; ">
+		<span
+			style="color: #999; font-size: 13px; font-family: Trebuchet MS; cursor: default; text-shadow: 0.1px 0.1px #ccc; line-height: 18px;">Auto-Suspend Interval</span>
+	</div>
+
+	<div id="slider" style="width: 208px;height: 59px;margin-left: 10px;padding-left: 28px;position: relative;" class="">
+		<div class="slider-blocker" style="display: none;">Paused</div>
+		<div class="slider-background"></div>
+
+		<input type="text" class="js-range-slider" value="900" />
 
 	</div>
 
-<!--div style="width: 11px; height: 36px; margin-left: auto; margin-right: auto; height: 20px;">
-	<span style="color: #999; font-size: 12px; font-family: Trebuchet MS; cursor: default;">or</span>
-</div-->
 
+</div>
 
 
 <hr class="fullhr" style="background-color: #ddd;">
 <div id="pause" class="menu " title="Stop Tab Suspender for a while...">
-	<img id="resetPauseTimer" class="reset-pause-timer" style="" title="Stop Tab Suspender for a while..." src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADOUlEQVQ4T12TbWibZRSGr+dN3qRJ2ua71SXdKrjVtrNKpjRbN7d1YqeuuCF0FqoiorBfY/sh+IEUURTBD+yQyfxAZT90jlG2KsVaFZZG25E53aS0zNqmDU2NwTZLk75J3kfeYGT0/Ho+zn2f576fcwTr4rUq896a6tpetEILCIGCLCnmS/lM5vTzhcLE+nxROegFX9jvG9iwqbEltHtvsD7QUCOlbnDIxMzMyvjI8Fwqmbw0mE4f/QHyFVyZ4BB493g9X7R33t/Udm84mE2lKKwsoxeLKKqK1eXC7vXx0/ff/fnLz9GJY6nU48CagTUI1Dfc7g937bqv847NW4LpqUlyi4sUV1eRehGhmDA7anAEA3ibmhmLRqbHJybO9mezLwBSPKKq7fvd7vcfO3w4FL8cIzs/y+epNLXAQ1UWvs5rrABP+Ouova2R4N0h/aMTA5ePaYUHgLQ4brMNPBpuP+iSpWD6+jSl/Bq7l9L8HrnIpw928eQ3w7R07OTHeg9mu4P65lauLi5Nnbt6ZeCzgn5CvOR0DvWF7gr/vRD35Ff+ASnZcm6I4PYdZRIDPB+NMHWoGxRw+OpQql2JU7HY+VNrhSPiRWftSN/tjaGFpYTbMA0JwzmNp4aGae3YWSb5+OEuuuzWsvEmqxWv2588OTk9ejKX7xPP2GyDTwf825bzmUBJl2VXG748XwbHo2M0bN/BtchF4j3dBjc2kwndZL/+XjwxOlgqHRH3KMrbRz01+zbZRNuyFOV/OTCXZi4a4deeA7SducDGcAcXGjyG6dSZBOOpfOzNbO50HN4xCva8bq863u21bZ0V0lFY32o37Q0R1Tk9fvaGNvtuLv8K8K1B0OxSlOf6LeY799TbWhOIKqPNpDCujEcLhJTYgYAusyN/5a69rGmRjM5bwIKRZQP2OxWlt9+ibthWbbpFrVU35oSiFqXELMBWQlvNrP0Ry+rJV7VCYlnXPwDGgEJlFtxApwoHn7VYXJsVfGaB4lcVU1LTSzoUr+h6+hOtmAS+AiJAptLKFZUOYCuwD2jyKIo1IKVpRsrSDcgBvwGjwCTrh+kmn0yAEwgCt0JZulEpAcz/tzaM+T/+BS3sRyfvdorLAAAAAElFTkSuQmCC">
+	<img id="resetPauseTimer" class="reset-pause-timer" style="" title="Stop Tab Suspender for a while..."
+			 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADOUlEQVQ4T12TbWibZRSGr+dN3qRJ2ua71SXdKrjVtrNKpjRbN7d1YqeuuCF0FqoiorBfY/sh+IEUURTBD+yQyfxAZT90jlG2KsVaFZZG25E53aS0zNqmDU2NwTZLk75J3kfeYGT0/Ho+zn2f576fcwTr4rUq896a6tpetEILCIGCLCnmS/lM5vTzhcLE+nxROegFX9jvG9iwqbEltHtvsD7QUCOlbnDIxMzMyvjI8Fwqmbw0mE4f/QHyFVyZ4BB493g9X7R33t/Udm84mE2lKKwsoxeLKKqK1eXC7vXx0/ff/fnLz9GJY6nU48CagTUI1Dfc7g937bqv847NW4LpqUlyi4sUV1eRehGhmDA7anAEA3ibmhmLRqbHJybO9mezLwBSPKKq7fvd7vcfO3w4FL8cIzs/y+epNLXAQ1UWvs5rrABP+Ouova2R4N0h/aMTA5ePaYUHgLQ4brMNPBpuP+iSpWD6+jSl/Bq7l9L8HrnIpw928eQ3w7R07OTHeg9mu4P65lauLi5Nnbt6ZeCzgn5CvOR0DvWF7gr/vRD35Ff+ASnZcm6I4PYdZRIDPB+NMHWoGxRw+OpQql2JU7HY+VNrhSPiRWftSN/tjaGFpYTbMA0JwzmNp4aGae3YWSb5+OEuuuzWsvEmqxWv2588OTk9ejKX7xPP2GyDTwf825bzmUBJl2VXG748XwbHo2M0bN/BtchF4j3dBjc2kwndZL/+XjwxOlgqHRH3KMrbRz01+zbZRNuyFOV/OTCXZi4a4deeA7SducDGcAcXGjyG6dSZBOOpfOzNbO50HN4xCva8bq863u21bZ0V0lFY32o37Q0R1Tk9fvaGNvtuLv8K8K1B0OxSlOf6LeY799TbWhOIKqPNpDCujEcLhJTYgYAusyN/5a69rGmRjM5bwIKRZQP2OxWlt9+ibthWbbpFrVU35oSiFqXELMBWQlvNrP0Ry+rJV7VCYlnXPwDGgEJlFtxApwoHn7VYXJsVfGaB4lcVU1LTSzoUr+h6+hOtmAS+AiJAptLKFZUOYCuwD2jyKIo1IKVpRsrSDcgBvwGjwCTrh+kmn0yAEwgCt0JZulEpAcz/tzaM+T/+BS3sRyfvdorLAAAAAElFTkSuQmCC">
 	<div id="progress-bar" class="progress-bar" style="width:0px;">
-	<span style="float: right; white-space: nowrap; margin-right: 20px; line-height: 20px;"></span>
+		<span style="float: right; white-space: nowrap; margin-right: 20px; line-height: 20px;"></span>
 	</div>
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVElEQVQ4T4WSXUhTYRjH/+92KksIJJLARUUZBRVFs6DQ1Lmrbrab6FbKUDL77nJZt5V93RQUJSF1t91444hZRIkZlEok2ofjSLWmm8d9nJ1z3veJvWtzW2TP3XOe9/97/u97/gxltb93aNcyBVdsIKcd5OBCwOBCNSw+YhC/PN7WMlosYcVNfd+Q326DR9V0xDMWOJEc2xlQqTBUKYAlKDDe7vbmdRLQHfpa8TISmZxNGY6wppebKumr7IQKcLW68kftYGurLgHZzZphev4nzpNWMw4FPPC567CXuZ4N13ESwx8iC0tuLh9WCR3gtI8d6HszEElk3LO6WTgz19Ui77/27nP5LdzRBCEIG+8PFs4sFxYUbgRZ89MhdfRXoib/YNkT0VMuCVjTeQ3Ktr341t4ILggbzvXIPlsMhFVpbYY19b2m99FkicOfnS4pqO7KAb6cOCSBm87fLACygpXJObCGJ69obC5dAvh+slkC1p2+LgWTbTnAlgulgBULs2AHe1+oE/NGDc/9cllqR5MU1Jy5IQETxxtkv/XirUUHRFC06Azb/SA0EDO4WzMXCeHsnQlYfzYH+HisXgK2X7pdANgMHZRJBdmehyEncf52Ol1kAYD16Z10k3+08p7NR8G5WSeDtONe0J+yyBPjJcn+Zy5YagHCNAJx31GvVDQ+ClVEkvpkUjCHRvYlAyXFekqNT0/V4nF3Lsr52nyn309ceJJQYNrsIPwZE8FmZkDpBASY3JzX/OXZ0dO/k1nmVUHcSdxyZBPIiakWaARk88V8R8aKl/4GE047BJlMkvQAAAAASUVORK5CYII=">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVElEQVQ4T4WSXUhTYRjH/+92KksIJJLARUUZBRVFs6DQ1Lmrbrab6FbKUDL77nJZt5V93RQUJSF1t91444hZRIkZlEok2ofjSLWmm8d9nJ1z3veJvWtzW2TP3XOe9/97/u97/gxltb93aNcyBVdsIKcd5OBCwOBCNSw+YhC/PN7WMlosYcVNfd+Q326DR9V0xDMWOJEc2xlQqTBUKYAlKDDe7vbmdRLQHfpa8TISmZxNGY6wppebKumr7IQKcLW68kftYGurLgHZzZphev4nzpNWMw4FPPC567CXuZ4N13ESwx8iC0tuLh9WCR3gtI8d6HszEElk3LO6WTgz19Ui77/27nP5LdzRBCEIG+8PFs4sFxYUbgRZ89MhdfRXoib/YNkT0VMuCVjTeQ3Ktr341t4ILggbzvXIPlsMhFVpbYY19b2m99FkicOfnS4pqO7KAb6cOCSBm87fLACygpXJObCGJ69obC5dAvh+slkC1p2+LgWTbTnAlgulgBULs2AHe1+oE/NGDc/9cllqR5MU1Jy5IQETxxtkv/XirUUHRFC06Azb/SA0EDO4WzMXCeHsnQlYfzYH+HisXgK2X7pdANgMHZRJBdmehyEncf52Ol1kAYD16Z10k3+08p7NR8G5WSeDtONe0J+yyBPjJcn+Zy5YagHCNAJx31GvVDQ+ClVEkvpkUjCHRvYlAyXFekqNT0/V4nF3Lsr52nyn309ceJJQYNrsIPwZE8FmZkDpBASY3JzX/OXZ0dO/k1nmVUHcSdxyZBPIiakWaARk88V8R8aKl/4GE047BJlMkvQAAAAASUVORK5CYII=">
 	<span class="menu _pause-paused no-clickable">Pause Suspender:</span>
-	<div id="pause-first-btn" class="inline-btn" style="margin-left: 12px;" title="Stop Tab Suspender for 10 minutes.">10 min</div>
-	<div id="pause-second-btn" class="inline-btn" style="margin-left:55;" title="Stop Tab Suspender for 1 hour.">1 hour</div>
-	<div id="pause-third-btn" class="inline-btn" style="margin-left: 97px;" title="Stop Tab Suspender for 5 hours.">5 hours</div>
-	<div id="pause-forth-btn" class="inline-btn" style="margin-left: 143px;" title="Stop Tab Suspender for 1 Day.">1 day</div>
+	<div id="pause-first-btn" class="inline-btn" style="margin-left: 12px;" title="Stop Tab Suspender for 10 minutes.">10
+		min
+	</div>
+	<div id="pause-second-btn" class="inline-btn" style="margin-left:55px;" title="Stop Tab Suspender for 1 hour.">1 hour
+	</div>
+	<div id="pause-third-btn" class="inline-btn" style="margin-left: 97px;" title="Stop Tab Suspender for 5 hours.">5
+		hours
+	</div>
+	<div id="pause-forth-btn" class="inline-btn" style="margin-left: 143px;" title="Stop Tab Suspender for 1 Day.">1 day
+	</div>
 </div>
 
 <hr class="fullhr">
 <div id="addToWhilelist" class="menu whitelist-btn" title="Add to Whitelist to NOT suspend this site in future.">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAYlJREFUOE+dk81KAlEUx2dj7VoZ2od4HefTCCMXUm1a9gy9RA9RWa0iAgsjkMSopTNNKmoYkrhLF7VtUfgO0+Cc7rkz4EejSQf+zOXe/+9czp1zuNGQDV6VSpF9sUja4iMxmeia7h3gmWv7HXN7IZ9c5NNKJQpqQwC5zIOkR5hwzfaqPNBkl/6sf8bFnNjpbvvW6kpFbUZBMhzIU/Qs1hRBNEhtob7UT7LRiqfxwBPyEHqFAskwWDDCq0r1j5tHRb3IRLRliRM1crzS8L49oAU8RRlAhn5TmOBdLBMGXHycwf1XHm67ubFCj6oLgAxl3zBBL/ywyBKYpgn2dw9syx4r9CS1BCCD7FACy7LAtqlxgtAznEDvl3D+cgr51g3kWtmxQk9Mo/VjCTqWoJOTcY84SewRdXLE8aWQpNT+8Rspg6zTCwVyzbrQy+wh9FLmisEY2MrxZ/lpmiTYhdRbm78Lzrq4E6FKcNphyux+JoeHaTC2XhM4zofU2BkY5w7dS22212OuzQ2O+wGXSeMZ7Ur3dgAAAABJRU5ErkJggg==">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAYlJREFUOE+dk81KAlEUx2dj7VoZ2od4HefTCCMXUm1a9gy9RA9RWa0iAgsjkMSopTNNKmoYkrhLF7VtUfgO0+Cc7rkz4EejSQf+zOXe/+9czp1zuNGQDV6VSpF9sUja4iMxmeia7h3gmWv7HXN7IZ9c5NNKJQpqQwC5zIOkR5hwzfaqPNBkl/6sf8bFnNjpbvvW6kpFbUZBMhzIU/Qs1hRBNEhtob7UT7LRiqfxwBPyEHqFAskwWDDCq0r1j5tHRb3IRLRliRM1crzS8L49oAU8RRlAhn5TmOBdLBMGXHycwf1XHm67ubFCj6oLgAxl3zBBL/ywyBKYpgn2dw9syx4r9CS1BCCD7FACy7LAtqlxgtAznEDvl3D+cgr51g3kWtmxQk9Mo/VjCTqWoJOTcY84SewRdXLE8aWQpNT+8Rspg6zTCwVyzbrQy+wh9FLmisEY2MrxZ/lpmiTYhdRbm78Lzrq4E6FKcNphyux+JoeHaTC2XhM4zofU2BkY5w7dS22212OuzQ2O+wGXSeMZ7Ur3dgAAAABJRU5ErkJggg==">
 	<span class="menu add-whitelist-btn">
 		Do not Suspend this Site...
 	</span>
@@ -119,7 +114,8 @@
 		Site already in Whitelist
 	</span>
 	<span class="menu remove-whitelist-btn" style="padding-left: 0px;">
-			<img class="checked" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAP9JREFUOE+V0b9LQlEYxvGblqUEgmBTmIPoEoQ4BUGL4OLY0B7o6Obo5q+2BrFdcGpqiEBxaXAyJ1uCbHBo9h+4fl85J9578Q4On8N9H95z77nndVzX3ccZRvjDGxK7moKk8IUHU9cw9jcFyeIbdyo7xlo3BbnCD0oqi+AFT1IcoYsp2qa2jddY4kZlMbyjhwMJBnhGGn3I5URRhGzOw26O4wMtm8myRtgGaGIO+eecyUQSM9RVtn3BKxo6RBUXqj7HAhWVbclyigkebeiTgZzmXmX/7MMJ5CRyFyGTiUvIBMoq89DFIYaGzFgm8Itb6D4PfyBf72CFTxTg71FcZwMwMWPUUopDQQAAAABJRU5ErkJggg==">
+			<img class="checked"
+					 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAP9JREFUOE+V0b9LQlEYxvGblqUEgmBTmIPoEoQ4BUGL4OLY0B7o6Obo5q+2BrFdcGpqiEBxaXAyJ1uCbHBo9h+4fl85J9578Q4On8N9H95z77nndVzX3ccZRvjDGxK7moKk8IUHU9cw9jcFyeIbdyo7xlo3BbnCD0oqi+AFT1IcoYsp2qa2jddY4kZlMbyjhwMJBnhGGn3I5URRhGzOw26O4wMtm8myRtgGaGIO+eecyUQSM9RVtn3BKxo6RBUXqj7HAhWVbclyigkebeiTgZzmXmX/7MMJ5CRyFyGTiUvIBMoq89DFIYaGzFgm8Itb6D4PfyBf72CFTxTg71FcZwMwMWPUUopDQQAAAABJRU5ErkJggg==">
 	</span>
 	<span class="menu remove-whitelist-btn">
 			<a id="removePageFromWhitelist" class="" href="" title="" style="">Remove</a>
@@ -127,83 +123,60 @@
 </div>
 
 <hr class="fullhr">
-<div id="ignodeCurrentTab" class="menu" title="The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T5WTzWsTQRjGn93uZmPSaIQURTz37EHFoxf1tH+AF0Hw4iWgttpusEkVWqyxEvQkIkkDKtFDkCJEqUI1rbTSU41pjGKaVCSxmM337s7sykQTiEhtBx7mHYbnx8v7weHP2T14+Kh+8NAJsY+3BEEEzwMC+2upINVNzk3U4ueVhQgAveNhN9d5HDh5Zpg/dnpKEnnY7LsgigIEzoLVKKOSS2PQaeC4h967MurzAtA6vi5gaNTn9Q4roVazCYMQUErQbDZRq1aRz32FulnC+XNnMTMTfjs0dFkul8vlngyu+f3eq4FAqNWoQ9f1rhr1Osqqio1CAR/TaXwr5JF4OXcpk81O9wD8fr83EAiEarVa22y0IQYMQ0e9XkelUsH6eg7ZTAaxJ099q6nUxDYAOnTDaMMajQZUVcWPUhGhO3eVZDI5uW1AJyMGYfGtYFB5Nju7cwAz8xyP4M0p5VEstnOApmlwuVyYmJxUotHo/wGUEMAkYEZd00AIgdvths/nuxh5+Pj2ljWwTIq1Lzm8WM3DJooQeA6CKMAm2rC4tPTuQ+bTe/KzWOoO0t9t5C0TcytpKMst7BvwwLPHCYckgRME6FwfmoITNPVmY0vA65UUri/XsH/Ag739dvTbbWBLonEiWqITxtpi4Z8A1ndK6e8J/F4EYMGiJqhpQrJLCD+I3H+eSEQtw2h1AWNjYxfGx8en2SSyYjGZlMKyrHbMdoMSCofDgRFFGQmHwzd6iijL8hFZlk9RSq222TR7BNMEYRlIEhePx1/Nz88vMMAvpe7VwCUyZr4AAAAASUVORK5CYII=">
+<div id="ignodeCurrentTab" class="menu"
+		 title="The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T5WTzWsTQRjGn93uZmPSaIQURTz37EHFoxf1tH+AF0Hw4iWgttpusEkVWqyxEvQkIkkDKtFDkCJEqUI1rbTSU41pjGKaVCSxmM337s7sykQTiEhtBx7mHYbnx8v7weHP2T14+Kh+8NAJsY+3BEEEzwMC+2upINVNzk3U4ueVhQgAveNhN9d5HDh5Zpg/dnpKEnnY7LsgigIEzoLVKKOSS2PQaeC4h967MurzAtA6vi5gaNTn9Q4roVazCYMQUErQbDZRq1aRz32FulnC+XNnMTMTfjs0dFkul8vlngyu+f3eq4FAqNWoQ9f1rhr1Osqqio1CAR/TaXwr5JF4OXcpk81O9wD8fr83EAiEarVa22y0IQYMQ0e9XkelUsH6eg7ZTAaxJ099q6nUxDYAOnTDaMMajQZUVcWPUhGhO3eVZDI5uW1AJyMGYfGtYFB5Nju7cwAz8xyP4M0p5VEstnOApmlwuVyYmJxUotHo/wGUEMAkYEZd00AIgdvths/nuxh5+Pj2ljWwTIq1Lzm8WM3DJooQeA6CKMAm2rC4tPTuQ+bTe/KzWOoO0t9t5C0TcytpKMst7BvwwLPHCYckgRME6FwfmoITNPVmY0vA65UUri/XsH/Ag739dvTbbWBLonEiWqITxtpi4Z8A1ndK6e8J/F4EYMGiJqhpQrJLCD+I3H+eSEQtw2h1AWNjYxfGx8en2SSyYjGZlMKyrHbMdoMSCofDgRFFGQmHwzd6iijL8hFZlk9RSq222TR7BNMEYRlIEhePx1/Nz88vMMAvpe7VwCUyZr4AAAAASUVORK5CYII=">
 	<span class="menu _ignore-tab">
 		Do not Suspend this Tab (Ignore)
 	</span>
-	<img class="checked" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAP9JREFUOE+V0b9LQlEYxvGblqUEgmBTmIPoEoQ4BUGL4OLY0B7o6Obo5q+2BrFdcGpqiEBxaXAyJ1uCbHBo9h+4fl85J9578Q4On8N9H95z77nndVzX3ccZRvjDGxK7moKk8IUHU9cw9jcFyeIbdyo7xlo3BbnCD0oqi+AFT1IcoYsp2qa2jddY4kZlMbyjhwMJBnhGGn3I5URRhGzOw26O4wMtm8myRtgGaGIO+eecyUQSM9RVtn3BKxo6RBUXqj7HAhWVbclyigkebeiTgZzmXmX/7MMJ5CRyFyGTiUvIBMoq89DFIYaGzFgm8Itb6D4PfyBf72CFTxTg71FcZwMwMWPUUopDQQAAAABJRU5ErkJggg==">
+	<img class="checked"
+			 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAP9JREFUOE+V0b9LQlEYxvGblqUEgmBTmIPoEoQ4BUGL4OLY0B7o6Obo5q+2BrFdcGpqiEBxaXAyJ1uCbHBo9h+4fl85J9578Q4On8N9H95z77nndVzX3ccZRvjDGxK7moKk8IUHU9cw9jcFyeIbdyo7xlo3BbnCD0oqi+AFT1IcoYsp2qa2jddY4kZlMbyjhwMJBnhGGn3I5URRhGzOw26O4wMtm8myRtgGaGIO+eecyUQSM9RVtn3BKxo6RBUXqj7HAhWVbclyigkebeiTgZzmXmX/7MMJ5CRyFyGTiUvIBMoq89DFIYaGzFgm8Itb6D4PfyBf72CFTxTg71FcZwMwMWPUUopDQQAAAABJRU5ErkJggg==">
 </div>
 
 <hr class="fullhr">
-<!--div id="suspendAllOther" class="menu" title="Immediately suspend all tabs except current tab">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAACkklEQVQ4jZXSTUgUYRgH8P/7zq67s6s7a6ur4JplLkoRaBEEQVR0yw4dgtFLhzQCD126BElkUB06JUVIH3gINpUE66LRd2mgZpKbJLVu+LG6bpszu7NfM/O+nRI1QfyfH348z8OfXHfUHrIQPOKAaHI0XdLG+rGFUIGgq0oq9u8uLPEJBE9vOOuObwkAYHcKVnhsDtRIXodAcPdewQ4acEltAZfk2RRgnLd9V2OawRmKRSfslJZKJDkCoBWAd1OAg7SnjVzncHRGS2STKKPzBZ5jh2tdVf4EgKLNAMI5BwDcKai86iHLrWXyaVK5rw7j7YOZ1Iz4G7QrbjL2mAMPZVVZ2hAIuKRGSuh9f9NZ0VtSiqlRIPnJifJmhiKJIxScyET7nnOe0p6YjF2WVWVuPXCGArc8+w86CT8p8oSA2lMZ2IQciN0O4pZgiA6Mv32jR7q7TZLL9ZjAAwDvVk4IuCSbFS1fbKXEf/TKXgGLCyAlXvClGFgkAjORhL7dh5zbjXBwgv95/0HTQqE0/beKrCpZHZ03xeqvWZpnAdc0sHAYLBIBi8WQWogg3j+A9O12FIOS6oaGfEoFbln7kuSL5W+TlIHACIfBdR25TBZpLQk9Hoc4PQ3OOIx8J36Njhpg5us1gKwq8z3ubT/DwYk9BXY70qEQLIoC62IUeboODiDbKCNHKWIvX2UZcJFiXQxmXvjR25vmlTshLEZhmZ0D13Wky31g588hKYp8sqNDZXruhKwqsytPXJ1ul/SxsL7+wK6aGmtieASivwpWnw+hwSEjNtC/xIAjsqpMrSnS6gRckocCYxVNzWXufAed/xrUY0NDBlKpZyZ4i6wqsf+auAFSQYDPBOAA+hhwTVaV6fVzfwEmuzlaIl5LbQAAAABJRU5ErkJggg==">
-	<span class="menu">
-		Suspend All Other Tabs
-	</span>
-</div-->
+
 <div class="menu no-clickable">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
-	<!--span class="menu">
-		Suspend All Other Tabs
-	</span-->
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
 	<span class="menu no-clickable">
 		Suspend:
 	</span>
-	<div id="suspend" class="inline-btn" style="margin-left: 63px;padding-left: 6px;padding-right: 6px;" title="Immediately suspend current tab.">
-        This Tab
-    </div>
-    <div id="suspendWindow" class="inline-btn" style="margin-left: 119px;padding-left: 6px;padding-right: 6px;" title="Immediately suspend all tabs at current window.">
-        This Window
-    </div>
-    <div id="suspendAllOther" class="inline-btn" style="margin-left: 195px;padding-left: 6px;padding-right: 6px;" title="Immediately suspend all tabs except current tab.">
-        All
-    </div>
-</div>
-<!--hr class="fullhr">
-<div id="suspendWindow" class="menu" title="Immediately suspend all tabs at current window">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxEAAAsRAX9kX5EAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAJvSURBVDhPlZJbSJNhGMeXUOrct2+6BTlN0fIiO2gLuuiAi1IhCjNIIhAhSOsqKiLqIivDQ5LlIXcT7sJsJxNNhIQpKE6oixkhhXbU75uWh0lrB1rlv+f9TJltXXTxG8/z7f//vXu3ySrl2XvvxGWP18RlCzTnA5D9DzIqujq0uehOzgfNPpIcihT8F0ww37vxMIY3FaJLm8ck4wZFapSJU94i1JFKociq5FnnG/jd3sH0AklSz+k8jzm1k8ogtkQqhcK+gyg69cFdhc7bm5yLdn4DegsKF3t27vKQYH+kUigrQ5Mi7aaJi18cPFMK0WBAT2ZxwMaVijZe9crMKa+QbH1ocRnphd48ZVGq/M6LlyDW1KK/qBZPU5oxUtEEoaERA2VlAVtikt/Kq4yUTYokKLFwylm7Ps/fl9MIu64ZcxV1+FZZDW/dffhajPhqsmDw7LmgRa0JWDllK3X0RNSKiZbodu7qm+6Maz+n3SmYnkmE71EbPA/L4aLIlKDGTFU1xI7L0j5iVgfpajMrgiWJtsR+5Khv9sMBKbRgLMVsj16aGWNFe/CpNUGa3z8phpWP//KXQKltT98cWHAsnfK5azumHCkQPWulffICD2FgHSbdPPpOFP2gq5hXCRg2Pn50tPwGRG80JoY0EMZiITyLgeheA6EtVnr+8XUGLAkaLx2YHCaghwc7d2T5hbdbMSn+OfleHCaecxB9MdI+fFseoFwOy4cJGPTRHC87M3+xMONd/UlMOPdJM2PoerR+ORtWZpBd3blN4WJhdt/+Y8eDfadV39kuBGUvQrOriqGQJJV+pnn6f8wRLbSnhecg+w0/z33RoCrG+wAAAABJRU5ErkJggg==">
-	<span class="menu">
-		Suspend Window
-	</span>
-</div>
-<hr class="fullhr">
-<div id="suspend" class="menu" title="Immediately suspend current tab">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
-	<span class="menu">
-		Suspend Current Tab
-	</span>
-</div-->
-<hr class="fullhr">
-<div class="menu  no-clickable" title="Unsuspend tab.">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T7WTXUhTYRjHn+c979nSHTdb+6DZ2Nw0F0UFDrsJwigko4hY666Luusm8EaiqENk1EUUFKyCSAoENYs+Rni3SLIwmUXax9psfhxY6nJb+zo7ZyemKEYFhvTAe/Pw/H/v/3n5vwgrLFyhHv4PwNEV10lQOAyoeADAqADoAWAQFRyiILdHvJaxBee/ObB1TOyUCXMPESyEAGhVDKSlIkjFxWVzioIt416zr9T5BbC+a7whJSp9hBBWp2bAvYYW86l0ktNqNIKI7IeEBEVlHkQRj0c8Zh/a2sPdWVnp+Has5qHpTjhCGKaaEgR3eWH2+aPeF4mZ2Y+AsLZ+e8Mmm3vr5jffZTIHUZSsQ8M4sPrmyFQSqQEQ7xOCHouGBStH5Vc9j29NC7HT0MvH527c29Zkdzlbqxobd0QyRYKIsJpIl9F5PRiLkzITEoTSkePTgjwRDaVCnw4uiBe333duY0PTrh7BYK8rAXRy5i3WXhn4MkXLnVh6MZyHACjjlGWuOitW+fq91uzSrDjO+C/kXVtOlmYtcjqErksvByYp50aGAGEQWMqATaeC2kpWYgFa7jZbry0FHOgc5rUm49lZUYH0pNCHG84H/FFS2axWEagxqMGuY6XY2MRosH9wJJvK+CT/qd6lALq/bXdZBXeiyrZOn5hJduK2i4HbVG8+auaIKETHwu+C74fz2YxflgoP4Bmf/GPU9/BaoOo6EPNhNB654TGYja2jka+fC7ncE7m88BS6+R/L/SMIh3gOcqp6SImvIcDnliv8a5T/FfATwVHcOvVAsqwAAAAASUVORK5CYII=">
-	<span class="menu no-clickable">
-		Unsuspend:
-	</span>
-	<div id="unsuspendWindow" class="inline-btn" style="margin-left: 104px;padding-left: 6px;padding-right: 6px;" title="Immediately unsuspend all tabs at current window.">
+	<div id="suspend" class="inline-btn" style="margin-left: 63px;padding-left: 6px;padding-right: 6px;"
+			 title="Immediately suspend current tab.">
+		This Tab
+	</div>
+	<div id="suspendWindow" class="inline-btn" style="margin-left: 119px;padding-left: 6px;padding-right: 6px;"
+			 title="Immediately suspend all tabs at current window.">
 		This Window
 	</div>
-	<div id="unsuspendAll" class="inline-btn" style="margin-left: 181px;padding-left: 6px;padding-right: 6px;" title="Immediately unsuspend all tabs.">
+	<div id="suspendAllOther" class="inline-btn" style="margin-left: 195px;padding-left: 6px;padding-right: 6px;"
+			 title="Immediately suspend all tabs except current tab.">
 		All
 	</div>
 </div>
-<!--div id="unsuspendAll" class="menu" title="Immediately unsuspend all tabs">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T7WTXUhTYRjHn+c979nSHTdb+6DZ2Nw0F0UFDrsJwigko4hY666Luusm8EaiqENk1EUUFKyCSAoENYs+Rni3SLIwmUXax9psfhxY6nJb+zo7ZyemKEYFhvTAe/Pw/H/v/3n5vwgrLFyhHv4PwNEV10lQOAyoeADAqADoAWAQFRyiILdHvJaxBee/ObB1TOyUCXMPESyEAGhVDKSlIkjFxWVzioIt416zr9T5BbC+a7whJSp9hBBWp2bAvYYW86l0ktNqNIKI7IeEBEVlHkQRj0c8Zh/a2sPdWVnp+Has5qHpTjhCGKaaEgR3eWH2+aPeF4mZ2Y+AsLZ+e8Mmm3vr5jffZTIHUZSsQ8M4sPrmyFQSqQEQ7xOCHouGBStH5Vc9j29NC7HT0MvH527c29Zkdzlbqxobd0QyRYKIsJpIl9F5PRiLkzITEoTSkePTgjwRDaVCnw4uiBe333duY0PTrh7BYK8rAXRy5i3WXhn4MkXLnVh6MZyHACjjlGWuOitW+fq91uzSrDjO+C/kXVtOlmYtcjqErksvByYp50aGAGEQWMqATaeC2kpWYgFa7jZbry0FHOgc5rUm49lZUYH0pNCHG84H/FFS2axWEagxqMGuY6XY2MRosH9wJJvK+CT/qd6lALq/bXdZBXeiyrZOn5hJduK2i4HbVG8+auaIKETHwu+C74fz2YxflgoP4Bmf/GPU9/BaoOo6EPNhNB654TGYja2jka+fC7ncE7m88BS6+R/L/SMIh3gOcqp6SImvIcDnliv8a5T/FfATwVHcOvVAsqwAAAAASUVORK5CYII=">
-	<span class="menu">
-		Unsuspend All Tabs
-	</span>
-</div>
+
 <hr class="fullhr">
-<div id="unsuspendWindow" class="menu" title="Immediately unsuspend all tabs at current window">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAJXSURBVDhPYximQGnVO365VS/T5Fa/2AXE52VXv3gIxOuAYnVKq57JQZVhB/LLnjjJrHj+VHbl8//yq5//19346r/S2hf/gQbB8HfZVS8zocpRgdqqx2aSSx79kl725L/W2uf/4w68/hu++cH75IOvf3nufvNfYQ3CIKU1UEPkF9xdLTb3TiCILTb/7j2JRQ/+yyx5+D9g3Z33gvFTNzH5tHYx+bYuNu3cfT5k7+u/cENWPf/msPWVBIPizGuvhWfd+i88+/Zq0bl3/uuvePjfZ8vTPyKJ06cxuDcIgW0BAhbvVneV4hX77Le8/Cu76jnYEP21T3oYlKecfyk47cZ/oRk3/4MMEug49pQx8fNXhvi/N8E6k/6rMyT+/8+Q8P8ag2+TtmrLtUcgPm/jl/86y+5eYFDtP31HYPLV/4JTr/+HGcRW+uEzSBFr2h8vIF0MNgCEgYZxZb44AWIL9r/9b7rk1i0Gjc5jp3l7L/3nm3DlP8gg0ek3/iv1vQRrkKn8tg1o80Ig+yPYgPj/qTzZP+5yZf3577fz5X/neecPM2i2HNjK1Xbhv2DPpf+mC27+D11/77fdxEO3GBJ+/WaI/XAU7PSE/+vAhiT8n8aQ8Pcrc9zj5xpVa49Jps/PZzDvODDXetb1/0HLbv60aN99jSusfzWzb2sCQ/yfTUANj8E2J/yvB+LdCJd8q2bwbTcFB7Jo3IwQzdK1pzmCe5cye7dGMIQ28IADD6QJpBjidGcg3Q3ngwIWDkAafNvsGRwaOKAiEIAI/cdgfuL/MKgBx8F86gAGBgAeYmMiUzq4dQAAAABJRU5ErkJggg==">
-	<span class="menu">
-		Unsuspend Window
+<div class="menu  no-clickable" title="Unsuspend tab.">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T7WTXUhTYRjHn+c979nSHTdb+6DZ2Nw0F0UFDrsJwigko4hY666Luusm8EaiqENk1EUUFKyCSAoENYs+Rni3SLIwmUXax9psfhxY6nJb+zo7ZyemKEYFhvTAe/Pw/H/v/3n5vwgrLFyhHv4PwNEV10lQOAyoeADAqADoAWAQFRyiILdHvJaxBee/ObB1TOyUCXMPESyEAGhVDKSlIkjFxWVzioIt416zr9T5BbC+a7whJSp9hBBWp2bAvYYW86l0ktNqNIKI7IeEBEVlHkQRj0c8Zh/a2sPdWVnp+Has5qHpTjhCGKaaEgR3eWH2+aPeF4mZ2Y+AsLZ+e8Mmm3vr5jffZTIHUZSsQ8M4sPrmyFQSqQEQ7xOCHouGBStH5Vc9j29NC7HT0MvH527c29Zkdzlbqxobd0QyRYKIsJpIl9F5PRiLkzITEoTSkePTgjwRDaVCnw4uiBe333duY0PTrh7BYK8rAXRy5i3WXhn4MkXLnVh6MZyHACjjlGWuOitW+fq91uzSrDjO+C/kXVtOlmYtcjqErksvByYp50aGAGEQWMqATaeC2kpWYgFa7jZbry0FHOgc5rUm49lZUYH0pNCHG84H/FFS2axWEagxqMGuY6XY2MRosH9wJJvK+CT/qd6lALq/bXdZBXeiyrZOn5hJduK2i4HbVG8+auaIKETHwu+C74fz2YxflgoP4Bmf/GPU9/BaoOo6EPNhNB654TGYja2jka+fC7ncE7m88BS6+R/L/SMIh3gOcqp6SImvIcDnliv8a5T/FfATwVHcOvVAsqwAAAAASUVORK5CYII=">
+	<span class="menu no-clickable">
+		Unsuspend:
 	</span>
-</div-->
+	<div id="unsuspendWindow" class="inline-btn" style="margin-left: 104px;padding-left: 6px;padding-right: 6px;"
+			 title="Immediately unsuspend all tabs at current window.">
+		This Window
+	</div>
+	<div id="unsuspendAll" class="inline-btn" style="margin-left: 181px;padding-left: 6px;padding-right: 6px;"
+			 title="Immediately unsuspend all tabs.">
+		All
+	</div>
+</div>
 
 <hr class="fullhr">
 <div id="suspendHistory" class="menu" title="Open suspended tabs history.">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADJ0lEQVQ4T32TW0xTSRjH/3PKaQ+lUm6lXOQWE+MaEC9JjUoIKsGH1VUfFPHyIjGswaiJD5robvCeeEmMl8QLutl1zSaYGM0KuoYseGlFxSyRFNqQFQRqS0vpoVB6OzPH9KhVEuO8TGbm//993zczH8F3xtLuFbM48JcooxXPS1uFb0nJtzYbLU7TXe0vN/2cqyg9xcC7xoZZGi0471O/vWgp+ff/rz3TADeeOA1RHhfM+L3amdwFo8EIQjhQJsHn9yIQ9EuyLLeqWKCmfUG7GAPFAdc63i+KhNmD/ncTBg3PITSvGd2wICMjG2+dPeChRZKgA5dAMB7weWXQuZbSR24FcKnNrQMftdltvtzlJiMqZ6dAp0lA75Qd2/vqkSfMxMncEzjddws2rgPGzEw4PP0D5tJ/ihTAhcfDx0ZGgweLC3SoXpjxJTFCwCDj4vtr2J1Tp5S+o/MsBpNeQ+ZoxB8aq1UAZ9oGnaIYztpRnon8VI0iPPdnC9atWIzCHMMn4MdqB3xhbB5aC2NaHjyio4WcauvPikpwqpiM/ZVfxO2dPdh76ia2rS5H/aZVEDR8HFTVuRPJORxc3uFB0tDybi4jkjVdy2H3spRp0brsQ9je0Ij66krUrq+In/306hBU2WNwiy4vaXhoTZuK8F61CjhalfrpiWPpEoAQHLn6NzZWmTCnMDsOWPX8MBLzvfCI7j6lsD13bG8kxkq2zNdiSX7sDj6aY/PPx2/h8sGtcXOXM4Rdrn1Iz9Rg1O/6SwHUNfXUSpQ16gWgYWUyZgicYghFojh+/RGO7lyjrCNMxsYXVzCR3osoC4YoDZTHP1LNH2/uS5T+WJDCoaZUi4W5atgG3BgaETFrvg5tXhtuj5oREfwQhASMB8Vmy7yW1XHAht9eZgWj3D3KZJPEZJjyeLiMzbCrnyGBCODViUjWJcE/OSkHghP/Ea1YYZ5jnpjWCxuamlSekbwDlOFXymQ1K2pFarEN0QhDMDwFJkthWSbXOxY1139uqGmAsrKy2Xq9vjKk0hVKuSU/MH2ikRb3ZWGSjattnteJ9lAXpfSpw+HotlqtkRjkAxLZUeytWy1bAAAAAElFTkSuQmCC">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADJ0lEQVQ4T32TW0xTSRjH/3PKaQ+lUm6lXOQWE+MaEC9JjUoIKsGH1VUfFPHyIjGswaiJD5robvCeeEmMl8QLutl1zSaYGM0KuoYseGlFxSyRFNqQFQRqS0vpoVB6OzPH9KhVEuO8TGbm//993zczH8F3xtLuFbM48JcooxXPS1uFb0nJtzYbLU7TXe0vN/2cqyg9xcC7xoZZGi0471O/vWgp+ff/rz3TADeeOA1RHhfM+L3amdwFo8EIQjhQJsHn9yIQ9EuyLLeqWKCmfUG7GAPFAdc63i+KhNmD/ncTBg3PITSvGd2wICMjG2+dPeChRZKgA5dAMB7weWXQuZbSR24FcKnNrQMftdltvtzlJiMqZ6dAp0lA75Qd2/vqkSfMxMncEzjddws2rgPGzEw4PP0D5tJ/ihTAhcfDx0ZGgweLC3SoXpjxJTFCwCDj4vtr2J1Tp5S+o/MsBpNeQ+ZoxB8aq1UAZ9oGnaIYztpRnon8VI0iPPdnC9atWIzCHMMn4MdqB3xhbB5aC2NaHjyio4WcauvPikpwqpiM/ZVfxO2dPdh76ia2rS5H/aZVEDR8HFTVuRPJORxc3uFB0tDybi4jkjVdy2H3spRp0brsQ9je0Ij66krUrq+In/306hBU2WNwiy4vaXhoTZuK8F61CjhalfrpiWPpEoAQHLn6NzZWmTCnMDsOWPX8MBLzvfCI7j6lsD13bG8kxkq2zNdiSX7sDj6aY/PPx2/h8sGtcXOXM4Rdrn1Iz9Rg1O/6SwHUNfXUSpQ16gWgYWUyZgicYghFojh+/RGO7lyjrCNMxsYXVzCR3osoC4YoDZTHP1LNH2/uS5T+WJDCoaZUi4W5atgG3BgaETFrvg5tXhtuj5oREfwQhASMB8Vmy7yW1XHAht9eZgWj3D3KZJPEZJjyeLiMzbCrnyGBCODViUjWJcE/OSkHghP/Ea1YYZ5jnpjWCxuamlSekbwDlOFXymQ1K2pFarEN0QhDMDwFJkthWSbXOxY1139uqGmAsrKy2Xq9vjKk0hVKuSU/MH2ikRb3ZWGSjattnteJ9lAXpfSpw+HotlqtkRjkAxLZUeytWy1bAAAAAElFTkSuQmCC">
 	<span class="menu _suspend-history">
 		Suspend History...
 	</span>
@@ -211,7 +184,8 @@
 
 <hr class="fullhr">
 <div id="sessionManager" class="menu" title="Open Session Manager (Experimental).">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABV0lEQVR4Xo3OPW4TQRiH8efdfWf2w5uFUEAKx+QMdOncwCW4A5WvgVxwAKRcAG4Q0UBFDYIiZGUsQHjXyGZjZW0PKazVGsnS/KSR5l/Mo5HxeJyKSI6n9Xo9G41GDTs6HA7fpmn6lAPKsqK4LnDOEScxeX70CnjRBhaLZVz/XYEACMKO0Do9HbRjOv1+jw4VAgaP+/gqioIuNcZircWXseb/gLaB+aJh1Ww55GbVIL3Bs4s3Hy+NhmSJvtY7bWA6K5nXtxyy2TicsSdxsD2RQJj8/HGt2vlBL7JEcjgAAmh7r0sVDYOAMAwBiKzhQdbD17fEohIE7BCGAVEU4csYg04mxdeqKs8EcHr/+OHxo8w7oCECpMARwOX7zy/Pn5w9x9O7D18uFKh3hyTJblQVX86B0nG73iAi+Npst/uB2Z96+emqQugQOlv29q+7B8K+HOgDgp/f/wD89mT6kxQvpwAAAABJRU5ErkJggg==">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABV0lEQVR4Xo3OPW4TQRiH8efdfWf2w5uFUEAKx+QMdOncwCW4A5WvgVxwAKRcAG4Q0UBFDYIiZGUsQHjXyGZjZW0PKazVGsnS/KSR5l/Mo5HxeJyKSI6n9Xo9G41GDTs6HA7fpmn6lAPKsqK4LnDOEScxeX70CnjRBhaLZVz/XYEACMKO0Do9HbRjOv1+jw4VAgaP+/gqioIuNcZircWXseb/gLaB+aJh1Ww55GbVIL3Bs4s3Hy+NhmSJvtY7bWA6K5nXtxyy2TicsSdxsD2RQJj8/HGt2vlBL7JEcjgAAmh7r0sVDYOAMAwBiKzhQdbD17fEohIE7BCGAVEU4csYg04mxdeqKs8EcHr/+OHxo8w7oCECpMARwOX7zy/Pn5w9x9O7D18uFKh3hyTJblQVX86B0nG73iAi+Npst/uB2Z96+emqQugQOlv29q+7B8K+HOgDgp/f/wD89mT6kxQvpwAAAABJRU5ErkJggg==">
 	<span class="menu _suspend-history">
 	Session Manager...
 </span>
@@ -219,14 +193,16 @@
 
 <hr class="fullhr">
 <div id="hotkeys" class="menu" title="Setup/Change hotkeys for fast access to Tab Suspender functions.">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADRklEQVQ4T32Ta2iTVxjH/+e8eRObYHX2YotIaiWuBKK12Iv51lpnmZV2uNWu6ybCEPZl6D7UsQnrVLyhUsXLVmIbS2Mnc0pCrBLSVuZacYvSUgZF6UWxre060rk0yXs7R95XrajggQPP4X+e3zn/8zyHcM5pKBRqohTLCYEGAJwQosqqnJGRuXfXyd+rM1LZDlkRLIxyruuUE6pp7L/xSfkT4vO11Za43R0LLBZQgYIQQNM4REHA1dCtKzfujDv2f1XmEkURRBcBMMZwf+QxTlwcvETa21vrikvcPvMCMygl0DRmbDCbzAiGuvzBO1FnU8Nmh2g2G8mcM+j3uD8ygX0ttwOk9YKnbl1RoS99SToopQgGrxmg0tJSXO3s9nf1P3We3FPpSLFaIUkSmk6cwq7dX+PB2AR+PH87QDytZ+sK17l9WdlZEE0m9PcPYC4Wg8vlwm+dYX/PQMx5+rtqh9VqRSKRRDgcRtmGMgyPTeIHT+9zgNO52pdjz4HJJGJwcBBOZx6is7O43t1nAI5/s8mxaPF7hs45h6rKiAwM4XD7vQDxeJpr1xbkdyRlSXdo+AQIrCkp6OkbuHzr79j7e79c70omky80XQUSCsG+5r5fSGNjI12ybFXb6HQ87xUAYCr4X8Oxtv9jSnFaKi1XNVioQMXFVjHKGU/VKJl4NJqoJPlbjzpcK6x/rFqeanlZpvmjXgRzcZUQQi0zTyXpwXj02MgUjwgCsY8E9/xEnFUHP67ZkOv9fEuBTdNUEEpBCTFqrhvSy8a056UbG4/iYGvvnw+nWR8RtcOjge+nDMC28pXe2gqXLXI3YvjPzc1FdnYWIpG7yF+7BqqqQlFkTM1IaGy+OfT4X1o61tnwxHgtHVBbvtL76ebVtmvB66j+qArnzvyMpUszMReP44vt9VAUBbIi48l0AgdabnZ1tzSUv7Q5D6jfUmDz+wOw2+2IRmeRlpYGjWkoKS4ykiVZwuRUHPvP97wNqClb4d1eVWRjnBndqP8JgQpGS+tTB3HGMPxoBkfael8H5FUe+mBjYeblCrd94Zuv/+Z64p84uxQa6gh7G+rnLehBxc5j3yYTbBPjnL4LIpjIZPqHOZ/9WlNjfHt9PANGBH9RSVgElgAAAABJRU5ErkJggg==">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADRklEQVQ4T32Ta2iTVxjH/+e8eRObYHX2YotIaiWuBKK12Iv51lpnmZV2uNWu6ybCEPZl6D7UsQnrVLyhUsXLVmIbS2Mnc0pCrBLSVuZacYvSUgZF6UWxre060rk0yXs7R95XrajggQPP4X+e3zn/8zyHcM5pKBRqohTLCYEGAJwQosqqnJGRuXfXyd+rM1LZDlkRLIxyruuUE6pp7L/xSfkT4vO11Za43R0LLBZQgYIQQNM4REHA1dCtKzfujDv2f1XmEkURRBcBMMZwf+QxTlwcvETa21vrikvcPvMCMygl0DRmbDCbzAiGuvzBO1FnU8Nmh2g2G8mcM+j3uD8ygX0ttwOk9YKnbl1RoS99SToopQgGrxmg0tJSXO3s9nf1P3We3FPpSLFaIUkSmk6cwq7dX+PB2AR+PH87QDytZ+sK17l9WdlZEE0m9PcPYC4Wg8vlwm+dYX/PQMx5+rtqh9VqRSKRRDgcRtmGMgyPTeIHT+9zgNO52pdjz4HJJGJwcBBOZx6is7O43t1nAI5/s8mxaPF7hs45h6rKiAwM4XD7vQDxeJpr1xbkdyRlSXdo+AQIrCkp6OkbuHzr79j7e79c70omky80XQUSCsG+5r5fSGNjI12ybFXb6HQ87xUAYCr4X8Oxtv9jSnFaKi1XNVioQMXFVjHKGU/VKJl4NJqoJPlbjzpcK6x/rFqeanlZpvmjXgRzcZUQQi0zTyXpwXj02MgUjwgCsY8E9/xEnFUHP67ZkOv9fEuBTdNUEEpBCTFqrhvSy8a056UbG4/iYGvvnw+nWR8RtcOjge+nDMC28pXe2gqXLXI3YvjPzc1FdnYWIpG7yF+7BqqqQlFkTM1IaGy+OfT4X1o61tnwxHgtHVBbvtL76ebVtmvB66j+qArnzvyMpUszMReP44vt9VAUBbIi48l0AgdabnZ1tzSUv7Q5D6jfUmDz+wOw2+2IRmeRlpYGjWkoKS4ykiVZwuRUHPvP97wNqClb4d1eVWRjnBndqP8JgQpGS+tTB3HGMPxoBkfael8H5FUe+mBjYeblCrd94Zuv/+Z64p84uxQa6gh7G+rnLehBxc5j3yYTbBPjnL4LIpjIZPqHOZ/9WlNjfHt9PANGBH9RSVgElgAAAABJRU5ErkJggg==">
 	<span class="menu _hotkeys">
 		Change Hotkeys...
 	</span>
 </div>
 <hr class="fullhr">
 <div id="settings" class="menu" title="Open full settings page.">
-	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADAklEQVQ4T2NkYGBgqO/uFmssLX0FYuMDy5cvDxEQEIgVEhKaZm5uvhOklnHPnj1TjI2Nsw8dPjzX388vBZcBkyZNWO/u4Rnw98/f/w8e3P+8a9dujQkTJjxnrKiocHF2cd3Bz8/HePXKFYfExMTD6IakpaWxhoaGfDc0NGQ+fPjI+cDAQGsGBobvYBeACHNzcz15eeWt3d3twm/evLE1NjY+i2xIbm5uanh4+CwNTQ2GO3fuvDt44KCCpKSY64kTp0+DDYACdld39+OzZszQfvr0qYeNjc1+mERrW+t5WTk5g1+//jCYmxozXLp06fe7d+8YZ86cJYNsAEg9S0BA4L7unm6Lly9ehNjY2GyaOXOmiLKy0rM169axaqipMRgZGzFcu3b93969e3esXrXaG90AkCFMScnJW4qKil0f3L9X+uPHj7a79+5y/vn95++HDx++ffn25dXtm7eX79mzp46BgeE/NgPAYdPS0rLFy9vba/OmTQwcHBx/Vq9eHXHmzJkNDAwMf5HDB6sB7e3txgoK8iePHDnCHB0Tx8D9Zd3L21smzQ+Z+KMSPYYwDOjs7HSUlJLcs2jRAiZTE/P/Onw7n0QEXJN9e/PX/5MH/pn4TmA4h9MFfX19vtzcXBuXLl3KqKurx/D27dsp4p9X/Ax3Yc03CfzN8uurAMOuOZ9XBPX/jYQZAnfBhAkTYv79/7do9eqVjPJyigy8vLxrZ8+eHQJSKM7PoLimke26eZAc+483DAx7F965EiDIoM/YwPAPbMC0adOyhYSEJk+cOIGRm5uHwcDA4EhPT489AwPDP5hNWZ4MxVmxTF1iksJMXAIsDPuWPL+vbM6gwbh//36BO3fuHD516tQRAQGBDF5e3ut1dXUGDAwMv9ADLMWFIbMwg2myEDcHM48oI8P1HV+3MGZlZal4enqe+v3794l79+7plJSUaDEwMHzBlamiHBgiCqMZFgvzMjKs2fs/EOyF4ODgKdzc3Bo7duyIfvXq1UtC2VpNikFDnIuB6fAdhmsACj0p17tHUkQAAAAASUVORK5CYII=">
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADAklEQVQ4T2NkYGBgqO/uFmssLX0FYuMDy5cvDxEQEIgVEhKaZm5uvhOklnHPnj1TjI2Nsw8dPjzX388vBZcBkyZNWO/u4Rnw98/f/w8e3P+8a9dujQkTJjxnrKiocHF2cd3Bz8/HePXKFYfExMTD6IakpaWxhoaGfDc0NGQ+fPjI+cDAQGsGBobvYBeACHNzcz15eeWt3d3twm/evLE1NjY+i2xIbm5uanh4+CwNTQ2GO3fuvDt44KCCpKSY64kTp0+DDYACdld39+OzZszQfvr0qYeNjc1+mERrW+t5WTk5g1+//jCYmxozXLp06fe7d+8YZ86cJYNsAEg9S0BA4L7unm6Lly9ehNjY2GyaOXOmiLKy0rM169axaqipMRgZGzFcu3b93969e3esXrXaG90AkCFMScnJW4qKil0f3L9X+uPHj7a79+5y/vn95++HDx++ffn25dXtm7eX79mzp46BgeE/NgPAYdPS0rLFy9vba/OmTQwcHBx/Vq9eHXHmzJkNDAwMf5HDB6sB7e3txgoK8iePHDnCHB0Tx8D9Zd3L21smzQ+Z+KMSPYYwDOjs7HSUlJLcs2jRAiZTE/P/Onw7n0QEXJN9e/PX/5MH/pn4TmA4h9MFfX19vtzcXBuXLl3KqKurx/D27dsp4p9X/Ax3Yc03CfzN8uurAMOuOZ9XBPX/jYQZAnfBhAkTYv79/7do9eqVjPJyigy8vLxrZ8+eHQJSKM7PoLimke26eZAc+483DAx7F965EiDIoM/YwPAPbMC0adOyhYSEJk+cOIGRm5uHwcDA4EhPT489AwPDP5hNWZ4MxVmxTF1iksJMXAIsDPuWPL+vbM6gwbh//36BO3fuHD516tQRAQGBDF5e3ut1dXUGDAwMv9ADLMWFIbMwg2myEDcHM48oI8P1HV+3MGZlZal4enqe+v3794l79+7plJSUaDEwMHzBlamiHBgiCqMZFgvzMjKs2fs/EOyF4ODgKdzc3Bo7duyIfvXq1UtC2VpNikFDnIuB6fAdhmsACj0p17tHUkQAAAAASUVORK5CYII=">
 	<span class="menu _settings">
 		All Settings...
 	</span>
@@ -235,42 +211,34 @@
 <hr class="fullhr" style="background-color: #ddd;">
 <div style="height: 2px;"></div>
 
-<div style="color: #1855ed;font-size: 10px;margin-left: 7px;margin-top: 2px;margin-bottom: 4px; white-space: nowrap; float: left;">
-	 <a id="donate" href="" title="If you like Tab Suspender, and would like to see it continue, new features and handling support requests...support project!">
-	Like Tab Suspender? Consider donating!</a>
+<div
+	style="color: #1855ed;font-size: 10px;margin-left: 7px;margin-top: 2px;margin-bottom: 4px; white-space: nowrap; float: left;">
+	<a id="donate" href=""
+		 title="If you like Tab Suspender, and would like to see it continue, new features and handling support requests...support project!">
+		Like Tab Suspender? Consider donating!</a>
 </div>
 <div style="display: inline-flex;float: right;color: #aaa;font-size: 9px;margin-right: 3px; margin-top: 3px;">
-	<a class="share-button" target="_blank" style="padding-left: 4px;" href="https://www.facebook.com/sharer/sharer.php?u=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" title="Facebook">	
+	<a class="share-button" target="_blank" style="padding-left: 4px;"
+		 href="https://www.facebook.com/sharer/sharer.php?u=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh"
+		 title="Facebook">
 		<img src="img/share-buttons/facebook.png">
 	</a>
-	<a class="share-button" target="_blank" href="https://plus.google.com/share?url=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" title="Google+">	
+	<a class="share-button" target="_blank"
+		 href="https://plus.google.com/share?url=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh"
+		 title="Google+">
 		<img src="img/share-buttons/googleplus.png">
 	</a>
-	<a class="share-button" target="_blank" href="http://vk.com/share.php?title=Tab%20Suspender&amp;url=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" title="Vkontakte">	
+	<a class="share-button" target="_blank"
+		 href="http://vk.com/share.php?title=Tab%20Suspender&amp;url=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh"
+		 title="Vkontakte">
 		<img src="img/share-buttons/vk.ico">
 	</a>
-	<a class="share-button" target="_blank" href="https://twitter.com/home?status=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" title="Twitter">	
+	<a class="share-button" target="_blank"
+		 href="https://twitter.com/home?status=https%3A//chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh"
+		 title="Twitter">
 		<img src="img/share-buttons/twitter.png">
 	</a>
 </div>
-
-<!--hr class="fullhr"-->
-
-
-<!--div style="width: 161px; height: 39px; margin-left: auto; margin-right: auto;">
-	<div style="">
-		<a id="suspend" href="#" title="Suspend Current Tab Immediately" class="myButton">Suspend Immediately</a>
-	</div>
-</div>
-<div style="width: 171px;
-    margin-left: auto;
-    margin-right: auto;
-    height: 20px;
-    font-size: 12px;
-    margin-top: 3px;">
-	<a id="suspendOther" href="#" title="Suspend All Other Tabs" style="float: left;">Suspend other Tabs</a>
-	<a id="restoreAll" href="#" title="Restore All Suspended Tabs" style="float: right;">Restore All</a>
-</div-->
 
 <!-- Add Whitelist: NOT IMPLENENTED -->
 <button id="whitelistButton" style="display: none;">Add&nbsp;to&nbsp;Whitelist</button>
@@ -279,4 +247,5 @@
 <button id="whitelistAddButton" style="float: right;" class="invisible">Add</button>
 <!-- //NOT IMPLENENTED -->
 
-</body></html>
+</body>
+</html>
