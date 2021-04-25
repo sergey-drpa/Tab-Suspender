@@ -8,19 +8,18 @@ function drawPreviewTile(tile, bgpage, options) {
 	let divLine = document.createElement('div');
 	divLine.classList.add('mx-auto');
 	divLine.innerHTML =
-		'<div class="card" style="width: 22rem;">\n' +
-		'<a href="' + tile.url + '" target="_blank" class="card-img-a">' +
-		'  <img class="card-img-top" style="max-height: 11.6rem; min-height: 11.6rem;">\n' +
+		'<div class="card">\n' +
+		'<a ' + (!options || !options.noHref ? 'href="' + tile.url + '"' : '') + ' target="_blank" class="card-img-a">' +
+		'  <img class="card-img-top">\n' +
 		'</a>' +
-		'  <div class="card-body" style="overflow: hidden;">\n' +
+		'  <div class="card-body">\n' +
 		(options && options.close ? '	<img src="/img/Close_Icon_24.png" class="delete-btn" title="Close Tab">' : '') +
-		'    <h5 class="card-title">' +
-		'<a href="' + tile.url + '" target="_blank" nativeTabId="' + tile.nativeTabId + '">' + (tile.title ? tile.title : parseUrlParam(tile.url, 'title')) + '</a>' +
-		'</h5>\n' +
-		'    <p class="card-text" style="white-space: nowrap; color: #999; margin-bottom: .25rem !important; text-overflow: ellipsis; overflow: hidden; font-size: 11px;">' +
+		(!options || !options.noTitle ? '    <h5 class="card-title">' + '<a href="' + tile.url + '" target="_blank" nativeTabId="' + tile.nativeTabId + '">' + (tile.title ? tile.title : parseUrlParam(tile.url, 'title')) + '</a>' +
+			'</h5>\n' : '') +
+		(!options || !options.noUrl ? '<p class="card-text">' +
 		'<a href="' + tile.url + '" target="_blank" style="color: #999;">' + tile.url + '</a>' +
-		'</p>\n' +
-		(options && options.noTime ? '' : '<p class="card-text" style="font-size: 9px; color: #999;">' + timeConverter(tile.timestamp) + '</p>\n') +
+		'</p>\n':'') +
+		(options && options.noTime ? '' : '<p class="card-text time">' + timeConverter(tile.timestamp) + '</p>\n') +
 		'  </div>\n' +
 		'</div>';
 
@@ -28,9 +27,10 @@ function drawPreviewTile(tile, bgpage, options) {
 
 	let tmpF = function(imgElement) {
 		let timeoutId;
+
 		$(imgElement).hover(function() {
-				if (imgElement.src.indexOf('chrome-extension://') == 0)
-					return;
+				//if (imgElement.src.indexOf('chrome-extension://') == 0)
+				//	return;
 
 				if (!timeoutId) {
 					timeoutId = window.setTimeout(function() {
@@ -38,7 +38,17 @@ function drawPreviewTile(tile, bgpage, options) {
 
 						if (!imgElement.classList.contains('clicked'))
 							imgElement.classList.add('zoom');
+
 					}, 1000);
+
+					$('.card-img-top').each((_, imgDomElement) => {
+						if (imgDomElement !== imgElement) {
+							if (imgDomElement.classList.contains('zoom')) {
+								imgDomElement.classList.remove('zoom');
+								imgDomElement.removeAttribute('style');
+							}
+						}
+					});
 				}
 			},
 			function() {
@@ -46,8 +56,10 @@ function drawPreviewTile(tile, bgpage, options) {
 					window.clearTimeout(timeoutId);
 					timeoutId = null;
 				} else {
-					imgElement.classList.remove('zoom');
+					//imgElement.classList.remove('zoom');
 				}
+				imgElement.classList.remove('zoom');
+				imgElement.removeAttribute('style');
 			});
 
 		if (tile.tabId != null && tile.sessionId != null) {

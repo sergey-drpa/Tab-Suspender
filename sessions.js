@@ -101,7 +101,7 @@
 			for (let i = from; i < to && i < tabs.length; i++) {
 				let divLine = drawPreviewTile(tabs[i], bgpage, { noTime: true, close: true });
 
-				(function(i) {
+				(function(i, divLine) {
 					divLine.getElementsByClassName('card-img-a')[0].onclick = function() {
 
 						chrome.windows.update(tabs[i].nativeWindowId, { focused: true }, function() {
@@ -120,7 +120,7 @@
 							}, 150);
 						});
 					};
-				})(i);
+				})(i, divLine);
 
 				let currentDiv = document.getElementById(targetDiv + 'Div');
 				currentDiv.appendChild(divLine);

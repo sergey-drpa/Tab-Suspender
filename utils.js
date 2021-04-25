@@ -1,6 +1,6 @@
 'use strict';
 // eslint-disable-next-line no-redeclare
-let debug = false;
+var debug = false;
 
 /* Definitions for Syntax Check */
 // eslint-disable-next-line no-redeclare
@@ -198,7 +198,7 @@ function parseUrlParam(url, val) {
 
 	let tmp = [];
 	// eslint-disable-next-line no-useless-escape
-	let parts = url.substr(1).split(/[&\?]/);
+	const parts = url.substr(1).split(/[&\?]/);
 
 	for (let i = 0; i < parts.length; i++) {
 		tmp = parts[i].split('=');

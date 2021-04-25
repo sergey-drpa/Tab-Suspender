@@ -47,7 +47,7 @@ try {
 	#{if($? != 0) { print "Exit code: $?"; die();}};
 	# Syntax Check...
 	my $compiler_options = "--warning_level VERBOSE ";
-    `java -jar $closureCompiler $compiler_options --jscomp_warning=checkVars --js $build_dir/background.js --js_output_file $compile_check_dir/background.js`; die "Exit code: $?" if $? > 0;
+    `java -jar $closureCompiler $compiler_options --jscomp_warning=checkVars --js $build_dir/background.js --language_in ECMASCRIPT_2018 --js_output_file $compile_check_dir/background.js`; die "Exit code: $?" if $? > 0;
 	`java -jar $closureCompiler $compiler_options --jscomp_warning=checkVars --js $build_dir/popup.js --js $build_dir/modules/errorsProcessing.js --js_output_file $compile_check_dir/popup.js`; die "Exit code: $?" if $? > 0;
 	`java -jar $closureCompiler $compiler_options --js $build_dir/utils.js --js_output_file $compile_check_dir/utils.js`; die "Exit code: $?" if $? > 0;
 	`java -jar $closureCompiler $compiler_options --js $build_dir/inject.js --js_output_file $compile_check_dir/inject.js`; die "Exit code: $?" if $? > 0;

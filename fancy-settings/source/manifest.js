@@ -456,6 +456,8 @@ this.manifest = {
 		},
 
 
+
+
 		{
 			'tab': 'Reset Settings',
 			'group': 'Reset All Settings',
@@ -473,6 +475,81 @@ this.manifest = {
 			'name': 'timeout-description',
 			'type': 'description',
 			'text': 'If you have some problems with current Tab Suspender configuration you can reset all settings to default.'
+		},
+		{
+			'tab': 'Reset Settings',
+			'group': 'Export Settings',
+			'name': 'exportAllSettings',
+			'type': 'button',
+			'text': 'Export Settings',
+			'onclick': function() {
+				function download(filename, text) {
+					let element = document.createElement('a');
+					element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+					element.setAttribute('download', filename);
+
+					element.style.display = 'none';
+					document.body.appendChild(element);
+
+					element.click();
+
+					document.body.removeChild(element);
+				}
+
+				chrome.extension.sendRequest({ method: '[AutomaticTabCleaner:exportAllSettings]' }, function(response) {
+					download('TabSuspender.cfg', response.settings);
+				});
+			}
+		},
+		{
+			'tab': 'Reset Settings',
+			'group': 'Export Settings',
+			'name': 'timeout-description',
+			'type': 'description',
+			'text': 'You can Export Tab Suspender Settings to another computer.'
+		},
+		{
+			'tab': 'Reset Settings',
+			'group': 'Import Settings',
+			'name': 'importAllSettings',
+			'type': 'button',
+			'text': 'Import Settings',
+			'onclick': function() {
+				let element = document.createElement('input');
+				element.setAttribute('type', 'file');
+				//element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+				//element.setAttribute('download', filename);
+
+				//element.style.display = 'none';
+				document.body.appendChild(element);
+
+				element.click();
+
+				element.onchange = (event) => {
+					console.log("changed: ", event);
+					const reader = new FileReader()
+					reader.onload = event => {
+						let settings = event.target.result;
+						console.log(settings);
+						if (window.confirm('Are you sure that you want to Import New Tab Suspender settings?')) {
+							debugger;
+							chrome.extension.sendRequest({
+								method: '[AutomaticTabCleaner:importAllSettings]',
+								settings: JSON.parse(settings)
+							});
+						}
+					} // desired file content
+					reader.onerror = error => console.error(error);
+					reader.readAsText(element.files[0]);
+				}
+			}
+		},
+		{
+			'tab': 'Reset Settings',
+			'group': 'Import Settings',
+			'name': 'timeout-description',
+			'type': 'description',
+			'text': 'You can Import Tab Suspender Settings from another computer.'
 		}
 
 

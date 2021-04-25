@@ -6,45 +6,6 @@ div.line {
     overflow: hidden;
 }
 
-.card {
-    margin-bottom: .75rem !important;
-}
-
-.card-title {
-    min-height: 3rem;
-    max-height: 3rem;
-    overflow: hidden;
-    margin-bottom: .25rem !important;
-    font-weight: 400;
-    margin-right: 5px;
-}
-
-.card-title a {
-    color: #00428a !important;
-}
-
-.card-img-top {
-    border: solid 1px #aaa;
-    transform: scale(1);
-    transition: transform .0s;
-    transform-origin: bottom;
-}
-
-.card-img-top:not(.clicked):hover {
-    transform: scale(1.3); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
-    transition: transform .2s;
-    z-index: 1000000;
-    cursor: pointer;
-}
-
-.card-img-top.zoom {
-    transform: scale(2.5) !important;
-}
-
-.card-img-a:hover {
-    z-index: 1000000;
-}
-
 .ts_title {
     font-family: Helvetica;
     font-size: 22px;
@@ -62,6 +23,7 @@ div.line {
 
 .card-window {
     margin-top: 70px;
+    min-width: -webkit-fill-available !important;
 }
 
 .first-window {
@@ -70,20 +32,6 @@ div.line {
 
 .container {
     padding-top: 10px !important;
-}
-
-.card-body {
-    padding: 0.5rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-.card-img-top.clicked {
-    position: fixed !important;
-    max-height: unset !important;
-    top: 0;
-    left: 0;
-    z-index: 10000000;
 }
 
 .delete-btn {

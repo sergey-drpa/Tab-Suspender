@@ -6,7 +6,8 @@
 
 'use strict';
 
-let debug = false;
+// eslint-disable-next-line no-redeclare
+var debug = debug || false;
 let currentTab, pauseTics, pauseTicsStartedFrom, ignodeCurrentTabChecked = false, tabInWhiteList = false;
 let BG;
 
@@ -224,35 +225,95 @@ document.addEventListener('DOMContentLoaded', function() {
 				elementsWithLocalTitles[i].title = chrome.i18n.getMessage(titleKey.substr(6, titleKey.length - 8));
 		}
 
-	/*chrome.windows.getAll({ 'populate': true }, function(windows) {
-		let parkUrl = chrome.extension.getURL('park.html');
-		let sessionsUrl = chrome.extension.getURL('sessions.html');
-		let TSSessionId = BG.TSSessionId;
+	function renderPreviews() {
+		document.getElementById('previewsBar').innerHTML = '';
 
-		for (let wi in windows) {
-			if (windows.hasOwnProperty(wi)) {
-				//let tabs = [];
-				for (let j in windows[wi].tabs)
-					if (windows[wi].tabs.hasOwnProperty(j)) {
-						let tab = windows[wi].tabs[j];
-						if (tab.url.indexOf(sessionsUrl) == 0)
-							continue;
-						let parked = tab.url.indexOf(parkUrl) == 0;
-						const tabMeta = {
-							title: tab.title,
-							url: (parked ? parseUrlParam(tab.url, 'url') : tab.url),
-							tabId: (parked ? parseUrlParam(tab.url, 'tabId') : tab.id),
-							sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : TSSessionId),
-							nativeTabId: tab.id,
-							nativeWindowId: windows[wi].id
-						};
-						console.log(tab.width);
+		debugger;
+		chrome.windows.getCurrent({ 'populate': true }, function(window) {
+			const windows = [window];
+			let parkUrl = chrome.extension.getURL('park.html');
+			let sessionsUrl = chrome.extension.getURL('sessions.html');
+			let TSSessionId = BG.TSSessionId;
 
-						let divLine = drawPreviewTile(tabMeta, BG, { noTime: true, close: true });
-					}
+			for (let wi in windows) {
+				if (windows.hasOwnProperty(wi)) {
+					//let tabs = [];
+					for (let j in windows[wi].tabs)
+						if (windows[wi].tabs.hasOwnProperty(j)) {
+							let tab = windows[wi].tabs[j];
+							if (tab.url.indexOf(sessionsUrl) == 0)
+								continue;
+							let parked = tab.url.indexOf(parkUrl) == 0;
+							const tabMeta = {
+								title: tab.title,
+								url: (parked ? parseUrlParam(tab.url, 'url') : tab.url),
+								tabId: (parked ? parseUrlParam(tab.url, 'tabId') : tab.id),
+								sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : TSSessionId),
+								nativeTabId: tab.id,
+								nativeWindowId: windows[wi].id
+							};
+
+							const divLine = drawPreviewTile(tabMeta, BG, {
+								noTime: true,
+								//close: true,
+								noHref: true,
+								noTitle: true,
+								noUrl: true
+							});
+
+							divLine.getElementsByClassName('card-img-a')[0].onclick = function() {
+								//e.stopPropagation();
+								chrome.windows.update(tabMeta.nativeWindowId, { focused: true }, function() {
+									console.log('window Updated');
+								});
+								chrome.tabs.update(tabMeta.nativeTabId, { active: true }, function() {
+									console.log('tab Updated');
+								});
+								return false;
+							};
+
+							let mousePosition;
+							divLine.getElementsByClassName('card-img-a')[0].onmousemove = function(e) {
+								//console.log(e);
+								if (e.target.classList.contains('zoom')) {
+									if (!mousePosition) {
+										mousePosition = [e.movementX, e.movementY];
+									} else {
+										mousePosition[0] -= e.movementX;
+										mousePosition[1] -= e.movementY;
+									}
+									e.target.style.setProperty("transform", `scale(2.5) translateX(${mousePosition[0]}px)`, "important")
+									//e.target.style.transform = `scale(2.5) translate(${mousePosition[0]}px, ${mousePosition[1]}px) !important`;
+								} else {
+									mousePosition = null;
+									e.target.style.transform = "";
+								}
+							}
+
+							divLine.getElementsByClassName('card-img-a')[0].onmouseout = function(e) {
+								//e.target.style.transform = "";
+							}
+
+							document.getElementById('previewsBar').appendChild(divLine);
+						}
+				}
 			}
+		});
+	}
+
+	let activeSessionsIsOpen = false;
+	document.getElementById("activeSessionsButton").onclick = () => {
+		let previewBar = document.getElementById("previewsBar");
+		if(!activeSessionsIsOpen) {
+			activeSessionsIsOpen = true;
+			renderPreviews();
+			previewBar.style.setProperty("display", "block");
+		} else {
+			activeSessionsIsOpen = false;
+			previewBar.style.setProperty("display", "none");
 		}
-	});*/
+	};
+
 
 	/* Dom Listeners... */
 	let slider = $('.js-range-slider').data('ionRangeSlider');
@@ -261,7 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 	/********************* BINDING EVENTS *******************/
-
 
 
 	document.querySelector('#settings').onclick = function(options) {

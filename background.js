@@ -93,7 +93,8 @@
 			'markedForDiscard': false,
 			'parkedCount': 0,
 			'parkedUrl': null,
-			'nonCmpltInput': false
+			'nonCmpltInput': false,
+			'refreshIconRetries': 0
 		};
 	}
 
@@ -110,7 +111,7 @@
 	let database;
 	let webSqlDatabase;
 	let tabs = {}; // list of tabIDs with inactivity time {'id', 'time', 'active_time', 'swch_cnt', 'screen', 'parkTrys'}
-	let HISTORY_KEEP_LAST_N_ITEMS = 150;
+	let HISTORY_KEEP_LAST_N_ITEMS = 300;
 	let parkHistory = [];
 	let closeHistory = [];
 	window.tabScreens = {}; // map of tabIDs with last 'screen'
@@ -971,7 +972,8 @@
 									tabInfo.discarded = tab.discarded;
 
 									/* Refresh susp. tab empty icons */
-									if (tab.favIconUrl == null || tab.favIconUrl === '') {
+									if ((tab.favIconUrl == null || tab.favIconUrl === '') && tabInfo.refreshIconRetries < 2) {
+										tabInfo.refreshIconRetries = tabInfo.refreshIconRetries + 1;
 										let tmpFunction = function(id, discard, index) {
 											setTimeout(function() {
 												console.log('Refresh susp. tab icon: ' + id);
@@ -1067,11 +1069,11 @@
 		return new Promise(function(resolve, reject) {
 			try {
 				let id = tab.id;
-				if (tab.active == true) {
+				if (tab.active === true) {
 					if (!tabs.hasOwnProperty(id))
 						tabs[id] = createNewTabInfo(tab);
 
-					if (tab.status != null && tab.status != 'loading')
+					if (tab.status != null && tab.status !== 'loading')
 						try {
 							t5.captureVisibleTab(tab.windowId, {
 								format: 'jpeg',
@@ -1090,6 +1092,7 @@
 									'No active web contents to capture')) {
 									try {
 										reject();
+										return;
 										// eslint-disable-next-line no-empty
 									} catch (e) {
 									}
@@ -1601,7 +1604,7 @@
 
 			getTabInfo(tab).nonCmpltInput = false;
 
-			if (tab.active == true) {
+			if (tab.active === true) {
 				if (isTabURLAllowedForPark(tab)) {
 					setTimeout(function() {
 						captureTab(tab);
@@ -1649,14 +1652,20 @@
 		delete tabs[removedTabId];
 	});
 
-	e5.onRequest.addListener(function(request) {
+	e5.onRequest.addListener(function(request, sender, sendResponse) {
 		if (request.method === '[AutomaticTabCleaner:ReloadSettings]') {
 			if (debug)
 				console.log(request.method);
 			reloadSettings({ fromSettingsPage: true });
 		} else if (request.method === '[AutomaticTabCleaner:resetAllSettings]') {
 			settings.removeAll();
-			settings = new (settingsStorageNamespace, DEFAULT_SETTINGS);
+			settings = new Store(settingsStorageNamespace, DEFAULT_SETTINGS);
+			reloadSettings(/*{fromSettingsPage: true}*/);
+		} else if (request.method === '[AutomaticTabCleaner:exportAllSettings]') {
+			sendResponse({settings: JSON.stringify(settings.toObject(), null, 2)});
+		} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
+			settings.removeAll();
+			settings = new Store(settingsStorageNamespace, { ...DEFAULT_SETTINGS, ...request.settings });
 			reloadSettings(/*{fromSettingsPage: true}*/);
 		}
 	});

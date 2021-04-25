@@ -1,0 +1,74 @@
+.card {
+    margin-bottom: .75rem !important;
+    width: 22rem;
+}
+
+.card-body {
+    padding: 0.5rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    overflow: hidden;
+}
+
+.card-title {
+    min-height: 3rem;
+    max-height: 3rem;
+    overflow: hidden;
+    margin-bottom: .25rem !important;
+    font-weight: 400;
+    margin-right: 5px;
+}
+
+.card-title a {
+    color: #00428a !important;
+}
+
+.card-img-top {
+    border: solid 1px #aaa;
+    transform: none;
+    transition: transform .0s;
+    transform-origin: center;
+    z-index: 1;
+    max-height: 11.6rem;
+    min-height: 11.6rem;
+}
+
+.card-img-top:not(.clicked):not(.zoom):hover {
+    transform: scale(1.3); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+    transition: transform .2s;
+    z-index: 1000000;
+    cursor: pointer;
+}
+
+.card-img-top.zoom {
+    transform: scale(2.5) !important;
+    border: solid 2px #262626 !important;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+.card-img-a:hover {
+    z-index: 1000000;
+}
+
+.card-img-top.clicked {
+    position: fixed !important;
+    max-height: unset !important;
+    top: 0;
+    left: 0;
+    z-index: 10000000;
+}
+
+.card-text {
+    white-space: nowrap;
+    color: #999;
+    margin-bottom: .25rem !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 11px;
+}
+
+.time {
+    font-size: 9px;
+    color: #999;
+}

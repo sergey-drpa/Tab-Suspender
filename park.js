@@ -30,16 +30,18 @@ let tabIconOpacityChange = false;
 let tabIconStatusVisualize = false;
 let tabId;
 let targetUrl;
-let loaded = false;
 let bgScreen = null; /* TEMPORARLY VARDON'T FORGGOT TO CLEAN AFTER DRAW! */
 let screenshotDevicePixelRatio;
 let isTabMarkedForUnsuspend = false;
 let parkedUrl;
 
-window.addEventListener('load', function() {
-	if (debugPerformance)
-		console.log('onload: ', Date.now());
-	loaded = true;
+let loaded = new Promise(function(resolve) {
+	window.addEventListener('load', function() {
+		if (debugPerformance)
+			console.log('onload: ', Date.now());
+
+		resolve();
+	});
 });
 
 let DOMContentLoaded;
@@ -327,7 +329,9 @@ function parseUrlParam(name, doNotCache) {
 function generateFaviconUri(url, callback) {
 	console.log('generateFaviconUri...');
 	let img = new Image();
+	let onCorruptedUrlTimeout = setTimeout(()=>{img.onerror();}, 3000);
 	img.onload = function() {
+		clearTimeout(onCorruptedUrlTimeout);
 		let canvas, ctx;
 		canvas = window.document.createElement('canvas');
 		canvas.width = img.width;
@@ -346,7 +350,13 @@ function generateFaviconUri(url, callback) {
 			callback(canvas.toDataURL());
 		}
 	};
+	img.onerror = (e) => {
+		clearTimeout(onCorruptedUrlTimeout);
+		console.log('Loading Favicon Error');
+		img.src = chrome.extension.getURL('img/new_page.png');
+	};
 	img.src = url && url != 'undefined' ? url : chrome.extension.getURL('img/new_page.png');
+
 }
 
 function drawWaterMark(canvas, ctx, width, callback) {
@@ -424,13 +434,19 @@ function continueStart() {
 	/****
 	 * TODO: Looks like document.readyState === "complete" != window.addEventListener('load'
 	 */
-	if (loaded) {
+	console.log('Waiting for Page load...', Date.now());
+	loaded.then(()=>{
+		console.log('Page Already loaded');
+		startEX();
+	});
+
+	/*if (loaded) {
 		console.log('Page Already loaded');
 		startEX();
 	} else {
 		console.log('Waiting for Page load...', Date.now());
 		setTimeout(continueStart, 50);
-	}
+	}*/
 }
 
 function startEX() {
