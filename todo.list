@@ -2,3 +2,100 @@
 + Make periodically cleanup
 + Fix history
 + Fix Store policy permissions
+
+
+
+	Damaged Localization on Popup.html - replaced from browser page without __MSG_.. Need to restore using backups!
+
+	<<<<<<<<<
+
+
+	SECURITY: need to move f_t930,.,., from session storage
+	TODO-USER: i need option no auto close tab if automaticly suspend
+	BUG-USER: Add support for HiDPI displays!
+	TODO-USER: When open any localhost site, this extension try to get favicon even it's absent. See in console log:
+	inject.js:373 GET file:///favicon.ico net::ERR_FILE_NOT_FOUND
+	BUG-USER: suspended page from bookmark does not resotre!
+
+	!!!!!!!!!!!!!!!!!!!!!!! Complete Localization !!!!!!!!!!!!!!!!!!
+	!! Addd page to https://add0n.com
+	[V]!!! Add option to not suspend tab with filled form!!!!!
+	!!! Fix add to whitelist for chrome.google.com domain: open dialog in new window.
+
+	!!! BUG with h2c when browser started and some tab on window wasnt activated but will call suspendFromInject
+	window.innerWidth, window.innerHeight return wrong values => screensort has wrong size!!
+
+
+	!!!!!!!! determine how to fix "var sortedWins = wins.sort(wins);"
+	!!!!!!!!!!!!!!! TODO: upload the Screen from parked page to save memory!!!
+	!!!!!!!!!!! TODO: remove Icon data from park href and move it into DB!
+	>>> Need more thougts because in this case if icon vil not available all tabs will be without icons
+
+
+	!!!!!!!!!!!!!!!!!! ://invalid problem!!!! //"park.html", "park.js", "img/new_page.ico", "/img/*.png", "dialog.html"
+	! Invocation of form runtime.connect(null, ) doesn't match definition runtime.connect(optional string extensionId,
+	optional object connectInfo)
+	>>> Loks like this problem occur only when force extension reload
+	!!!!!!!!! In Settings make button restore default settings and cleanup all settings/reset suspender!
+	!!!!!!! TODO: Invesigate
+	https://yandex.ru/maps/2/saint-petersburg/?ll=30.414844%2C60.004372&z=12&mode=search&text=molly&sll=30.414844%2C60.004372&sspn=0.372849%2C0.003782&sctx=ZAAAAAgBEAAaKAoSCVnaqbncUD5AEQZwqwdp901AEhIJwSUCAMDc5z8ROPBhbOXJyz8gACABIAIgAygFMAE4%2BYuinpTW%2BYw1QL2CBkgBVcH%2Bfz9YAGIjZGlyZWN0X2RvbnRfc2hvd19vbl9jaGFpbl9yZXF1ZXN0PTFiKGRpcmVjdF9kb250X3Nob3dfb25fcnVicmljX3dpdGhfYWR2ZXJ0PTFqAnJ1cAA%3D
+	*/
+	/* DOMException: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported. */
+
+	!!! Add info message about current page status (Page can/can't be suspended and why) like at
+	https://chrome.google.com/webstore/detail/tiny-suspender/bbomjaikkcabgmfaomdichgcodnaeecf
+
+	[V]!!! Dont suspend usaved Forms, need to determine what form is unsaved!!
+
+	!!!USER-TODO: discard all tabs in all session and restore it option
+
+	!!!Create help page when extension was installed.
+
+	Add settings option: "Don't suspend tabs while offline"
+	>>> Needs "WebRequest" permission
+
+	!! Add new lable on main Icon when new version installed.
+
+	TODO-USER: avoid including suspended url to tab history because it's just a wasting of history.
+
+	!TODO: make tab icon animation for ignored and pinned tab like screencastify for exception tab and ETC.
+
+	!BUG: CRASHES PERIODICALLY ON LINUX!
+	![\]TODO: Add promotion like "Turn Off Light" right click menu and share, contribute and etc.
+
+	TODO: BANNER + Saving CPU time and energy.
+
+	TODO-USER: this auto restores tabs on startup automatically, and i don't see any option to turn this off. i wouldn't
+	mind this so much if it actually restore tabs to their respective windows but it restores all the tabs into a single
+	window instead.
+
+	TODO: restore selected in any window tab insted mix it after update.
+
+	TODO: Add different timeout settings for different site patterns.
+
+	TODO-USER: (Impossible!!!) please add hotkey for unsuspend the current tab only
+
+	TODO: whitelist check for repeatable pattenrs and left only one(clenup).
+	TODO: I need option no auto close tab if automaticly suspend
+	TODO: make slide up donation block rearly on suspended tabs.
+
+	==========================================================================================
+	Proposals
+	==========================================================================================
+	1) When a tab is suspended, Chrome still manages it as a separate process with associated memory allocated. Although
+	the memory utilisation drops, having lots of suspended tabs is still consuming substantial RAM from what I have
+	observed. It would be useful to have a sequence of suspension steps with different time intervals associated to them.
+	Something like: 1. Suspend tab (as today) - tab remains visible but whited out 2. Tab removed to list - tab is removed
+	and placed as a thumbnail onto a dedicated tab owned and managed by Tab Suspender (this is where the process and
+	memory saving would kick in to the greatest extent). 3. Archived - after an extended period (days, weeks or months)
+	'tab' is removed from the above list and forgotten altogether or buried in an archive list. Aside from the above
+	suggestion, it would also be of benefit to be able to set the Tab Close interval to a much higher value than one day
+	eg. x weeks or months. (I, like many others I am guessing, have tabs open in some browsers for over a year!)
+	Add comments:
+	A Google User Looks like I was somewhat mistaken in my understanding of the way things are working. I was observing
+	Chrome processes in the Windows Task Manager, but just discovered the Chrome Task Manager and see that the suspended
+	tabs appear to be grouped into a small set of processes. From a UI perspective, I still would find it useful to have
+	the longer-standing suspended tabs moved off to a thumbnail list though, to de-clutter the tab bar without losing them
+	altogether. This may still also reduce memory utilisation of the shared process also. The suspended tabs I see now (10
+	of) are grouped into two processes consuming a total of 222MB of RAM - not to be sneezed at.
+	==========================================================================================

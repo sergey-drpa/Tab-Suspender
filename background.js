@@ -182,7 +182,6 @@
 		};
 	};
 
-	//TODO: COMMENTED FOR TESTS: function addScreen (id, screen, devicePixelRatio){
 	window.addScreen = function(id, screen, devicePixelRatio) {
 		'use strict';
 
@@ -2287,7 +2286,6 @@
 			if (!factor.on)
 				trackView('active_user');
 			else {
-				//console.log('clear int!');
 				clearInterval(interval);
 			}
 		}, 1740 * 1000  /*30*1000*/);

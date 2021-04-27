@@ -439,14 +439,6 @@ function continueStart() {
 		console.log('Page Already loaded');
 		startEX();
 	});
-
-	/*if (loaded) {
-		console.log('Page Already loaded');
-		startEX();
-	} else {
-		console.log('Waiting for Page load...', Date.now());
-		setTimeout(continueStart, 50);
-	}*/
 }
 
 function startEX() {
@@ -685,7 +677,7 @@ function initNativeUrlAnimation() {
 }
 
 /************************/
-/*		Util Methods    */
+/*     Util Methods     */
 /************************/
 
 window.drawAddPageToWhiteListDialog = function() {

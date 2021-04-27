@@ -244,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	/************************************/
 	/*	     DrawSetupWizardDialog      */
-
 	/************************************/
 
 
@@ -269,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	/************************************/
 	/*	   AddPageToWhiteListDialog     */
-
 	/************************************/
 
 
@@ -293,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	/************************************/
-	/*				FAVICON             */
+	/*				FAVICON                   */
 	/************************************/
 	let lockImgSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAYAAAD+WDajAAAACXBIWXMAAAsSAAALEgHS3X78AAAA70lEQVQYlU3JP2qFMBwA4CQELeSlprwDlE5WeoAsBUHFtVfQ8zxwkQ5d39DF5R3iba2DFQ+h0CwqiX/SX6dCv/VDAICKorjjnL8GQfDped5bVVVHAEAIAFCSJOcsyy5d173keX5J0/QdABBqmuZRSnnVWt/O84yMMQcp5bWu6yfS973gnOuyLClj7Hg6nRwhxDgMg4fDMDy3bfustf7e950QQhBjTPi+/0GVUg8AgIQQAgAwIQSMMVgpdU8ppYu1FrZt2wEAY4zBWosJIQsdx9Gdpom6rvvzl+u60mmabmgURe2yLAfHcdZ/6cRx/PUL8ROEMEM1AFcAAAAASUVORK5CYII=';
 	let faviconInfo = getFaviconInfo();
@@ -432,7 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	/*  Percent  */
-
 	function applyPercent(ctx, highliteInfo) {
 		let percent = highliteInfo.suspendPercent;
 
