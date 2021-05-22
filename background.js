@@ -4,6 +4,7 @@
  * Zadorozhniy.Sergey@gmail.com
  */
 
+const INSTALLED = 'installed';
 (function() {
 	let Copyright = 'Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy. Zadorozhniy.Sergey@gmail.com';
 	let DELAY_BEFORE_DB_CLEANUP = 60 * 1000;
@@ -51,7 +52,7 @@
 		'autoRestoreTab': false,
 		'restoreOnMouseHover': true,
 		'reloadTabOnRestore': false,
-		'exceptionPatterns': null,
+		'exceptionPatterns': null, // DEPRECATED
 		'exceptionPatternsV2': '*mail.google.com*\n*outlook.live.com*\n*service.mail.com*\n*mail.yahoo.com*\n*mail.aol.com*\n*icloud.com/#mail*\nexamplesite.com*\n*.examplesitesecond.com*', // <<=== Continue There TODO - DONE
 		// Tab Icon
 		'tabIconOpacityChange': true,
@@ -1289,6 +1290,8 @@
 		} else if (request.method === '[AutomaticTabCleaner:hideDialog]') {
 			hideWhiteListDialod(sender.tab.id);
 			sendResponse({ tabId: sender.tab.id });
+		} else if (request.method === '[AutomaticTabCleaner:installed]') {
+			settings.set(INSTALLED, true);
 		} else if (request.method === '[AutomaticTabCleaner:addToWhiteList]') {
 			whiteList.addPattern(request.pattern);
 			if (request.hideDialog === true)
@@ -1659,12 +1662,14 @@
 		} else if (request.method === '[AutomaticTabCleaner:resetAllSettings]') {
 			settings.removeAll();
 			settings = new Store(settingsStorageNamespace, DEFAULT_SETTINGS);
+			settings.set(INSTALLED, true);
 			reloadSettings(/*{fromSettingsPage: true}*/);
 		} else if (request.method === '[AutomaticTabCleaner:exportAllSettings]') {
 			sendResponse({settings: JSON.stringify(settings.toObject(), null, 2)});
 		} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
 			settings.removeAll();
 			settings = new Store(settingsStorageNamespace, { ...DEFAULT_SETTINGS, ...request.settings });
+			settings.set(INSTALLED, true);
 			reloadSettings(/*{fromSettingsPage: true}*/);
 		}
 	});
@@ -2336,30 +2341,29 @@
 			/* TODO: cleanup this logic after cleanup complete! */
 
 			/* Prerare settings */
-			let settingsOld = new Store('settings', DEFAULT_SETTINGS);
-			let firstInstallation = ((new Store(settingsStorageNamespace).get('timeout')) == null && !chrome.extension.inIncognitoContext);
+			let firstInstallation = ((Store.get('timeout', settingsStorageNamespace)) == null && !chrome.extension.inIncognitoContext);
 			settings = new Store(settingsStorageNamespace, DEFAULT_SETTINGS);
 			settingsInitedResolve();
 
 			/*
-			 * TODO: WIZARD: ADD IF FOR IS IT FIRAST INSTALL OR UPDATE ONLY!!!
+			 * TODO: WIZARD: ADD IF FOR IS IT FIRST INSTALL OR UPDATE ONLY!!!
 			 */
 			try {
-				if (firstInstallation) {
-					console.log('EX: Installed!');
-					drawSetupWizardDialog();
-					trackView('installed');
-				} else
-					console.log('EX: Updated!');
+				settings.getOnStorageInitialized().then(() => {
+					let isAlreadyHasSyncSettings = ((settings.get(INSTALLED)) != null && !chrome.extension.inIncognitoContext);
+					if (firstInstallation && !isAlreadyHasSyncSettings) {
+						console.log('EX: Installed!');
+						drawSetupWizardDialog();
+						trackView(INSTALLED);
+					} else {
+						console.log('EX: Updated!');
+						if(!isAlreadyHasSyncSettings) {
+							settings.set(INSTALLED, true);
+						}
+					}
+				});
 				// eslint-disable-next-line no-empty
 			} catch (e) {
-			}
-
-			if (settings.get('migratedFromOldSettings') == null) {
-				for (let k in DEFAULT_SETTINGS)
-					if (DEFAULT_SETTINGS.hasOwnProperty(k))
-						settings.set(k, settingsOld.get(k));
-				settings.set('migratedFromOldSettings', true);
 			}
 
 			window.TSSettingsInitialized = true;

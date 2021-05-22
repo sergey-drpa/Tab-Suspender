@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		trackErrors('wizard', true);
 
+		chrome.extension.sendMessage({
+			method: '[AutomaticTabCleaner:installed]'
+		});
+
 		overlay.addEventListener('click', closeDialog = function() {
 			chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
 		});
