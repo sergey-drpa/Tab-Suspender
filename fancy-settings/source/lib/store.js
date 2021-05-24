@@ -3,6 +3,7 @@
 // https://github.com/frankkohlhepp/store-js
 // License: MIT-license
 //
+
 (function () {
     var Store = this.Store = function (name, defaults, isNotMainSettings) {
         var key;
@@ -15,16 +16,18 @@
                 // Retrieve data from Sync
                 chrome.storage.sync.get(null, (items) => {
                     // Pass any observed errors down the promise chain.
+                    /* TODO: Implement sync from sync server
                     if (!chrome.runtime.lastError) {
                         console.log('Retrieve Sync changes and cache locally....');
                         if (items !== undefined) {
                             for (key in items) {
                                 if (items.hasOwnProperty(key)) {
                                     const localValue = this.get(key);
-                                    if (localValue !== items[key]) {
-                                        console.log(`Initial Retrieve Sync changes: ${key}: '${localValue}' -> ${items[key]}`);
+                                    const syncValue = checkTypeAndCast(key, JSON.parse(items[key]));
+                                    if (localValue !== syncValue) {
+                                        console.log(`Initial Retrieve Sync changes: ${key}: '${localValue}' -> ${syncValue}`);
                                         try {
-                                            this.set(key, JSON.parse(items[key]), true);
+                                            this.set(key, syncValue, true);
                                         } catch (e) {
                                             console.warn(e);
                                         }
@@ -34,7 +37,7 @@
                         }
                     } else {
                         console.error(chrome.runtime.lastError);
-                    }
+                    }*/
 
 
                     if (defaults !== undefined) {
@@ -43,14 +46,16 @@
                                 if (this.get(key) === undefined) {
                                     this.set(key, defaults[key], true);
                                 }
+                                /* NO NEED DEFAULTS IN SYNC
                                 ((localKey) => {
-                                    this.getSync(key).then((valueFromSync) => {
-                                        if (valueFromSync === undefined) {
+                                    this.getSync(localKey).then((valueFromSync) => {
+                                        const syncValue = checkTypeAndCast(localKey, JSON.parse(valueFromSync));
+                                        if (syncValue === undefined && syncValue !== this.get(localKey)) {
                                             console.log(`Initial Setup Sync values: ${localKey}: '${valueFromSync}' -> ${defaults[localKey]}`);
-                                            this.setSync(localKey, defaults[localKey]);
+                                            this.set(localKey, defaults[localKey]);
                                         }
                                     });
-                                })(key);
+                                })(key);*/
                             }
                         }
                     }
@@ -89,14 +94,61 @@
         });
     };
 
+    function checkTypeAndCast (name, value) {
+        if(window.SETTINGS_TYPES == null) {
+            console.error(`window.SETTINGS_TYPES not defined!!!`);
+            try {
+                return JSON.parse(value);
+            } catch (e) {
+                return value;
+            }
+        }
+        if(value == null) {
+            return value;
+        }
+
+        switch (window.SETTINGS_TYPES[name]) {
+            case window.NUMBER_TYPE:
+                if (typeof value !== "number") {
+                    try {
+                        return parseFloat(value);
+                    } catch (e) {
+                        return value;
+                    }
+                }
+                break;
+            case window.STRING_TYPE:
+                if(value.startsWith("\"")) {
+                    try {
+                        return JSON.parse(value);
+                    } catch (e) {
+                        return value;
+                    }
+                }
+                break;
+            default: //Boolean
+                if (typeof value !== "boolean") {
+                    try {
+                        return JSON.parse(value);
+                    } catch (e) {
+                        return value;
+                    }
+                }
+                break;
+        }
+        return value;
+    }
+
     Store.get = Store.prototype.get = function (name, namespace) {
+        const initialName = name;
         name = "store." + (namespace ? namespace : this.name) + "." + name;
         const value = localStorage.getItem(name);
         if (value === null) { return undefined; }
         try {
-            return JSON.parse(value);
+            return checkTypeAndCast(initialName, JSON.parse(value));
         } catch (e) {
-            return null;
+            console.error(e)
+            return value;
         }
     };
 
