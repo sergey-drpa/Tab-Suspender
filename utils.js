@@ -237,3 +237,14 @@ function extractHostname(url) {
 
 	return hostname;
 }
+
+function isDarkMode() {
+	const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+	if(isDarkMode)
+		console.log('Currently in dark mode');
+	else
+		console.log('Currently not in dark mode');
+
+	return isDarkMode;
+}

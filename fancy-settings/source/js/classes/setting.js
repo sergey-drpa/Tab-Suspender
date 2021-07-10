@@ -7,6 +7,16 @@
     var settings,
         Bundle;
 
+    let DOMContentLoaded;
+    document.addEventListener('DOMContentLoaded', function() {
+        if (DOMContentLoaded) return;
+        DOMContentLoaded = true;
+
+        const isDarkModeEnabled = isDarkMode();
+        if(isDarkModeEnabled)
+            document.getElementsByTagName('body')[0].classList.add("dark");
+    });
+
     settings = new Store("tabSuspenderSettings", undefined, true);
     Bundle = new Class({
         // Attributes:

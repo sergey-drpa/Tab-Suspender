@@ -2,3 +2,46 @@
 // Add your own style rules here, not in css/main.css
 // or css/setting.css for easy updating reasons.
 */
+
+
+.dark .content {
+    background-color: #222;
+}
+
+.dark .label {
+    color: #dbdbdb;;
+}
+
+.dark #sidebar {
+    background-image: -webkit-gradient( linear, left top, left 500, color-stop(0, #2b2b2b), color-stop(1, #4f4f4f) );
+    border-color: #5a5a5a !important;
+}
+
+.dark #search-container input::placeholder {
+    color: #000;
+}
+
+.dark .setting.group {
+    border-color: #8f8f8f !important;
+}
+
+.dark .tab {
+    text-shadow: none;
+    color: #ececec !important;
+}
+
+.dark .tab.active {
+    color: #000 !important;
+}
+
+.dark #search {
+    background-color: #868686;
+}
+
+.dark .group-name {
+    color: #d0d0d0;
+}
+
+.dark  .setting textarea, .dark .setting select.list-box{
+    background-color: #bdbdbd!important;
+}

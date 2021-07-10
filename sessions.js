@@ -9,53 +9,72 @@
 	let parkUrl = chrome.extension.getURL('park.html');
 	let sessionsUrl = chrome.extension.getURL('sessions.html');
 	let scrollYPosition = 0;
+	const isDarkModeEnabled = isDarkMode();
+
+	if(isDarkModeEnabled) {
+		const style = `<style>
+				body { background-color: #222; }
+				#sessionManagerP { color: #fff; }
+				.card-body { background-color: #444; }
+				.card { border: 1px solid rgb(0 0 0); }
+				.card-title a { color: #c1c1c1 !important; }
+				.container { background-color: #222 !important; }
+		</style>`;
+		$('html > head').append($(style));
+	}
 
 	let drawContent = function() {
 		return new Promise(function(resolve) {
 			chrome.runtime.getBackgroundPage(function(bgpage) {
-				chrome.windows.getAll({ 'populate': true }, function(windows) {
-					let TSSessionId = bgpage.TSSessionId;
-					for (let wi in windows) {
-						if (windows.hasOwnProperty(wi)) {
-							let tabs = [];
-							for (let j in windows[wi].tabs)
-								if (windows[wi].tabs.hasOwnProperty(j)) {
-									let tab = windows[wi].tabs[j];
-									if (tab.url.indexOf(sessionsUrl) == 0)
-										continue;
-									let parked = tab.url.indexOf(parkUrl) == 0;
-									tabs.push({
-										title: tab.title,
-										url: (parked ? parseUrlParam(tab.url, 'url') : tab.url),
-										tabId: (parked ? parseUrlParam(tab.url, 'tabId') : tab.id),
-										sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : TSSessionId),
-										nativeTabId: tab.id,
-										nativeWindowId: windows[wi].id
-									});
-									console.log(tab.width);
-								}
+				chrome.windows.getCurrent({ 'populate': true }, function(currentWindow) {
+					chrome.windows.getAll({ 'populate': true }, function(windows) {
+						let TSSessionId = bgpage.TSSessionId;
 
-							let divWindow = document.createElement('div');
-							divWindow.classList.add('card');
-							divWindow.classList.add('card-window');
-							if (parseInt(wi, 10) == 0)
-								divWindow.classList.add('first-window');
-							divWindow.innerHTML =
-								'\t\t<div class="card-header">\n' +
-								'\t\t\t<h4 class="my-0 font-weight-normal">Window #' + (parseInt(wi, 10) + 1) + ' <span class="tabs-n">( ' + tabs.length + ' tabs )</span>' + '</h4>\n' +
-								'\t\t</div>\n' +
-								'\t\t<div id="park' + wi + 'Container" class="container">\n' +
-								'\t\t\t<div id="park' + wi + 'Div" class="row">\n' +
-								'\t\t\t</div>\n' +
-								'\t\t</div>\n';
+						windows = windows.filter((wind)=>wind.id!==currentWindow.id);
+						windows.unshift(currentWindow);
 
-							document.getElementById('container').appendChild(divWindow);
+						for (let wi in windows) {
+							if (windows.hasOwnProperty(wi)) {
+								let tabs = [];
+								for (let j in windows[wi].tabs)
+									if (windows[wi].tabs.hasOwnProperty(j)) {
+										let tab = windows[wi].tabs[j];
+										if (tab.url.indexOf(sessionsUrl) === 0)
+											continue;
+										let parked = tab.url.indexOf(parkUrl) === 0;
+										tabs.push({
+											title: tab.title,
+											url: (parked ? parseUrlParam(tab.url, 'url') : tab.url),
+											tabId: (parked ? parseUrlParam(tab.url, 'tabId') : tab.id),
+											sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : TSSessionId),
+											nativeTabId: tab.id,
+											nativeWindowId: windows[wi].id
+										});
+										console.log(tab.width);
+									}
 
-							new DrawHistory(tabs, 'park' + wi, bgpage, 0, 150);
+								let divWindow = document.createElement('div');
+								divWindow.classList.add('card');
+								divWindow.classList.add('card-window');
+								if (parseInt(wi, 10) === 0)
+									divWindow.classList.add('first-window');
+								divWindow.innerHTML =
+									`\t\t<div class="card-header" style="${isDarkModeEnabled ? 'background-color: #444;' : ''}">\n` +
+									'\t\t\t<h4 class="my-0 font-weight-normal">Window #' + (parseInt(wi, 10) + 1) + ' <span class="tabs-n">( ' + tabs.length + ' tabs )</span>' + '</h4>\n' +
+									'\t\t</div>\n' +
+									`\t\t<div id="park${wi}Container" class="container" >\n` +
+									'\t\t\t<div id="park' + wi + 'Div" class="row">\n' +
+									'\t\t\t</div>\n' +
+									'\t\t</div>\n';
+
+								document.getElementById('container').appendChild(divWindow);
+
+								new DrawHistory(tabs, 'park' + wi, bgpage, 0, 150);
+							}
 						}
-					}
 
-					resolve();
+						resolve();
+					});
 				});
 			});
 		});

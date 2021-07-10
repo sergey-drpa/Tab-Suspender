@@ -6,6 +6,21 @@
 
 (function() {
 	let pageSize = 30;
+	const isDarkModeEnabled = isDarkMode();
+
+	if(isDarkModeEnabled) {
+		const style = `<style>
+				body { background-color: #222; }
+				#historyP { color: #fff; }
+				#historyClosedTabsP { color: #fff; }
+				hr { border-top: 1px solid rgb(189 189 189); }
+				.card-body { background-color: #444; }
+				.card { border: 1px solid rgb(0 0 0); }
+				.card-title a { color: #c1c1c1 !important; }
+				.container { background-color: #222 !important; }
+		</style>`;
+		$('html > head').append($(style));
+	}
 
 	chrome.runtime.getBackgroundPage(function(bgpage) {
 		chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:getParkHistory]' }, function(res) {

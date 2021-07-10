@@ -85,12 +85,14 @@ WhiteList.prototype.addPattern = function(pattern) {
 		if (debug == true)
 			console.log('WhiteList: added pattern ' + pattern);
 
+		chrome.notifications.clear('userInfo');
 		chrome.notifications.create('userInfo',
 			{
 				type: 'basic',
 				iconUrl: 'img/icon16.png',
 				title: 'Added to Whitelist',
-				message: pattern
+				message: pattern,
+				priority: 2,
 			},
 			function() {
 				console.log('Last error:', chrome.runtime.lastError);

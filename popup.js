@@ -19,11 +19,32 @@ window.trackErrors = window.trackErrors || {};
 // eslint-disable-next-line no-redeclare
 window.$ = window.$ || {};
 
-/***window.************************************
+/***window.******************************
  **************** ONLOAD ****************
  ****************************************/
 
 document.addEventListener('DOMContentLoaded', function() {
+
+	const isDarkModeEnabled = isDarkMode();
+
+	if(isDarkModeEnabled) {
+		const style = `<style>
+				body { background-color: #222; }
+				hr { background-color: #505050 !important; }
+				.slider-background { background-color: #656565; }
+				.menu { color: #cccccc !important; }
+				.irs-line { background: linear-gradient(to bottom, #8e8e8e -50%, #fff 150%); }
+				div.menu:hover:not(.disabled) { background-color: #585858; }
+				.recicle-section { background-color: #383838; border: 1px #545454 solid; }
+				.tab-button { border-bottom: 2px solid #222;}
+				.tab-button.visible { background-color: #383838; border: 1px #545454 solid; border-bottom: 1px #383838 solid; }
+				.inline-btn { color: #eaeaea; }
+				.menu:hover .inline-btn.disabled { background-color: #fff; border: solid 1px #f7f7f7; color: #a9aeaf; opacity: 0.6; }
+				.sessionManagerLinkNew { filter: brightness(3.5); }
+				.button { color: #ececec; }
+		</style>`;
+		$('html > head').append($(style));
+	}
 
 	trackErrors('popup', true);
 
@@ -51,12 +72,24 @@ document.addEventListener('DOMContentLoaded', function() {
 				$('#suspend').addClass('disabled');
 			}
 
+			recalculatePauseStatus();
+
+			if (res.active != null) {
+				$('#tabSuspenderActive').attr('checked', res.active);
+				changePausedUI(!res.active);
+			}
+
 			if (res.isCloseTabsOn) {
 				$('#recicleTab').prop('checked', true);
 				$('.tab-button').addClass('checked');
 			} else {
 				$('#recicleTab').prop('checked', false);
 				$('.tab-button').removeClass('checked');
+			}
+
+			if (res.popup_showWindowSessionByDefault) {
+				$('#showWindowSessionByDefault').prop('checked', true);
+				setTimeout(()=>{ toggleShowWindowSessions(true); }, 10 );
 			}
 
 			if (tabs[0].url.indexOf(chrome.extension.getURL('park.html')) == 0)
@@ -74,27 +107,27 @@ document.addEventListener('DOMContentLoaded', function() {
 						recalculatePauseStatus();
 					}, 1000);
 
-			recalculatePauseStatus();
 
 			let sliderDisabled;
-			if (tabs[0].url != null && tabs[0].url == chrome.extension.getURL(manifest.options_page)) {
+			/*if (tabs[0].url != null && tabs[0].url == chrome.extension.getURL(manifest.options_page)) {
 				sliderDisabled = true;
 				document.querySelector('#settings').className = 'menu disabled';
-			} else
+			} else*/
 				sliderDisabled = false;
 
 			if (res.timeout != null) {
-				if (res.timeout > 3600)
+				slider.update({ from: res.timeout, min: 0, max: Math.ceil(res.timeout/3600)*2*3600, from_min: 60, step: 60, disable: sliderDisabled });
+				/*if (res.timeout > 3600)
 					slider.update({ from: res.timeout, min: 0, max: 21600, from_min: 60, step: 60, disable: sliderDisabled });
 				else
-					slider.update({ from: res.timeout, min: 0, max: 3600, from_min: 60, step: 60, disable: sliderDisabled });
+					slider.update({ from: res.timeout, min: 0, max: 3600, from_min: 60, step: 60, disable: sliderDisabled });*/
 			}
 
 			if (res.closeTimeout != null) {
-				if (res.closeTimeout > 10800)
-					sliderRecycleAfter.update({ from: res.closeTimeout, max: 86400, disable: !res.isCloseTabsOn });
-				else
-					sliderRecycleAfter.update({ from: res.closeTimeout, max: 10800, disable: !res.isCloseTabsOn });
+				//if (res.closeTimeout > 10800)
+					sliderRecycleAfter.update({ from: res.closeTimeout, max: Math.ceil(res.closeTimeout/3600)*2*3600, disable: !res.isCloseTabsOn });
+				//else
+					//sliderRecycleAfter.update({ from: res.closeTimeout, max: 10800, disable: !res.isCloseTabsOn });
 			}
 
 			if (res.limitOfOpenedTabs != null)
@@ -114,18 +147,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 
-/*	function secondsHumanise(seconds) {
+	function secondsHumanise(seconds) {
+		if(seconds===0){
+			return '0 min';
+		}
 		var numDays = Math.floor((seconds / 86400));
 		var numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
 		var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
 		var numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
-		return '   ' + (numDays > 0 ? numDays + ' day ' : '') + (numhours > 0 ? numhours + ' hours ' : '') + (numminutes > 0 ? numminutes + ' minutes ' : '') + (numseconds > 0 && numminutes <= 10 ? numseconds + ' seconds' : '') + ' of inactivity';
-	}*/
+		return '   ' + (numDays > 0 ? numDays + ' day ' : '') + (numhours > 0 ? numhours + ' hour ' : '') + (numminutes > 0 ? numminutes + ' mim ' : '') + (numseconds > 0 && numminutes <= 10 ? numseconds + ' sec' : '');
+	}
 
+	let slider;
+	let sliderRecycleAfter;
 	$('.js-range-slider').ionRangeSlider({
 		grid: true,
 		min: 0,
-		max: 3600,
+		max: 3600*24,
 		from_min: 60,
 		step: 60,
 		hide_min_max: true,
@@ -136,26 +174,58 @@ document.addEventListener('DOMContentLoaded', function() {
 		keyboard_step: 1.1,
 		prettify_enabled: true,
 		prettify: function(seconds) {
-			let numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
-			let numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+			//let numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+			//let numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
 
-			let result;
-			if (this.max > 3600)
+			let result = secondsHumanise(seconds);
+			/*if (this.max > 3600)
 				result = numhours + ' h ' + (numminutes > 0 ? (numminutes < 10 ? numminutes + '0' : numminutes) + ' min' : '');
 			else
-				result = (numhours > 0 ? numhours + ' hour' : '') + (numhours < 1 || numhours > 1 && numminutes > 0 ? numminutes + ' min' : '');
+				result = (numhours > 0 ? numhours + ' hour' : '') + (numhours < 1 || numhours > 1 && numminutes > 0 ? numminutes + ' min' : '');*/
 
 			setTimeout(function() {
 				updateJsRangeSliderTitle(result);
 			}, 100);
+
+			if(slider) {
+				console.log(slider.old_from);
+				if (slider.old_from === this.max) {
+					adjustSlider(slider, this.max * 2)
+				}
+			}
+
 			return result;
 		},
 		onFinish: function(data) {
 			console.log('onFinish', data);
-
+			//if (data.from > 1300 && this.max === 3600) {
 			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
 		}
 	});
+
+	function adjustSlider(slider, targetMax) {
+		setTimeout(() => {
+			let startedMax = slider.options.max;
+			const steps = 30;
+			const step = (targetMax - startedMax) / steps;
+			let iteration = 0;
+			const interval = setInterval(function() {
+				iteration++;
+				if (iteration === steps) {
+					clearInterval(interval);
+					slider.update({ max: targetMax });
+				} else
+					slider.update({ max: startedMax + step * iteration });
+			}, 30);
+		}, 0);
+	}
+
+	document.getElementById('increaseSliderInterval').onclick = () => {
+		adjustSlider(slider, slider.options.max * 2)
+	}
+	document.getElementById('increaseSliderRecicleAfterInterval').onclick = () => {
+		adjustSlider(sliderRecycleAfter, sliderRecycleAfter.options.max * 2)
+	}
 
 	function updateJsRangeSliderTitle(time) {
 		$('.js-range-slider').parent().find('.irs-single').attr('title', chrome.i18n.getMessage('autoSuspendSliderValue', [time]));
@@ -174,13 +244,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		keyboard_step: 0.5,
 		prettify_enabled: true,
 		prettify: function(seconds) {
-			let numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+			/*let numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
 			let numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
 
-			let result = (numhours > 0 ? numhours + ' h ' : '') + (numminutes > 0 ? numminutes + ' min ' : '');
+			let result = (numhours > 0 ? numhours + ' h ' : '') + (numminutes > 0 ? numminutes + ' min ' : '');*/
+			let result = secondsHumanise(seconds);
 			setTimeout(function() {
 				updateRecycleAfterSliderTitle(result);
 			}, 100);
+
+			if(sliderRecycleAfter) {
+				console.log(sliderRecycleAfter.old_from);
+				if (sliderRecycleAfter.old_from === this.max) {
+					adjustSlider(sliderRecycleAfter, this.max * 2)
+				}
+			}
 
 			return 'Can close tabs after <b style=\'font-size: 11px;\'>' + result + '</b> of tab inactivity';
 		},
@@ -199,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		grid: false,
 		force_edges: true,
 		min: 0,
-		max: 100,
+		max: 300,
 		from_min: 1,
 		step: 1,
 		hide_min_max: true,
@@ -236,7 +314,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	function renderPreviews() {
 		document.getElementById('previewsBar').innerHTML = '';
 
-		debugger;
 		chrome.windows.getCurrent({ 'populate': true }, function(window) {
 			const windows = [window];
 			let parkUrl = chrome.extension.getURL('park.html');
@@ -310,22 +387,27 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	let activeSessionsIsOpen = false;
-	document.getElementById("activeSessionsButton").onclick = () => {
-		let previewBar = document.getElementById("previewsBar");
-		if(!activeSessionsIsOpen) {
+
+	function toggleShowWindowSessions(value) {
+		let previewBar = document.getElementById('previewsBar');
+		if (!activeSessionsIsOpen || value) {
 			activeSessionsIsOpen = true;
 			renderPreviews();
-			previewBar.style.setProperty("display", "block");
+			previewBar.style.setProperty('display', 'block');
 		} else {
 			activeSessionsIsOpen = false;
-			previewBar.style.setProperty("display", "none");
+			previewBar.style.setProperty('display', 'none');
 		}
+	}
+
+	document.getElementById("activeSessionsButton").onclick = () => {
+		toggleShowWindowSessions();
 	};
 
 
 	/* Dom Listeners... */
-	let slider = $('.js-range-slider').data('ionRangeSlider');
-	let sliderRecycleAfter = $('.js-range-slider-recicle-after').data('ionRangeSlider');
+	slider = $('.js-range-slider').data('ionRangeSlider');
+	sliderRecycleAfter = $('.js-range-slider-recicle-after').data('ionRangeSlider');
 	let sliderRecycleKeep = $('.js-range-slider-recicle-keep').data('ionRangeSlider');
 
 
@@ -335,7 +417,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.querySelector('#settings').onclick = function(options) {
 
 		let manifest = chrome.runtime.getManifest();
-		let extviews = chrome.extension.getViews();
+		focuseOrOpenTSPage(manifest.options_page, options);
+
+		/*let extviews = chrome.extension.getViews();
 
 		for (let i = 0; i <= extviews.length; i++) {
 			if (extviews[i] && extviews[i].location.href == chrome.extension.getURL(manifest.options_page)) {
@@ -351,47 +435,36 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (options == null || options.reloadOnly == null || options.reloadOnly == false)
 					chrome.tabs.create({ 'url': manifest.options_page, 'active': true });
 			}
-		}
+		}*/
 		return false;
 	};
 
 	document.querySelector('#suspendHistory').onclick = function(options) {
-		let extviews = chrome.extension.getViews();
-
-		for (let i = 0; i <= extviews.length; i++) {
-			if (extviews[i] && extviews[i].location.href.indexOf(chrome.extension.getURL('history.html')) == 0) {
-				extviews[i].chrome.tabs.getCurrent(function(tab) {
-					chrome.tabs.reload(tab.id, {});
-					if (options == null || options.reloadOnly == null || options.reloadOnly == false)
-						chrome.tabs.update(tab.id, { 'active': true });
-				});
-				break;
-			} else if (i == extviews.length - 1) {
-				// Create new tab if past end of list and none open
-				if (options == null || options.reloadOnly == null || options.reloadOnly == false)
-					chrome.tabs.create({ 'url': 'history.html', 'active': true });
-			}
-		}
+		focuseOrOpenTSPage('history.html', options);
 		return false;
 	};
 
-	document.querySelector('#sessionManager').onclick = function(options) {
-		let extviews = chrome.extension.getViews();
-
-		for (let i = 0; i <= extviews.length; i++) {
-			if (extviews[i] && extviews[i].location.href.indexOf(chrome.extension.getURL('sessions.html')) == 0) {
-				extviews[i].chrome.tabs.getCurrent(function(tab) {
-					chrome.tabs.reload(tab.id, {});
-					if (options == null || options.reloadOnly == null || options.reloadOnly == false)
+	function focuseOrOpenTSPage(pageLocalUrl, options) {
+		chrome.windows.getCurrent({ 'populate': true }, function(currentWindow) {
+			for (let i = 0; i <= currentWindow.tabs.length; i++) {
+				const tab = currentWindow.tabs[i];
+				if (tab && tab.url.indexOf(chrome.extension.getURL(pageLocalUrl)) === 0) {
+					if (tab.active)
+						chrome.tabs.reload(tab.id, {});
+					else if (options == null || options.reloadOnly == null || options.reloadOnly === false)
 						chrome.tabs.update(tab.id, { 'active': true });
-				});
-				break;
-			} else if (i == extviews.length - 1) {
-				// Create new tab if past end of list and none open
-				if (options == null || options.reloadOnly == null || options.reloadOnly == false)
-					chrome.tabs.create({ 'url': 'sessions.html', 'active': true });
+					break;
+				} else if (i === currentWindow.tabs.length - 1) {
+					// Create new tab if past end of list and none open
+					if (options == null || options.reloadOnly == null || options.reloadOnly === false)
+						chrome.tabs.create({ 'url': pageLocalUrl, 'active': true });
+				}
 			}
-		}
+		});
+	}
+
+	document.querySelector('#sessionManager').onclick = document.querySelector('#sessionManagerLink').onclick = function(options) {
+		focuseOrOpenTSPage('sessions.html', options);
 		return false;
 	};
 
@@ -435,6 +508,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				chrome.extension.sendMessage({
 					method: '[AutomaticTabCleaner:suspendAllOtherTabs]',
 					tab: tabs[0]
+				}, function() {
+					setTimeout(function() {
+						window.close();
+					}, 300);
+				});
+			});
+	};
+
+	let suspendAllButton;
+	(suspendAllButton=document.querySelector('#suspendAll')).onclick = function() {
+		if (suspendAllButton.className.indexOf('disabled') == -1)
+			chrome.tabs.query({ currentWindow: true, active: true }, function(tabs) {
+				chrome.extension.sendMessage({
+					method: '[AutomaticTabCleaner:suspendAllTabs]'
 				}, function() {
 					setTimeout(function() {
 						window.close();
@@ -564,6 +651,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 	};
 
+	/* Tab Suspender Active Checkbox */
+	let tabSuspenderActiveCheckbox;
+	(tabSuspenderActiveCheckbox=document.querySelector('#tabSuspenderActive')).onchange = function() {
+		chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', isTabSuspenderActive: tabSuspenderActiveCheckbox.checked });
+		changePausedUI(!tabSuspenderActiveCheckbox.checked);
+	};
+
 
 	/** RECICLE POPUP LOGIC */
 	let recicleTabCheckbox;
@@ -573,18 +667,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			sliderRecycleAfter.update({ disable: false });
 			sliderRecycleKeep.update({ disable: false });
 
-			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', isCloseTabsOn: true }/*, function(res) {
-				wakeUpSettingsPage({reloadOnly: true});
-			}*/);
+			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', isCloseTabsOn: true });
 		} else {
 			$('.tab-button').removeClass('checked');
 			sliderRecycleAfter.update({ disable: true });
 			sliderRecycleKeep.update({ disable: true });
 
-			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', isCloseTabsOn: false }/*, function(res) {
-				wakeUpSettingsPage({reloadOnly: true});
-			}*/);
+			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', isCloseTabsOn: false });
 		}
+	};
+
+	let showWindowSessionByDefaultCheckbox;
+	(showWindowSessionByDefaultCheckbox = document.querySelector('#showWindowSessionByDefault')).onchange = function() {
+		if (showWindowSessionByDefaultCheckbox.checked) {
+			toggleShowWindowSessions(true);
+		}
+			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', popup_showWindowSessionByDefault: showWindowSessionByDefaultCheckbox.checked });
 	};
 
 	let focus = false;
@@ -593,9 +691,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		$('.tab-button').addClass('visible');
 	};
 
+	$('#recicleTab').click(function(event) {
+		focus = false;
+		event.stopPropagation();
+	});
 	let tabButtonLinkClick;
 	$('.tab-button-link').click(tabButtonLinkClick = function(event) {
 		if ($('.tab-button').hasClass('visible') && event != null) {
+			//console.log('2', event);
 			focus = false;
 			$('.recicle-section').removeClass('visible');
 			$('.tab-button').removeClass('visible');
@@ -609,6 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	$('.tab-button, .recicle-section').focusin(function() {
+		//console.log('3');
 		focus = true;
 		console.log('Focus!');
 	});
@@ -622,6 +726,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		if (event && event.relatedTarget && ($(event.relatedTarget).hasClass('tab-button') || $(event.relatedTarget).parents('.tab-button').length > 0 || $(event.relatedTarget).hasClass('recicle-section') || $(event.relatedTarget).parents('.recicle-section').length > 0))
 			return;
+
+		//console.log('4');
 
 		$('.recicle-section').removeClass('visible');
 		$('.tab-button').removeClass('visible');
@@ -685,22 +791,36 @@ function recalculatePauseStatus() {
 		document.querySelector('.progress-bar span').innerHTML = '';
 	}
 
-	let sliders = document.querySelectorAll('#slider');
+	//let sliders = document.querySelectorAll('#slider');
 	if (pauseTics > 0) {
 		document.querySelector('#pause').className = 'menu stage2';
 		document.querySelector('#pause .menu').innerHTML = 'Suspender Paused for:';
-		for (let i in sliders)
+		changePausedUI(true);
+		/*for (let i in sliders)
 			if (sliders.hasOwnProperty(i))
-				sliders[i].className = 'disabled';
+				sliders[i].className = 'disabled';*/
 	} else {
 		document.querySelector('#pause').className = 'menu ';
 		document.querySelector('#pause .menu').innerHTML = 'Pause Suspender:';
-		for (let j in sliders)
+		changePausedUI(false);
+		/*for (let j in sliders)
 			if (sliders.hasOwnProperty(j))
-				sliders[j].className = '';
+				sliders[j].className = '';*/
 		clearInterval(pauseInterval);
 		pauseInterval = null;
 	}
+}
+
+function changePausedUI(paused) {
+	let sliders = document.querySelectorAll('#slider');
+
+	for (let i in sliders)
+		if (sliders.hasOwnProperty(i))
+			if(paused){
+				sliders[i].className = 'disabled';
+			} else {
+				sliders[i].className = '';
+			}
 }
 
 let pauseInterval = null;

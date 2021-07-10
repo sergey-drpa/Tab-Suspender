@@ -11,7 +11,8 @@ const INSTALLED = 'installed';
 	let DELAY_BEFORE_DB_MIGRATE_TO_INDEXEDDB = 60 * 1000;
 	let tickSize = 10;
 
-	let debug = false; //true;
+	/* Debug */
+	let debug = false;
 	let debugInit = false;
 	let debugScreenCache = false;
 	const debugDBCleanup = true;
@@ -40,40 +41,6 @@ const INSTALLED = 'installed';
 	window.DBProvider = window.DBProvider || {};
 	window.Store = window.Store || {};
 
-
-	let DEFAULT_SETTINGS = {
-		'active': true,
-		'timeout': 30 * 60,
-		'pinned': true,
-		'isCloseTabsOn': false,
-		'ignoreAudible': true,
-		'limitOfOpenedTabs': 20,
-		'closeTimeout': 60 * 60,
-		'autoRestoreTab': false,
-		'restoreOnMouseHover': true,
-		'reloadTabOnRestore': false,
-		'exceptionPatterns': null, // DEPRECATED
-		'exceptionPatternsV2': '*mail.google.com*\n*outlook.live.com*\n*service.mail.com*\n*mail.yahoo.com*\n*mail.aol.com*\n*icloud.com/#mail*\nexamplesite.com*\n*.examplesitesecond.com*', // <<=== Continue There TODO - DONE
-		// Tab Icon
-		'tabIconOpacityChange': true,
-		'animateTabIconSuspendTimeout': false,
-		'tabIconStatusVisualize': false,
-		'restoreTabOnStartup': false,
-		'parkBgColor': 'FFFFFF',
-		'autoSuspendOnlyOnBatteryOnly': false,
-		'startDiscarted': true,
-		'startNormalTabsDiscarted': false,
-		'screenshotQuality': 90,
-		'discardTabAfterSuspendWithTimeout': true,
-		'discardTimeoutFactor': 0.2,
-		'openUnfocusedTabDiscarded': false,
-		'enableSuspendOnlyIfBattLvlLessValue': false,
-		'battLvlLessValue': 50,
-		'screenshotCssStyle': '',
-		'adaptiveSuspendTimeout': true,
-		'restoreButtonView': 'roundIcon', /* Available: roundIcon, noIcon, topBar */
-		'sendErrors': true
-	};
 
 	function createNewTabInfo(tab) {
 		return {
@@ -166,6 +133,8 @@ const INSTALLED = 'installed';
 			successful: true,
 			tabId: tab.id,
 			allowed: tabURLAllowedForPark,
+
+			active: settings.get('active'),
 			timeout: settings.get('timeout'),
 			parked: parked == true,
 			pauseTics: pauseTics,
@@ -179,7 +148,8 @@ const INSTALLED = 'installed';
 			closeTimeout: settings.get('closeTimeout'),
 			limitOfOpenedTabs: settings.get('limitOfOpenedTabs'),
 			TSVersion: chrome.runtime.getManifest().version,
-			sendErrors: settings.get('sendErrors')
+			sendErrors: settings.get('sendErrors'),
+			popup_showWindowSessionByDefault: settings.get('popup_showWindowSessionByDefault'),
 		};
 	};
 
@@ -375,7 +345,7 @@ const INSTALLED = 'installed';
 		if (color != null && color.search(/^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/) >= 0)
 			return color;
 		else
-			return DEFAULT_SETTINGS.parkBgColor;
+			return window.DEFAULT_SETTINGS.parkBgColor;
 	};
 
 	function addToIgnoreTabList(tabId) {
@@ -442,6 +412,10 @@ const INSTALLED = 'installed';
 			tab.url === wizardPageUrl);
 	}
 
+
+	function passGroupedTabsRules(tab, ignoreCloseGroupedTabs) {
+		return tab.groupId === -1 || (tab.groupId !== -1 && !ignoreCloseGroupedTabs);
+	}
 
 	function isExceptionTab(tab) {
 		'use strict';
@@ -752,7 +726,7 @@ const INSTALLED = 'installed';
 		t5.remove(tabId, null);
 	}
 
-	const turnOffAutoDiscardable = (tab) => {
+	const checkAndTurnOffAutoDiscardable = (tab) => {
 		if (tab.autoDiscardable === true)
 			t5.update(tab.id, { autoDiscardable: false });
 	};
@@ -781,7 +755,7 @@ const INSTALLED = 'installed';
 		}
 
 		let pinnedSettings = settings.get('pinned');
-		let titeoutSettings = settings.get('timeout');
+		let timeoutSettings = settings.get('timeout');
 		let closeTimeout = settings.get('closeTimeout');
 		let isCloseTabsOn = settings.get('isCloseTabsOn');
 		let ignoreAudible = settings.get('ignoreAudible');
@@ -804,9 +778,10 @@ const INSTALLED = 'installed';
 			// CLOSE TAB LOGIC
 			if (!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging)
 				if (isCloseTabsOn && tickCount % tickSize == 0) {
+					let ignoreCloseGroupedTabs = settings.get('ignoreCloseGroupedTabs');
+
 					let oneTabClosed = false;
 					for (let wi in windows) {
-						// TDDO: add saparation per window.
 						let tabArray = [];
 
 						let tab;
@@ -817,7 +792,7 @@ const INSTALLED = 'installed';
 									tab = windows[wi].tabs[j];
 									tabFromTabs = tabs[tab.id];
 									if (tabFromTabs) {
-										if (!isExceptionTab(tab))
+										if (!isExceptionTab(tab) && passGroupedTabsRules(tab, ignoreCloseGroupedTabs))
 											tabArray.push(tabFromTabs);
 									}
 								}
@@ -883,7 +858,7 @@ const INSTALLED = 'installed';
 							}
 
 
-							turnOffAutoDiscardable(tab);
+							checkAndTurnOffAutoDiscardable(tab);
 
 							let tabInfo = null;
 
@@ -912,7 +887,7 @@ const INSTALLED = 'installed';
 									if (tabInfo.parkedCount == null)
 										tabInfo.parkedCount = 0;
 
-									let calculatedTabTimeFrame = titeoutSettings + titeoutSettings * tabInfo.parkedCount + (tabInfo.active_time + 1) * Math.log2(tabInfo.swch_cnt + 1) + (titeoutSettings / 4) * Math.log2(tabInfo.swch_cnt + 1);
+									let calculatedTabTimeFrame = timeoutSettings + timeoutSettings * tabInfo.parkedCount + (tabInfo.active_time + 1) * Math.log2(tabInfo.swch_cnt + 1) + (timeoutSettings / 4) * Math.log2(tabInfo.swch_cnt + 1);
 
 									if (extUrl !== 'chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html')
 										chrome.browserAction.setBadgeText({
@@ -920,7 +895,7 @@ const INSTALLED = 'installed';
 											tabId: tabId
 										});
 
-									if (!adaptiveSuspendTimeout && tabInfo.time >= titeoutSettings
+									if (!adaptiveSuspendTimeout && tabInfo.time >= timeoutSettings
 										|| adaptiveSuspendTimeout && tabInfo.time >= calculatedTabTimeFrame) {
 										if (!tab.active &&
 											tab.status === 'complete' &&
@@ -950,7 +925,7 @@ const INSTALLED = 'installed';
 												isTabURLAllowedForPark(tab) &&
 												(!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging) &&
 												(enableSuspendOnlyIfBattLvlLessValue == false || enableSuspendOnlyIfBattLvlLessValue == true && batteryLevel < battLvlLessValue / 100 && !isCharging)) {
-												let step = Math.round(tabInfo.time / ((titeoutSettings + titeoutSettings * (2 / steps)) / steps));
+												let step = Math.round(tabInfo.time / ((timeoutSettings + timeoutSettings * (2 / steps)) / steps));
 												let suspendPercent = step * 10;
 												if (tabInfo.suspendPercent != suspendPercent) {
 													tabInfo.suspendPercent = suspendPercent;
@@ -990,7 +965,7 @@ const INSTALLED = 'installed';
 
 									if (!tabInfo.discarded && discardTabAfterSuspendWithTimeout)
 										if (!tab.active) {
-											if (tabInfo.suspended_time >= titeoutSettings * discardTimeoutFactor) {
+											if (tabInfo.suspended_time >= timeoutSettings * discardTimeoutFactor) {
 												// eslint-disable-next-line no-undef
 												if (!isTabMarkedForUnsuspend(parseUrlParam(tab.url, 'tabId'), parseUrlParam(tab.url, 'sessionId'))) {
 													try {
@@ -1200,6 +1175,13 @@ const INSTALLED = 'installed';
 			parkTabs(request.tab);
 
 			sendResponse({ successful: true });
+		} else if (request.method === '[AutomaticTabCleaner:suspendAllTabs]') {
+			if (debug)
+				console.log('suspendAllTabs Requested.');
+
+			parkTabs();
+
+			sendResponse({ successful: true });
 		} else if (request.method === '[AutomaticTabCleaner:unsuspendAllTabs]') {
 			if (debug)
 				console.log('unsuspendAllTabs Requested.');
@@ -1262,7 +1244,9 @@ const INSTALLED = 'installed';
 				limitOfOpenedTabs: settings.get('limitOfOpenedTabs')
 			});
 		} else if (request.method === '[AutomaticTabCleaner:updateTimeout]') {
-			if (request.timeout != null && typeof request.timeout == 'number')
+			if (request.isTabSuspenderActive != null)
+				settings.set('active', request.isTabSuspenderActive);
+			else if (request.timeout != null && typeof request.timeout == 'number')
 				settings.set('timeout', request.timeout);
 			else if (request.isCloseTabsOn != null)
 				settings.set('isCloseTabsOn', request.isCloseTabsOn);
@@ -1272,6 +1256,8 @@ const INSTALLED = 'installed';
 				settings.set('limitOfOpenedTabs', request.limitOfOpenedTabs);
 			else if (request.sendErrors != null)
 				settings.set('sendErrors', request.sendErrors);
+			else if (request.popup_showWindowSessionByDefault != null)
+				settings.set('popup_showWindowSessionByDefault', request.popup_showWindowSessionByDefault);
 
 			reloadSettings();
 
@@ -1460,7 +1446,7 @@ const INSTALLED = 'installed';
 	t5.onCreated.addListener(function(tab) {
 		tabs[tab.id] = createNewTabInfo(tab);
 
-		turnOffAutoDiscardable(tab);
+		checkAndTurnOffAutoDiscardable(tab);
 
 		historyOpenerController.onNewTab(tab);
 
@@ -1661,14 +1647,14 @@ const INSTALLED = 'installed';
 			reloadSettings({ fromSettingsPage: true });
 		} else if (request.method === '[AutomaticTabCleaner:resetAllSettings]') {
 			settings.removeAll();
-			settings = new Store(settingsStorageNamespace, DEFAULT_SETTINGS);
+			settings = new Store(settingsStorageNamespace, window.DEFAULT_SETTINGS);
 			settings.set(INSTALLED, true);
 			reloadSettings(/*{fromSettingsPage: true}*/);
 		} else if (request.method === '[AutomaticTabCleaner:exportAllSettings]') {
 			sendResponse({settings: JSON.stringify(settings.toObject(), null, 2)});
 		} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
 			settings.removeAll();
-			settings = new Store(settingsStorageNamespace, { ...DEFAULT_SETTINGS, ...request.settings });
+			settings = new Store(settingsStorageNamespace, { ...window.DEFAULT_SETTINGS, ...request.settings });
 			settings.set(INSTALLED, true);
 			reloadSettings(/*{fromSettingsPage: true}*/);
 		}
@@ -1763,7 +1749,7 @@ const INSTALLED = 'installed';
 						documentUrlPatterns: ['http://*/*', 'https://*/*']
 					},
 					{
-						title: 'Suspend Current',
+						title: 'Suspend Current Tab',
 						contexts: ['all'],
 						onclick: function(info, tab) {
 							parkTab(tab, tab.id);
@@ -1902,7 +1888,7 @@ const INSTALLED = 'installed';
 								id = wins[i].tabs[j].id;
 
 								/* TURN OFF AUTODISCARTABLE */
-								turnOffAutoDiscardable(wins[i].tabs[j]);
+								checkAndTurnOffAutoDiscardable(wins[i].tabs[j]);
 
 								// HISTORY SUPPORT LOGIC
 								historyOpenerController.collectInitialTabState(wins[i].tabs[j]);
@@ -2342,7 +2328,7 @@ const INSTALLED = 'installed';
 
 			/* Prerare settings */
 			let firstInstallation = ((Store.get('timeout', settingsStorageNamespace)) == null && !chrome.extension.inIncognitoContext);
-			settings = new Store(settingsStorageNamespace, DEFAULT_SETTINGS);
+			settings = new Store(settingsStorageNamespace, window.DEFAULT_SETTINGS);
 			settingsInitedResolve();
 
 			/*
@@ -2405,7 +2391,7 @@ const INSTALLED = 'installed';
 				setTimeout(preInit, 1000);
 		};
 
-		/* Adjast DEFAULT_SETTINGS.limitOfOpenedTabs according of Screen size */
+		/* Adjust DEFAULT_SETTINGS.limitOfOpenedTabs according of Screen size */
 		if (chrome.hasOwnProperty('system') && chrome.system.hasOwnProperty('display'))
 			try {
 				chrome.system.display.getInfo(function(displayInfo) {
@@ -2414,7 +2400,7 @@ const INSTALLED = 'installed';
 							let displayWidth = displayInfo[0].workArea.width;
 
 							if (displayWidth != null && displayWidth > 0)
-								DEFAULT_SETTINGS.limitOfOpenedTabs = parseInt(displayWidth / 90.29);
+								window.DEFAULT_SETTINGS.limitOfOpenedTabs = parseInt(displayWidth / 90.29);
 						}
 					} catch (e) {
 						console.error(e);

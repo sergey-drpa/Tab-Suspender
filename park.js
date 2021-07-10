@@ -104,8 +104,8 @@ try {
 			} catch (e) {
 				console.error(e);
 
-				applyRestoreButtonView();
-				setTimeout(drawContent, 0);
+				applyRestoreButtonView(bgpage);
+				setTimeout(() => { drawContent(bgpage);}, 0);
 				setTimeout(continueStart, 0);
 			}
 
@@ -139,6 +139,10 @@ try {
 							if (debugPerformance)
 								console.log('Get Screen Loaded: ', Date.now());
 
+							if(scr == null) {
+								throw new Error('Screen image is null!');
+							}
+
 							bgScreen = scr;
 							if (!pixRat) {
 								screenshotDevicePixelRatio = window.devicePixelRatio;
@@ -146,13 +150,13 @@ try {
 								screenshotDevicePixelRatio = pixRat;
 							}
 							/* EXPERIMANTAL */
-							setTimeout(drawContent, 0);
+							setTimeout(() => { drawContent(bgpage);}, 0);
 							setTimeout(continueStart, 0);
 						} catch (e) {
 							console.error(e);
 
-							applyRestoreButtonView();
-							setTimeout(drawContent, 0);
+							applyRestoreButtonView(bgpage);
+							setTimeout(() => { drawContent(bgpage);}, 0);
 							setTimeout(continueStart, 0);
 						}
 					});
@@ -162,7 +166,7 @@ try {
 
 					applysSreenshotCssStyle(bgpage.getScreenshotCssStyle());
 					applyBackground('#' + bgpage.getParkBgColor());
-					applyRestoreButtonView(bgpage.getRestoreButtonView());
+					//applyRestoreButtonView(bgpage.getRestoreButtonView());
 					restoreEvent = bgpage.getRestoreEvent();
 					reloadTabOnRestore = bgpage.getReloadTabOnRestore();
 
@@ -206,7 +210,9 @@ function applysUserDisplayHeight(height) {
 	resoteImg.classList.remove('wait-for-render');
 }
 
-function applyRestoreButtonView(restoreButtonView) {
+function applyRestoreButtonView(bgpage, restoreButtonView) {
+	restoreButtonView = restoreButtonView ? restoreButtonView : (bgpage ? bgpage.getRestoreButtonView() : null);
+
 	let screen = document.getElementById('screen');
 	let resroreImg = document.getElementById('resoteImg');
 
@@ -220,6 +226,7 @@ function applyRestoreButtonView(restoreButtonView) {
 
 	if (restoreButtonView == null || restoreButtonView == 'roundIcon') {
 		resroreImg.style.display = 'block';
+		resroreImg.style.opacity = null;
 		document.getElementById('topRestore').style.display = 'none';
 
 		initOriginalUrlBlock();
@@ -392,11 +399,18 @@ function applyPixelRatio() {
 	}
 }
 
-function drawContent() {
+function drawContent(bgpage) {
 	if (debugPerformance)
 		console.log('Drow Content: ', Date.now());
 	//createTitleAndIcon();
 	let screenImg = document.getElementById('screen');
+
+	screenImg.onload = () => {
+		applyRestoreButtonView(bgpage);
+	}
+	screenImg.onerror = () => {
+		applyRestoreButtonView(bgpage);
+	}
 
 	applyPixelRatio();
 
@@ -470,7 +484,7 @@ function startEX() {
 				applysSreenshotCssStyle(message.screenshotCssStyle);
 
 			if (message.restoreButtonView != null)
-				applyRestoreButtonView(message.restoreButtonView);
+				applyRestoreButtonView(null, message.restoreButtonView);
 
 			if (message.tabIconStatusVisualize != null) {
 				tabIconStatusVisualize = message.tabIconStatusVisualize;

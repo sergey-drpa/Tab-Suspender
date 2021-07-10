@@ -34,7 +34,7 @@ this.manifest = {
 			'name': 'timeout',
 			'type': 'slider',
 			'label': 'Auto-Suspend tab after: ',
-			'max': 24 * 60 * 60,
+			'max': 24 * 2 * 60 * 60,
 			'min': 10,
 			'step': 10,
 			'step2': 1 * 60,
@@ -63,7 +63,7 @@ this.manifest = {
 			'group': 'Suspend interval',
 			'name': 'adaptiveSuspendTimeout-description',
 			'type': 'description',
-			'text': 'Recalculate Auto-Suspend Timeout for each Tab based on user interaction with tabs.'
+			'text': 'Recalculate Auto-Suspend Timeout for each Tab based on user interaction and time spent on each tab.'
 		},
 		/* time spent on Tab and number of returns to Tab */
 
@@ -159,6 +159,9 @@ this.manifest = {
 		},
 
 
+
+
+
 		{
 			'tab': 'Auto-close Tabs',
 			'group': 'Close tabs automatically',
@@ -214,6 +217,22 @@ this.manifest = {
 			'type': 'description',
 			'text': 'The max. amount of tabs that Tab Suspender will try to keep opened to reduce memory. (if opened tabs count exceeds the selected amount - Tab Suspender will start smoothly close most unused tabs, until the number of opened tabs decreases to the selected amount)'
 		},
+		{
+			'tab': 'Auto-close Tabs',
+			'group': 'Ignore options',
+			'name': 'ignoreCloseGroupedTabs',
+			'type': 'checkbox',
+			'label': 'Ignore Grouped tabs'
+		},
+		{
+			'tab': 'Auto-close Tabs',
+			'group': 'Ignore options',
+			'name': 'timeout-description',
+			'type': 'description',
+			'text': 'Ignore Grouped Tabs from being closed'
+		},
+
+
 
 
 
@@ -353,9 +372,23 @@ this.manifest = {
 		{
 			'tab': 'Restore Tab',
 			'group': 'Restore Tab',
+			'name': 'restoreOnMouseHover',
+			'type': 'checkbox',
+			'label': 'Restore on mouse hover'
+		},
+		{
+			'tab': 'Restore Tab',
+			'group': 'Restore Tab',
+			'name': 'timeout-description',
+			'type': 'description',
+			'text': 'Restore on mouse hover on blue circle instead of click'
+		},
+		{
+			'tab': 'Restore Tab',
+			'group': 'Restore Tab',
 			'name': 'autoRestoreTab',
 			'type': 'checkbox',
-			'label': 'Restore Automatically'
+			'label': 'Restore when switching to a tab'
 		},
 		{
 			'tab': 'Restore Tab',
@@ -369,28 +402,14 @@ this.manifest = {
 			'group': 'Restore Tab',
 			'name': 'reloadTabOnRestore',
 			'type': 'checkbox',
-			'label': 'Reload site on restore'
+			'label': 'Reload page on restore'
 		},
 		{
 			'tab': 'Restore Tab',
 			'group': 'Restore Tab',
 			'name': 'timeout-description',
 			'type': 'description',
-			'text': 'Reload site on restore instead of default behavior: get site from browser cache'
-		},
-		{
-			'tab': 'Restore Tab',
-			'group': 'Restore Tab',
-			'name': 'restoreOnMouseHover',
-			'type': 'checkbox',
-			'label': 'Restore on mouse hover'
-		},
-		{
-			'tab': 'Restore Tab',
-			'group': 'Restore Tab',
-			'name': 'timeout-description',
-			'type': 'description',
-			'text': 'Restore on mouse hover instead of click on restore icon'
+			'text': 'Reload page on restore instead of default behavior: get site from browser cache'
 		},
 
 
@@ -459,7 +478,7 @@ this.manifest = {
 
 
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Reset All Settings',
 			'name': 'resetAllSettings',
 			'type': 'button',
@@ -470,14 +489,14 @@ this.manifest = {
 			}
 		},
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Reset All Settings',
 			'name': 'timeout-description',
 			'type': 'description',
 			'text': 'If you have some problems with current Tab Suspender configuration you can reset all settings to default.'
 		},
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Export Settings',
 			'name': 'exportAllSettings',
 			'type': 'button',
@@ -502,14 +521,14 @@ this.manifest = {
 			}
 		},
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Export Settings',
 			'name': 'timeout-description',
 			'type': 'description',
 			'text': 'You can Export Tab Suspender Settings to another computer.'
 		},
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Import Settings',
 			'name': 'importAllSettings',
 			'type': 'button',
@@ -545,7 +564,7 @@ this.manifest = {
 			}
 		},
 		{
-			'tab': 'Reset Settings',
+			'tab': 'Manage Settings',
 			'group': 'Import Settings',
 			'name': 'timeout-description',
 			'type': 'description',

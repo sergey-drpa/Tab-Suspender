@@ -24,11 +24,20 @@
 </head>
 <body style="width: 300px;margin: 0px;font-family: Segoe UI;" class="en_US">
 <div style="margin: 10px; margin-bottom: 0px;">
-	<div style="width: 300px;height: 27px;text-align: center;">
+	<input id="tabSuspenderActive" type="checkbox" class="checkbox" style="float: right; margin-right: 0px; margin-left: 3px;">
+	<label class="checkbox checkboxBig" for="tabSuspenderActive"
+				 style="display: block;
+    position: absolute;
+    right: 8px;
+    top: 7px;">Toggle</label>
+
+	<div style="width: 300px;height: 27px;text-align: center;user-select: none;">
 		<a id="link" target="_blank" title="Rate it, please."
 			 href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews"
 			 class="title MSG_extTitle__"></a>
-		<span id="versionSpan" style="color: #ccc;font-size: 7px; cursor: default;">v1.2.9.1</span><span id="tabId"></span>
+		<span id="versionSpan" style="color: #ccc;font-size: 7px; cursor: default;user-select: none;">v1.2.9.1</span>
+		<span id="tabId"></span>
+
 
 	</div>
 	<hr style="
@@ -45,13 +54,12 @@
 		<div style="width: 100%; line-height: 19px;">
 			<div class="tab-button checked">
 				<label class="tab-button-link"
-							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica; cursor: pointer;" title="">Close
+							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica;font-weight: 100; cursor: pointer;" title="">Close
 					Unused Tabs Automatically
-					<input id="recicleTab" type="checkbox" name="vehicle"
-								 style="float: right; margin-right: 0px; margin-left: 3px;">
-					<label class="checkbox" for="recicleTab"
-								 style="float: right; margin-right: 0px; margin-left: 1px;">Toggle</label>
+					<!--<label class="checkbox" for="recicleTab"
+								 style="float: right; margin-right: 0px; margin-left: 1px;">Toggle</label-->
 				</label>
+					<input id="recicleTab" type="checkbox" style="float: right; margin-right: 0px; margin-left: 3px;">
 			</div>
 		</div>
 	</div>
@@ -60,12 +68,15 @@
 		<div id="slider" style="width: 252px;height: 74px;margin-left: 22px;" class="irs-greeen">
 			<div class="irs-greeen ">
 				<input type="text" class="js-range-slider-recicle-after" value="1800" />
+				<img id="increaseSliderRecicleAfterInterval" src="img/double-arrow2.png" class="increaseIntervalImg" style="left: 274px; top: 21px;" title="Increase interval..."/>
 			</div>
 			<div class="irs-greeen ">
 				<input type="text" class="js-range-slider-recicle-keep" value="30" />
 			</div>
 		</div>
 	</div>
+
+	<hr class="fullhr" style="background-color: #ddd;margin-left: -10px;margin-right: -10px;">
 
 	<div title="" style="width: fit-content; height: 36px; margin-left: auto; margin-right: auto; height: 20px; ">
 		<span
@@ -77,6 +88,7 @@
 		<div class="slider-background"></div>
 
 		<input type="text" class="js-range-slider" value="900" />
+		<img id="increaseSliderInterval" src="img/double-arrow2.png"  class="increaseIntervalImg" style="left: 237px; top: 15px;" title="Increase interval..."/>
 
 	</div>
 
@@ -85,28 +97,6 @@
 
 
 <hr class="fullhr" style="background-color: #ddd;">
-<div id="pause" class="menu " title="Stop Tab Suspender for a while...">
-	<img id="resetPauseTimer" class="reset-pause-timer" style="" title="Stop Tab Suspender for a while..."
-			 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADOUlEQVQ4T12TbWibZRSGr+dN3qRJ2ua71SXdKrjVtrNKpjRbN7d1YqeuuCF0FqoiorBfY/sh+IEUURTBD+yQyfxAZT90jlG2KsVaFZZG25E53aS0zNqmDU2NwTZLk75J3kfeYGT0/Ho+zn2f576fcwTr4rUq896a6tpetEILCIGCLCnmS/lM5vTzhcLE+nxROegFX9jvG9iwqbEltHtvsD7QUCOlbnDIxMzMyvjI8Fwqmbw0mE4f/QHyFVyZ4BB493g9X7R33t/Udm84mE2lKKwsoxeLKKqK1eXC7vXx0/ff/fnLz9GJY6nU48CagTUI1Dfc7g937bqv847NW4LpqUlyi4sUV1eRehGhmDA7anAEA3ibmhmLRqbHJybO9mezLwBSPKKq7fvd7vcfO3w4FL8cIzs/y+epNLXAQ1UWvs5rrABP+Ouova2R4N0h/aMTA5ePaYUHgLQ4brMNPBpuP+iSpWD6+jSl/Bq7l9L8HrnIpw928eQ3w7R07OTHeg9mu4P65lauLi5Nnbt6ZeCzgn5CvOR0DvWF7gr/vRD35Ff+ASnZcm6I4PYdZRIDPB+NMHWoGxRw+OpQql2JU7HY+VNrhSPiRWftSN/tjaGFpYTbMA0JwzmNp4aGae3YWSb5+OEuuuzWsvEmqxWv2588OTk9ejKX7xPP2GyDTwf825bzmUBJl2VXG748XwbHo2M0bN/BtchF4j3dBjc2kwndZL/+XjwxOlgqHRH3KMrbRz01+zbZRNuyFOV/OTCXZi4a4deeA7SducDGcAcXGjyG6dSZBOOpfOzNbO50HN4xCva8bq863u21bZ0V0lFY32o37Q0R1Tk9fvaGNvtuLv8K8K1B0OxSlOf6LeY799TbWhOIKqPNpDCujEcLhJTYgYAusyN/5a69rGmRjM5bwIKRZQP2OxWlt9+ibthWbbpFrVU35oSiFqXELMBWQlvNrP0Ry+rJV7VCYlnXPwDGgEJlFtxApwoHn7VYXJsVfGaB4lcVU1LTSzoUr+h6+hOtmAS+AiJAptLKFZUOYCuwD2jyKIo1IKVpRsrSDcgBvwGjwCTrh+kmn0yAEwgCt0JZulEpAcz/tzaM+T/+BS3sRyfvdorLAAAAAElFTkSuQmCC">
-	<div id="progress-bar" class="progress-bar" style="width:0px;">
-		<span style="float: right; white-space: nowrap; margin-right: 20px; line-height: 20px;"></span>
-	</div>
-	<img
-		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVElEQVQ4T4WSXUhTYRjH/+92KksIJJLARUUZBRVFs6DQ1Lmrbrab6FbKUDL77nJZt5V93RQUJSF1t91444hZRIkZlEok2ofjSLWmm8d9nJ1z3veJvWtzW2TP3XOe9/97/u97/gxltb93aNcyBVdsIKcd5OBCwOBCNSw+YhC/PN7WMlosYcVNfd+Q326DR9V0xDMWOJEc2xlQqTBUKYAlKDDe7vbmdRLQHfpa8TISmZxNGY6wppebKumr7IQKcLW68kftYGurLgHZzZphev4nzpNWMw4FPPC567CXuZ4N13ESwx8iC0tuLh9WCR3gtI8d6HszEElk3LO6WTgz19Ui77/27nP5LdzRBCEIG+8PFs4sFxYUbgRZ89MhdfRXoib/YNkT0VMuCVjTeQ3Ktr341t4ILggbzvXIPlsMhFVpbYY19b2m99FkicOfnS4pqO7KAb6cOCSBm87fLACygpXJObCGJ69obC5dAvh+slkC1p2+LgWTbTnAlgulgBULs2AHe1+oE/NGDc/9cllqR5MU1Jy5IQETxxtkv/XirUUHRFC06Azb/SA0EDO4WzMXCeHsnQlYfzYH+HisXgK2X7pdANgMHZRJBdmehyEncf52Ol1kAYD16Z10k3+08p7NR8G5WSeDtONe0J+yyBPjJcn+Zy5YagHCNAJx31GvVDQ+ClVEkvpkUjCHRvYlAyXFekqNT0/V4nF3Lsr52nyn309ceJJQYNrsIPwZE8FmZkDpBASY3JzX/OXZ0dO/k1nmVUHcSdxyZBPIiakWaARk88V8R8aKl/4GE047BJlMkvQAAAAASUVORK5CYII=">
-	<span class="menu _pause-paused no-clickable">Pause Suspender:</span>
-	<div id="pause-first-btn" class="inline-btn" style="margin-left: 12px;" title="Stop Tab Suspender for 10 minutes.">10
-		min
-	</div>
-	<div id="pause-second-btn" class="inline-btn" style="margin-left:55px;" title="Stop Tab Suspender for 1 hour.">1 hour
-	</div>
-	<div id="pause-third-btn" class="inline-btn" style="margin-left: 97px;" title="Stop Tab Suspender for 5 hours.">5
-		hours
-	</div>
-	<div id="pause-forth-btn" class="inline-btn" style="margin-left: 143px;" title="Stop Tab Suspender for 1 Day.">1 day
-	</div>
-</div>
-
-<hr class="fullhr">
 <div id="addToWhilelist" class="menu whitelist-btn" title="Add to Whitelist to NOT suspend this site in future.">
 	<img
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAYlJREFUOE+dk81KAlEUx2dj7VoZ2od4HefTCCMXUm1a9gy9RA9RWa0iAgsjkMSopTNNKmoYkrhLF7VtUfgO0+Cc7rkz4EejSQf+zOXe/+9czp1zuNGQDV6VSpF9sUja4iMxmeia7h3gmWv7HXN7IZ9c5NNKJQpqQwC5zIOkR5hwzfaqPNBkl/6sf8bFnNjpbvvW6kpFbUZBMhzIU/Qs1hRBNEhtob7UT7LRiqfxwBPyEHqFAskwWDDCq0r1j5tHRb3IRLRliRM1crzS8L49oAU8RRlAhn5TmOBdLBMGXHycwf1XHm67ubFCj6oLgAxl3zBBL/ywyBKYpgn2dw9syx4r9CS1BCCD7FACy7LAtqlxgtAznEDvl3D+cgr51g3kWtmxQk9Mo/VjCTqWoJOTcY84SewRdXLE8aWQpNT+8Rspg6zTCwVyzbrQy+wh9FLmisEY2MrxZ/lpmiTYhdRbm78Lzrq4E6FKcNphyux+JoeHaTC2XhM4zofU2BkY5w7dS22212OuzQ2O+wGXSeMZ7Ur3dgAAAABJRU5ErkJggg==">
@@ -140,21 +130,25 @@
 <hr class="fullhr">
 
 <div class="menu no-clickable">
-	<img
+	<img style="opacity: 0.7;"
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
 	<span class="menu no-clickable">
 		Suspend:
 	</span>
-	<div id="suspend" class="inline-btn" style="margin-left: 63px;padding-left: 6px;padding-right: 6px;"
+	<div id="suspend" class="inline-btn" style="margin-left: 31px;padding-left: 5px;padding-right: 5px;"
 			 title="Immediately suspend current tab.">
-		This Tab
+		Tab
 	</div>
-	<div id="suspendWindow" class="inline-btn" style="margin-left: 119px;padding-left: 6px;padding-right: 6px;"
+	<div id="suspendWindow" class="inline-btn" style="margin-left: 70px;padding-left: 5px;padding-right: 5px;"
 			 title="Immediately suspend all tabs at current window.">
-		This Window
+		Window
 	</div>
-	<div id="suspendAllOther" class="inline-btn" style="margin-left: 195px;padding-left: 6px;padding-right: 6px;"
+	<div id="suspendAllOther" class="inline-btn" style="margin-left: 131px;padding-left: 5px;padding-right: 5px;"
 			 title="Immediately suspend all tabs except current tab.">
+		All Other
+	</div>
+	<div id="suspendAll" class="inline-btn" style="margin-left: 195px;padding-left: 5px;padding-right: 5px;"
+			 title="Immediately suspend all tabs.">
 		All
 	</div>
 </div>
@@ -166,11 +160,11 @@
 	<span class="menu no-clickable">
 		Unsuspend:
 	</span>
-	<div id="unsuspendWindow" class="inline-btn" style="margin-left: 104px;padding-left: 6px;padding-right: 6px;"
+	<div id="unsuspendWindow" class="inline-btn" style="margin-left: 122px;padding-left: 5px;padding-right: 5px;"
 			 title="Immediately unsuspend all tabs at current window.">
-		This Window
+		Window
 	</div>
-	<div id="unsuspendAll" class="inline-btn" style="margin-left: 181px;padding-left: 6px;padding-right: 6px;"
+	<div id="unsuspendAll" class="inline-btn" style="margin-left: 182px;padding-left: 5px;padding-right: 5px;"
 			 title="Immediately unsuspend all tabs.">
 		All
 	</div>
@@ -186,13 +180,39 @@
 </div>
 
 <hr class="fullhr">
-<div id="sessionManager" class="menu" title="Open Session Manager (Experimental).">
+<div id="sessionManager" class="menu" title="Open Session Manager.">
 	<img
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABV0lEQVR4Xo3OPW4TQRiH8efdfWf2w5uFUEAKx+QMdOncwCW4A5WvgVxwAKRcAG4Q0UBFDYIiZGUsQHjXyGZjZW0PKazVGsnS/KSR5l/Mo5HxeJyKSI6n9Xo9G41GDTs6HA7fpmn6lAPKsqK4LnDOEScxeX70CnjRBhaLZVz/XYEACMKO0Do9HbRjOv1+jw4VAgaP+/gqioIuNcZircWXseb/gLaB+aJh1Ww55GbVIL3Bs4s3Hy+NhmSJvtY7bWA6K5nXtxyy2TicsSdxsD2RQJj8/HGt2vlBL7JEcjgAAmh7r0sVDYOAMAwBiKzhQdbD17fEohIE7BCGAVEU4csYg04mxdeqKs8EcHr/+OHxo8w7oCECpMARwOX7zy/Pn5w9x9O7D18uFKh3hyTJblQVX86B0nG73iAi+Npst/uB2Z96+emqQugQOlv29q+7B8K+HOgDgp/f/wD89mT6kxQvpwAAAABJRU5ErkJggg==">
 	<span class="menu _suspend-history">
 	Session Manager...
 </span>
 </div>
+
+
+<hr class="fullhr">
+<div id="pause" class="menu " title="Stop Tab Suspender for a while...">
+	<img id="resetPauseTimer" class="reset-pause-timer" style="" title="Stop Tab Suspender for a while..."
+			 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADOUlEQVQ4T12TbWibZRSGr+dN3qRJ2ua71SXdKrjVtrNKpjRbN7d1YqeuuCF0FqoiorBfY/sh+IEUURTBD+yQyfxAZT90jlG2KsVaFZZG25E53aS0zNqmDU2NwTZLk75J3kfeYGT0/Ho+zn2f576fcwTr4rUq896a6tpetEILCIGCLCnmS/lM5vTzhcLE+nxROegFX9jvG9iwqbEltHtvsD7QUCOlbnDIxMzMyvjI8Fwqmbw0mE4f/QHyFVyZ4BB493g9X7R33t/Udm84mE2lKKwsoxeLKKqK1eXC7vXx0/ff/fnLz9GJY6nU48CagTUI1Dfc7g937bqv847NW4LpqUlyi4sUV1eRehGhmDA7anAEA3ibmhmLRqbHJybO9mezLwBSPKKq7fvd7vcfO3w4FL8cIzs/y+epNLXAQ1UWvs5rrABP+Ouova2R4N0h/aMTA5ePaYUHgLQ4brMNPBpuP+iSpWD6+jSl/Bq7l9L8HrnIpw928eQ3w7R07OTHeg9mu4P65lauLi5Nnbt6ZeCzgn5CvOR0DvWF7gr/vRD35Ff+ASnZcm6I4PYdZRIDPB+NMHWoGxRw+OpQql2JU7HY+VNrhSPiRWftSN/tjaGFpYTbMA0JwzmNp4aGae3YWSb5+OEuuuzWsvEmqxWv2588OTk9ejKX7xPP2GyDTwf825bzmUBJl2VXG748XwbHo2M0bN/BtchF4j3dBjc2kwndZL/+XjwxOlgqHRH3KMrbRz01+zbZRNuyFOV/OTCXZi4a4deeA7SducDGcAcXGjyG6dSZBOOpfOzNbO50HN4xCva8bq863u21bZ0V0lFY32o37Q0R1Tk9fvaGNvtuLv8K8K1B0OxSlOf6LeY799TbWhOIKqPNpDCujEcLhJTYgYAusyN/5a69rGmRjM5bwIKRZQP2OxWlt9+ibthWbbpFrVU35oSiFqXELMBWQlvNrP0Ry+rJV7VCYlnXPwDGgEJlFtxApwoHn7VYXJsVfGaB4lcVU1LTSzoUr+h6+hOtmAS+AiJAptLKFZUOYCuwD2jyKIo1IKVpRsrSDcgBvwGjwCTrh+kmn0yAEwgCt0JZulEpAcz/tzaM+T/+BS3sRyfvdorLAAAAAElFTkSuQmCC">
+	<div id="progress-bar" class="progress-bar" style="width:0px;">
+		<span style="float: right; white-space: nowrap; margin-right: 20px; line-height: 20px;"></span>
+	</div>
+	<img
+		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACVElEQVQ4T4WSXUhTYRjH/+92KksIJJLARUUZBRVFs6DQ1Lmrbrab6FbKUDL77nJZt5V93RQUJSF1t91444hZRIkZlEok2ofjSLWmm8d9nJ1z3veJvWtzW2TP3XOe9/97/u97/gxltb93aNcyBVdsIKcd5OBCwOBCNSw+YhC/PN7WMlosYcVNfd+Q326DR9V0xDMWOJEc2xlQqTBUKYAlKDDe7vbmdRLQHfpa8TISmZxNGY6wppebKumr7IQKcLW68kftYGurLgHZzZphev4nzpNWMw4FPPC567CXuZ4N13ESwx8iC0tuLh9WCR3gtI8d6HszEElk3LO6WTgz19Ui77/27nP5LdzRBCEIG+8PFs4sFxYUbgRZ89MhdfRXoib/YNkT0VMuCVjTeQ3Ktr341t4ILggbzvXIPlsMhFVpbYY19b2m99FkicOfnS4pqO7KAb6cOCSBm87fLACygpXJObCGJ69obC5dAvh+slkC1p2+LgWTbTnAlgulgBULs2AHe1+oE/NGDc/9cllqR5MU1Jy5IQETxxtkv/XirUUHRFC06Azb/SA0EDO4WzMXCeHsnQlYfzYH+HisXgK2X7pdANgMHZRJBdmehyEncf52Ol1kAYD16Z10k3+08p7NR8G5WSeDtONe0J+yyBPjJcn+Zy5YagHCNAJx31GvVDQ+ClVEkvpkUjCHRvYlAyXFekqNT0/V4nF3Lsr52nyn309ceJJQYNrsIPwZE8FmZkDpBASY3JzX/OXZ0dO/k1nmVUHcSdxyZBPIiakWaARk88V8R8aKl/4GE047BJlMkvQAAAAASUVORK5CYII=">
+	<span class="menu _pause-paused no-clickable">Pause Suspender:</span>
+	<div id="pause-first-btn" class="inline-btn" style="margin-left: 2px; filter: brightness(0.55);" title="Stop Tab Suspender for 10 minutes.">
+		10 min
+	</div>
+	<div id="pause-second-btn" class="inline-btn" style="margin-left:48px; filter: brightness(0.55);" title="Stop Tab Suspender for 1 hour.">
+		1 hour
+	</div>
+	<div id="pause-third-btn" class="inline-btn" style="margin-left: 92px; filter: brightness(0.55);" title="Stop Tab Suspender for 5 hours.">
+		5 hours
+	</div>
+	<div id="pause-forth-btn" class="inline-btn" style="margin-left: 141px; filter: brightness(0.55);" title="Stop Tab Suspender for 1 Day.">
+		1 day
+	</div>
+</div>
+
 
 <hr class="fullhr">
 <div id="hotkeys" class="menu" title="Setup/Change hotkeys for fast access to Tab Suspender functions.">
@@ -204,10 +224,10 @@
 </div>
 <hr class="fullhr">
 <div id="settings" class="menu" title="Open full settings page.">
-	<img
+	<img style="opacity: 1;"
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADAklEQVQ4T2NkYGBgqO/uFmssLX0FYuMDy5cvDxEQEIgVEhKaZm5uvhOklnHPnj1TjI2Nsw8dPjzX388vBZcBkyZNWO/u4Rnw98/f/w8e3P+8a9dujQkTJjxnrKiocHF2cd3Bz8/HePXKFYfExMTD6IakpaWxhoaGfDc0NGQ+fPjI+cDAQGsGBobvYBeACHNzcz15eeWt3d3twm/evLE1NjY+i2xIbm5uanh4+CwNTQ2GO3fuvDt44KCCpKSY64kTp0+DDYACdld39+OzZszQfvr0qYeNjc1+mERrW+t5WTk5g1+//jCYmxozXLp06fe7d+8YZ86cJYNsAEg9S0BA4L7unm6Lly9ehNjY2GyaOXOmiLKy0rM169axaqipMRgZGzFcu3b93969e3esXrXaG90AkCFMScnJW4qKil0f3L9X+uPHj7a79+5y/vn95++HDx++ffn25dXtm7eX79mzp46BgeE/NgPAYdPS0rLFy9vba/OmTQwcHBx/Vq9eHXHmzJkNDAwMf5HDB6sB7e3txgoK8iePHDnCHB0Tx8D9Zd3L21smzQ+Z+KMSPYYwDOjs7HSUlJLcs2jRAiZTE/P/Onw7n0QEXJN9e/PX/5MH/pn4TmA4h9MFfX19vtzcXBuXLl3KqKurx/D27dsp4p9X/Ax3Yc03CfzN8uurAMOuOZ9XBPX/jYQZAnfBhAkTYv79/7do9eqVjPJyigy8vLxrZ8+eHQJSKM7PoLimke26eZAc+483DAx7F965EiDIoM/YwPAPbMC0adOyhYSEJk+cOIGRm5uHwcDA4EhPT489AwPDP5hNWZ4MxVmxTF1iksJMXAIsDPuWPL+vbM6gwbh//36BO3fuHD516tQRAQGBDF5e3ut1dXUGDAwMv9ADLMWFIbMwg2myEDcHM48oI8P1HV+3MGZlZal4enqe+v3794l79+7plJSUaDEwMHzBlamiHBgiCqMZFgvzMjKs2fs/EOyF4ODgKdzc3Bo7duyIfvXq1UtC2VpNikFDnIuB6fAdhmsACj0p17tHUkQAAAAASUVORK5CYII=">
-	<span class="menu _settings">
-		All Settings...
+	<span class="menu _settings" style="color: #000000;">
+		Settings...
 	</span>
 </div>
 
@@ -254,11 +274,14 @@
     /* float: left; */
     height: 48px;
     padding-top: 42px;
-    text-align: center;
-	  cursor: pointer;" id="activeSessionsButton">
-	<div class="button">
+    text-align: center;" >
+	<div id="activeSessionsButton" class="button">
 		Show Window Sessions
 	</div>
+	<img id="sessionManagerLink" class="sessionManagerLinkNew" src="./img/open-512.png" width="24" height="24" style="vertical-align: middle; cursor: pointer;" title="Open Window Sessions in New window"/>
+	<br/>
+	<label style="font-size: 10px; font-family: Helvetica; color: #8c8c8c;">Show by default</label>
+	<input id="showWindowSessionByDefault" type="checkbox" style="vertical-align: middle;">
 </div>
 <div id="previewsBar" style="display: none;"></div>
 

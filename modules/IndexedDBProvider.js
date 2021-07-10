@@ -182,36 +182,58 @@ IndexedDBProvider.prototype.putV2 = function(queries) {
  */
 IndexedDBProvider.prototype.getTransaction = function(tables, mode) {
 	let self = this;
-	try {
-		if (this.db == null)
-			return new Promise(function(resolve) {
-				self.initializedPromise.then(function() {
+	if (this.db == null)
+		return new Promise(function(resolve, reject) {
+			self.initializedPromise.then(function() {
+				try {
 					resolve(self.db.transaction(tables, mode));
-				});
+				} catch (e) {
+					console.error(e);
+					self.getTransactionWithReconnect(e, tables, mode)
+						.then(resolve)
+						.catch(reject);
+				}
 			});
-
-		return new Promise(function(resolve) {
-			resolve(self.db.transaction(tables, mode));
 		});
-	} catch (e) {
-		console.error(e);
+
+	return new Promise(function(resolve, reject) {
+		try {
+			resolve(self.db.transaction(tables, mode));
+		} catch (e) {
+			console.error(e);
+			self.getTransactionWithReconnect(e, tables, mode)
+				.then(resolve)
+				.catch(reject);
+		}
+	});
+};
+
+IndexedDBProvider.prototype.getTransactionWithReconnect = function(e, tables, mode) {
+	let self = this;
+	return new Promise(function(resolve, reject) {
 		if (e.name === 'InvalidStateError') {
-			return new Promise(function(resolve) {
+
 				self.open();
 				self.initializedPromise.then(function() {
-						resolve(self.db.transaction(tables, mode));
+						try {
+							resolve(self.db.transaction(tables, mode));
+						} catch (e) {
+							console.error(e);
+							reject();
+						}
 					},
 					function(e) {
 						e.message = 'Could not reconnect to IndexedDB!!!!!: ' + e.message;
+						reject();
 						throw e;
 					});
-			});
 		} else {
 			e.message = 'Unexpected getTransaction Exception: ' + e.message;
+			reject();
 			throw e;
 		}
-	}
-};
+	});
+}
 
 /**
  *
