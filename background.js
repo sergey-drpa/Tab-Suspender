@@ -1481,8 +1481,39 @@ const INSTALLED = 'installed';
 	// tabs.onSelectionChanged - load if unloaded, reset inactivity
 	t5.onActivated.addListener(function(activeInfo) {
 		'use strict';
+		const processedPromise = new Promise((resolve,reject) => {
 
-		t5.get(activeInfo.tabId, function(tab) {
+			let retries = 0;
+			let timeout;
+			timeout = setTimeout(()=> {
+				if(retries > 5) {
+					clearTimeout(timeout);
+					console.error("Can't request Tab object on TabActivated (5 retries left)");
+					reject();
+					return;
+				}
+				//if(retries > 1) {
+					console.error(`Trying to request Tab object on TabActivated (${retries})`);
+				//}
+				retries++;
+				try {
+					t5.get(activeInfo.tabId, function(tab) {
+						if (tab != null) {
+							clearTimeout(timeout);
+							resolve(tab);
+						}
+					});
+				} catch(e) {
+					console.log(e);
+				}
+
+			}, 150);
+
+		});
+
+		processedPromise.then(tab => {
+
+			console.log(`OnTab Activated: ${activeInfo.tabId}`, tab);
 
 			getTabInfo(tab).swch_cnt++;
 			getTabInfo(tab).time = 0;
