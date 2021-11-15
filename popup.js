@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				updateRecycleKeepSliderTitle(seconds);
 			}, 100);
 
-			return '...and when window have more than <b style=\'font-size: 11px;\'>' + seconds + '</b> opened tabs';
+			return '...and only when window have more than <b style=\'font-size: 11px;\'>' + seconds + '</b> opened tabs';
 		},
 		onFinish: function(data) {
 
@@ -440,7 +440,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 
 	document.querySelector('#suspendHistory').onclick = function(options) {
-		focuseOrOpenTSPage('history.html', options);
+		focuseOrOpenTSPage('history.html#suspended', options);
+		return false;
+	};
+
+	document.querySelector('#closeHistory').onclick = function(options) {
+		focuseOrOpenTSPage('history.html#closed', options);
 		return false;
 	};
 

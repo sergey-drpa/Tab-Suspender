@@ -51,5 +51,5 @@ var DEFAULT_SETTINGS = {
 	'restoreButtonView': 'roundIcon', /* Available: roundIcon, noIcon, topBar */
 	'sendErrors': true,
 	'ignoreCloseGroupedTabs': true,
-	'popup_showWindowSessionByDefault': false
+	'popup_showWindowSessionByDefault': true
 };

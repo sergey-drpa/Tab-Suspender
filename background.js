@@ -19,7 +19,7 @@ const INSTALLED = 'installed';
 
 	/* Definitions for Syntax Check */
 	window.chrome = window.chrome || {};
-	window.FormRestoreController = window.FormRestoreController || {};
+	window.PageStateRestoreController = window.PageStateRestoreController || {};
 	window.HistoryOpenerController = window.HistoryOpenerController || {};
 	window.isTabInIgnoreTabList = window.isTabInIgnoreTabList || {};
 	window.parseUrlParam = window.parseUrlParam || {};
@@ -76,6 +76,7 @@ const INSTALLED = 'installed';
 	// Globals
 	let rootExtensionUri = e5.getURL('');
 	let sessionsPageUrl = e5.getURL('sessions.html');
+	let historyPageUrl = e5.getURL('history.html');
 	let database;
 	let webSqlDatabase;
 	let tabs = {}; // list of tabIDs with inactivity time {'id', 'time', 'active_time', 'swch_cnt', 'screen', 'parkTrys'}
@@ -97,7 +98,7 @@ const INSTALLED = 'installed';
 	let firstTimeTabDiscardMap = {};
 	let screenshotQuality;
 	// eslint-disable-next-line no-undef
-	let formRestoreController = new FormRestoreController();
+	let formRestoreController = new PageStateRestoreController();
 	// eslint-disable-next-line no-undef
 	let tabsMarkedForUnsuspend = [];
 	let TABS_MARKED_FOR_UNSUSPEND_TTL = 5000;
@@ -477,8 +478,14 @@ const INSTALLED = 'installed';
 			c5.windows.getAll({ 'populate': true }, callbackAll);
 	}
 
+	function genYoutubeUrlWithTimeMark(url, videoTime) {
+		const urlWithTimeMark = new URL(url);
+		urlWithTimeMark.searchParams.set('t', videoTime + 's');
+		return urlWithTimeMark.href;
+	}
+
 	// park idle tab if it is not parked yet
-	function parkTab(tab, tabId, options) {
+	async function parkTab(tab, tabId, options) {
 		'use strict';
 
 		if (!isTabURLAllowedForPark(tab))
@@ -494,7 +501,14 @@ const INSTALLED = 'installed';
 		}
 
 		/* Save history */
+		let pageState;
 		try {
+			pageState = await formRestoreController.collectPageState(tabId);
+
+			if(pageState.videoTime != null) {
+				tab.url = genYoutubeUrlWithTimeMark(tab.url, pageState.videoTime);
+			}
+
 			let duplicate = false;
 			if (parkHistory.length > 0 && parkHistory[0].tabId != null && parkHistory[0].sessionId != null)
 				if (parkHistory[0].tabId == tabId && parkHistory[0].sessionId == window.TSSessionId)
@@ -511,102 +525,102 @@ const INSTALLED = 'installed';
 				localStorage.setItem('parkHistory', JSON.stringify(parkHistory));
 			}
 
-			formRestoreController.hebernateFormData(tabId);
 		} catch (e) {
 			console.error(e);
 		}
 
-		/* Detached from thread for hebernateFormData have chance to process */
-		setTimeout(function() {
-			isScreenExist(tabId, null, function(screenExist) {
-				if (screenExist == null || parseInt(screenExist) <= 0) {
-					if (debug)
-						console.log('Screen Not Exist');
+		/* Detached from thread for collectPageState have chance to process */
+		//setTimeout(function() {
+		isScreenExist(tabId, null, function(screenExist) {
+			if (screenExist == null || parseInt(screenExist) <= 0) {
+				if (debug)
+					console.log('Screen Not Exist');
 
-					getTabInfo(tab).lstCapUrl = tab.url;
+				getTabInfo(tab).lstCapUrl = tab.url;
 
-					let tabParked = false;
-					let closureTabId = tabId;
-					let closureTab = tab;
-					let checkTabIsParked;
-					let checkTabIsParkedTimeout;
+				let tabParked = false;
+				let closureTabId = tabId;
+				let closureTab = tab;
+				let checkTabIsParked;
+				let checkTabIsParkedTimeout;
 
-					let parkByMessage = function(closureTab, closureTabId) {
-						c5.windows.get(closureTab.windowId, function(win) {
-							let width = null;
-							if (closureTab.width == null || closureTab.width == 0)
-								width = win.width - 20;
-							let height = win.height;
+				let parkByMessage = function(closureTab, closureTabId) {
+					c5.windows.get(closureTab.windowId, function(win) {
+						let width = null;
+						if (closureTab.width == null || closureTab.width == 0)
+							width = win.width - 20;
+						let height = win.height;
 
-							t5.sendMessage(closureTabId, {
-									method: '[AutomaticTabCleaner:ParkPageFromInject]',
-									'tabId': closureTab.id,
-									'sessionId': window.TSSessionId,
-									'width': width,
-									'height': height
-								},
-								function(response) {
-									if (response != null) {
-										if (response.result == 'successful') {
-											tabParked = true;
-											markTabParked(closureTab);
-										} else if (checkTabIsParked != null)
-											checkTabIsParked();
-									}
-									console.log('ParkPageFromInject response: ' + response);
-								});
-						});
-					};
-
-					parkByMessage(closureTab, closureTabId);
-
-					/*	TODO:	Invesigate https://yandex.ru/maps/2/saint-petersburg/?ll=30.414844%2C60.004372&z=12&mode=search&text=molly&sll=30.414844%2C60.004372&sspn=0.372849%2C0.003782&sctx=ZAAAAAgBEAAaKAoSCVnaqbncUD5AEQZwqwdp901AEhIJwSUCAMDc5z8ROPBhbOXJyz8gACABIAIgAygFMAE4%2BYuinpTW%2BYw1QL2CBkgBVcH%2Bfz9YAGIjZGlyZWN0X2RvbnRfc2hvd19vbl9jaGFpbl9yZXF1ZXN0PTFiKGRpcmVjdF9kb250X3Nob3dfb25fcnVicmljX3dpdGhfYWR2ZXJ0PTFqAnJ1cAA%3D					*/
-					/*  DOMException: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported. */
-					/*  Try to reinject JS if parked failed */
-					/*								*/
-					checkTabIsParkedTimeout = setTimeout(checkTabIsParked = function() {
-						if (checkTabIsParkedTimeout != null) {
-							clearTimeout(checkTabIsParkedTimeout);
-							checkTabIsParkedTimeout = null;
-						}
-
-						if (tabParked == false/* && isPageHasNonCompleteInput == false*/) {
-							injectJS(closureTabId);
-							parkByMessage(closureTab, closureTabId);
-						}
-					}, 10000);
-				} else
-					try {
-						if (debug)
-							console.log('Screen Exist');
-
-						//check if parked
-						if (tab != null /*&& !tab.active && isTabURLAllowedForPark(tab)*/) {
-							t5.sendMessage(tabId, { method: '[AutomaticTabCleaner:getOriginalFaviconUrl]' }, function(originalFaviconUrl) {
-
-								if (debug)
-									console.log('originalFaviconUrl: ', originalFaviconUrl);
-
-								let url = extUrl + '?title=' + encodeURIComponent(tab.title);
-								url += '&url=' + encodeURIComponent(tab.url);
-								url += '&tabId=' + encodeURIComponent(tabId);
-								url += '&sessionId=' + encodeURIComponent(window.TSSessionId);
-
-								if (originalFaviconUrl != null && originalFaviconUrl != '')
-									url += '&icon=' + encodeURIComponent(originalFaviconUrl);
-								else if (tab.favIconUrl)
-									url += '&icon=' + encodeURIComponent(tab.favIconUrl);
-
-								t5.update(tab.id, { 'url': url });
+						t5.sendMessage(closureTabId, {
+								method: '[AutomaticTabCleaner:ParkPageFromInject]',
+								'tabId': closureTab.id,
+							  'url': closureTab.url,
+								'sessionId': window.TSSessionId,
+								'width': width,
+								'height': height
+							},
+							function(response) {
+								if (response != null) {
+									if (response.result == 'successful') {
+										tabParked = true;
+										markTabParked(closureTab);
+									} else if (checkTabIsParked != null)
+										checkTabIsParked();
+								}
+								console.log('ParkPageFromInject response: ' + response);
 							});
-						}
+					});
+				};
 
-						markTabParked(tab);
-					} catch (e) {
-						console.error('Park by link failed: ', e);
+				parkByMessage(closureTab, closureTabId);
+
+				/*	TODO:	Invesigate https://yandex.ru/maps/2/saint-petersburg/?ll=30.414844%2C60.004372&z=12&mode=search&text=molly&sll=30.414844%2C60.004372&sspn=0.372849%2C0.003782&sctx=ZAAAAAgBEAAaKAoSCVnaqbncUD5AEQZwqwdp901AEhIJwSUCAMDc5z8ROPBhbOXJyz8gACABIAIgAygFMAE4%2BYuinpTW%2BYw1QL2CBkgBVcH%2Bfz9YAGIjZGlyZWN0X2RvbnRfc2hvd19vbl9jaGFpbl9yZXF1ZXN0PTFiKGRpcmVjdF9kb250X3Nob3dfb25fcnVicmljX3dpdGhfYWR2ZXJ0PTFqAnJ1cAA%3D					*/
+				/*  DOMException: Failed to execute 'toDataURL' on 'HTMLCanvasElement': Tainted canvases may not be exported. */
+				/*  Try to reinject JS if parked failed */
+				/*								*/
+				checkTabIsParkedTimeout = setTimeout(checkTabIsParked = function() {
+					if (checkTabIsParkedTimeout != null) {
+						clearTimeout(checkTabIsParkedTimeout);
+						checkTabIsParkedTimeout = null;
 					}
-			});
-		}, 200);
+
+					if (tabParked == false/* && isPageHasNonCompleteInput == false*/) {
+						injectJS(closureTabId);
+						parkByMessage(closureTab, closureTabId);
+					}
+				}, 10000);
+			} else
+				try {
+					if (debug)
+						console.log('Screen Exist');
+
+					//check if parked
+					if (tab != null /*&& !tab.active && isTabURLAllowedForPark(tab)*/) {
+						t5.sendMessage(tabId, { method: '[AutomaticTabCleaner:getOriginalFaviconUrl]' }, function(originalFaviconUrl) {
+
+							if (debug)
+								console.log('originalFaviconUrl: ', originalFaviconUrl);
+
+							let url = extUrl + '?title=' + encodeURIComponent(tab.title);
+							url += '&url=' + encodeURIComponent(tab.url);
+							url += '&tabId=' + encodeURIComponent(tabId);
+							url += '&sessionId=' + encodeURIComponent(window.TSSessionId);
+
+							if (originalFaviconUrl != null && originalFaviconUrl != '')
+								url += '&icon=' + encodeURIComponent(originalFaviconUrl);
+							else if (tab.favIconUrl)
+								url += '&icon=' + encodeURIComponent(tab.favIconUrl);
+
+							t5.update(tab.id, { 'url': url });
+						});
+					}
+
+					markTabParked(tab);
+				} catch (e) {
+					console.error('Park by link failed: ', e);
+				}
+		});
+		//}, 200);
 	}
 
 	function markTabParked(tab) {
@@ -1553,6 +1567,8 @@ const INSTALLED = 'installed';
 			try {
 				if (tab.url.indexOf(sessionsPageUrl) == 0)
 					chrome.tabs.sendMessage(tab.id, { 'method': '[AutomaticTabCleaner:updateSessions]' });
+				if (tab.url.indexOf(historyPageUrl) == 0)
+					chrome.tabs.sendMessage(tab.id, { 'method': '[AutomaticTabCleaner:updateHistoryPage]' });
 			} catch (e) {
 				console.error(e);
 			}

@@ -7,7 +7,7 @@
 /**
  *
  */
-function FormRestoreController() {
+function PageStateRestoreController() {
 	'use strict';
 
 	this.TIMEOUT = 7000;
@@ -20,7 +20,7 @@ function FormRestoreController() {
 /**
  *
  */
-FormRestoreController.prototype.getFormRestoreDataAndRemove = function(actualTabId) {
+PageStateRestoreController.prototype.getFormRestoreDataAndRemove = function(actualTabId) {
 	'use strict';
 
 	let targetMapEntry = this.getTargetMapEntry(actualTabId);
@@ -37,7 +37,7 @@ FormRestoreController.prototype.getFormRestoreDataAndRemove = function(actualTab
 /**
  *
  */
-FormRestoreController.prototype.getTargetMapEntry = function(actualTabId) {
+PageStateRestoreController.prototype.getTargetMapEntry = function(actualTabId) {
 	'use strict';
 
 	let tabMapEntry = this.tabMap[actualTabId];
@@ -52,27 +52,35 @@ FormRestoreController.prototype.getTargetMapEntry = function(actualTabId) {
 /**
  *
  */
-FormRestoreController.prototype.hebernateFormData = function(tabId) {
+PageStateRestoreController.prototype.collectPageState = async function(tabId) {
 	'use strict';
 
-	let self = this;
-	chrome.tabs.sendMessage(tabId, { method: '[AutomaticTabCleaner:HebernateFormData]' }, function(formData) {
-		if (debug)
-			console.log('FData: ', formData);
+	let finished = false;
+	return new Promise(resolve => {
 
-		if (!formData)
-			return;
-		if (Object.keys(formData).length === 0 && formData.constructor === Object)
-			return;
+		let self = this;
+		chrome.tabs.sendMessage(tabId, { method: '[AutomaticTabCleaner:CollectPageState]' }, function(response/*{ formData, videoTime }*/) {
+			if (debug)
+				console.log('FData: ', response.formData);
 
-		localStorage.setItem(self.PREFIX + tabId, JSON.stringify(formData));
+			if (response.formData && Object.keys(response.formData).length === 0 && response.formData.constructor === Object) {
+				localStorage.setItem(self.PREFIX + tabId, JSON.stringify(response.formData));
+			}
+
+			finished = true;
+			resolve({ videoTime: response.videoTime });
+		});
+
+		setTimeout(()=>{
+			if(!finished) resolve({});
+		}, 500);
 	});
 };
 
 /**
  *
  */
-FormRestoreController.prototype.expectRestore = function(actualTabId, storedAsTabId, url) {
+PageStateRestoreController.prototype.expectRestore = function(actualTabId, storedAsTabId, url) {
 	'use strict';
 
 	if (actualTabId != null && storedAsTabId != null)
@@ -82,7 +90,7 @@ FormRestoreController.prototype.expectRestore = function(actualTabId, storedAsTa
 /**
  *
  */
-FormRestoreController.prototype.cleanup = function() {
+PageStateRestoreController.prototype.cleanup = function() {
 	'use strict';
 
 	for (let key in this.tabMap)
@@ -94,7 +102,7 @@ FormRestoreController.prototype.cleanup = function() {
 /**
  *
  */
-FormRestoreController.prototype.isTabMapEntryOutdated = function(tabMapEntry) {
+PageStateRestoreController.prototype.isTabMapEntryOutdated = function(tabMapEntry) {
 	'use strict';
 
 	return Date.now() - tabMapEntry.timestamp > this.TIMEOUT;

@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					document.body.appendChild(canvas);
 
 					let url = chrome.extension.getURL('park.html') + '?title=' + encodeURIComponent(document.title);
-					url += '&url=' + encodeURIComponent(window.location.href);
+					url += '&url=' + request.url ? request.url : encodeURIComponent(window.location.href);
 					url += '&tabId=' + encodeURIComponent(closureTabId);
 					url += '&sessionId=' + encodeURIComponent(request.sessionId);
 					url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());
@@ -225,8 +225,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			setTimeout(function() {
 				highlite(request.highliteInfo);
 			}, 0);
-		} else if (request.method === '[AutomaticTabCleaner:HebernateFormData]') {
-			sendResponse(hebernateFormData());
+		} else if (request.method === '[AutomaticTabCleaner:CollectPageState]') {
+			sendResponse({ formData: hebernateFormData(), videoTime: collectVideoTime() });
 		} else if (request.method === '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]') {
 			drawAddPageToWhiteListDialog();
 		} else if (request.method === '[AutomaticTabCleaner:hideDialogRequetToTab]') {
@@ -241,6 +241,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			drawSetupWizardDialog();
 		}
 	});
+
+	function collectVideoTime() {
+		if (document.location.href.indexOf('https://www.youtube.com/watch') === 0) {
+			const video = document.querySelector('video');
+			const time = video ? parseInt(video.currentTime.toFixed(0)) : 0;
+
+			// Update Video Time Url
+			const pushState = window.history.pushState;
+			const url = new URL(document.location.href);
+			url.searchParams.set('t', time + 's');
+
+			pushState.apply(history, [null, document.title, url.href]);
+
+			return time;
+		}
+	}
 
 	/************************************/
 	/*	     DrawSetupWizardDialog      */

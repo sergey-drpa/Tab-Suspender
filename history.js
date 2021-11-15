@@ -22,19 +22,45 @@
 		$('html > head').append($(style));
 	}
 
-	chrome.runtime.getBackgroundPage(function(bgpage) {
-		chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:getParkHistory]' }, function(res) {
+	const drawContent = () => {
+		chrome.runtime.getBackgroundPage(function(bgpage) {
+			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:getParkHistory]' }, function(res) {
 
-			let parkHistory = res.parkHistory;
-			let closeHistory = res.closeHistory;
+				let parkHistory = res.parkHistory;
+				let closeHistory = res.closeHistory;
 
-			new DrawHistory(parkHistory, 'park', bgpage, 0, 30);
+				new DrawHistory(parkHistory, 'park', bgpage, 0, 30);
 
-			new DrawHistory(closeHistory, 'close', bgpage, 0, 30);
+				new DrawHistory(closeHistory, 'close', bgpage, 0, 30);
 
-			trackErrors('history_page', true);
+				trackErrors('history_page', true);
+
+				if (window.location.hash === '#suspended') {
+					setTimeout(() => {
+						document.getElementById("suspended").scrollIntoView();
+					}, 150);
+				}
+				if (window.location.hash === '#closed') {
+					setTimeout(() => {
+						document.getElementById("closed").scrollIntoView();
+					}, 150);
+				}
+			});
 		});
-	});
+	};
+
+	drawContent();
+
+	setTimeout(function() {
+		chrome.extension.onMessage.addListener(function(request) {
+			if (request.method === '[AutomaticTabCleaner:updateHistoryPage]') {
+				console.log('updateHistoryPage..');
+				drawContent();
+				//window.location.reload();
+				console.log('updateHistoryPage..Complete.');
+			}
+		});
+	}, 5000);
 
 	function DrawHistory(closeHistory, targetDiv, bgpage, from, to) {
 		this.drawNextPage(closeHistory, targetDiv, bgpage, from, to);
@@ -43,6 +69,7 @@
 	DrawHistory.prototype.drawNextPage = function(closeHistory, targetDiv, bgpage, from, to) {
 		this.to = to;
 		let self = this;
+		document.getElementById(targetDiv + 'Div').innerHTML = '';
 		if (closeHistory) {
 			for (let i = from; i < to && i < closeHistory.length; i++) {
 				let divLine = drawPreviewTile(closeHistory[i], bgpage);

@@ -182,9 +182,10 @@ div.disabled .irs-single {
 }
 
 .inline-btn:hover:not(.disabled) {
-    background-color: #4aa7f7 !important;
+    background-color: #63b7ff !important;
     border-color: rgb(53, 118, 175) !important;
     filter: none !important;
+    color: #222 !important;
 }
 
 .inline-btn.disabled:hover {
@@ -550,6 +551,7 @@ label.checkbox:active:after {
 
 .button:hover {
     background-color: #4aa7f7 !important;
+    color: #222 !important;
 }
 
 .button{
