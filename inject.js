@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					document.body.appendChild(canvas);
 
 					let url = chrome.extension.getURL('park.html') + '?title=' + encodeURIComponent(document.title);
-					url += '&url=' + request.url ? request.url : encodeURIComponent(window.location.href);
+					url += '&url=' + encodeURIComponent(request.url ? request.url : window.location.href);
 					url += '&tabId=' + encodeURIComponent(closureTabId);
 					url += '&sessionId=' + encodeURIComponent(request.sessionId);
 					url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());

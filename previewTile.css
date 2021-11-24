@@ -31,6 +31,7 @@
     z-index: 1;
     max-height: 11.6rem;
     min-height: 11.6rem;
+    width: calc(100% - 4em);
 }
 
 .card-img-top:not(.clicked):not(.zoom):hover {

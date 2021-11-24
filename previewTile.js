@@ -1,5 +1,7 @@
 'use strict';
 
+const extensionUrl = chrome.extension.getURL('');
+
 // eslint-disable-next-line no-redeclare,no-unused-vars
 function drawPreviewTile(tile, bgpage, options) {
 	let emptyScreen = '/img/no_preview_available.png';
@@ -17,7 +19,7 @@ function drawPreviewTile(tile, bgpage, options) {
 		(!options || !options.noTitle ? '    <h5 class="card-title">' + '<a href="' + tile.url + '" target="_blank" nativeTabId="' + tile.nativeTabId + '">' + (tile.title ? tile.title : parseUrlParam(tile.url, 'title')) + '</a>' +
 			'</h5>\n' : '') +
 		(!options || !options.noUrl ? '<p class="card-text">' +
-		'<a href="' + tile.url + '" target="_blank" style="color: #999;">' + tile.url + '</a>' +
+		'<a href="' + tile.url + '" target="_blank" style="color: #999;">' + (tile.url.indexOf(extensionUrl) === 0 ? new URLSearchParams(tile.url).get('url') : tile.url) + '</a>' +
 		'</p>\n':'') +
 		(options && options.noTime ? '' : '<p class="card-text time">' + timeConverter(tile.timestamp) + '</p>\n') +
 		'  </div>\n' +

@@ -12,7 +12,7 @@ sub END {
     sleep(1);
 }
 
-my $closureCompiler = './closureJS/closure-compiler-v20191027.jar --warning_level=QUIET --language_in=ECMASCRIPT6';
+my $closureCompiler = './closureJS/closure-compiler-v20211107.jar --warning_level=QUIET --language_in=ECMASCRIPT_2017';
 my $build_dir = './build_dir/';
 my $compile_check_dir = './compile_dir/';
 my $target_dir = './target_dir';

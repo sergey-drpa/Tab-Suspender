@@ -358,8 +358,6 @@ const INSTALLED = 'installed';
 	}
 
 	window.isTabInIgnoreTabList = function(tabId) {
-		'use strict';
-
 		return ignoreTabList[tabId] != null;
 	};
 
@@ -418,9 +416,7 @@ const INSTALLED = 'installed';
 		return tab.groupId === -1 || (tab.groupId !== -1 && !ignoreCloseGroupedTabs);
 	}
 
-	function isExceptionTab(tab) {
-		'use strict';
-
+	const isExceptionTab = (tab) => {
 		try {
 			return isTabExceprion(tab) || whiteList.isURIException(tab.url);
 		} catch (ex) {
@@ -429,7 +425,7 @@ const INSTALLED = 'installed';
 		}
 	}
 
-	function isTabExceprion(tab) {
+	const isTabExceprion = (tab) => {
 		// Audiable
 		if (isAudiable(tab) && settings.get('ignoreAudible'))
 			return true;
@@ -451,7 +447,7 @@ const INSTALLED = 'installed';
 		return false;
 	}
 
-	function isAudiable(tab) {
+	const isAudiable = (tab) => {
 		return (typeof tab.audible == 'boolean' && tab.audible == true);
 	}
 
@@ -746,7 +742,7 @@ const INSTALLED = 'installed';
 	};
 
 	// simple timer - update inactivity time, unload timeouted tabs
-	function tick(stateOnly) {
+	const tick = (stateOnly) => {
 		'use strict';
 
 		navigator.getBattery().then(function(battery) {
@@ -787,7 +783,7 @@ const INSTALLED = 'installed';
 
 		let cleanedTabsArray = {};
 
-		c5.windows.getAll({ 'populate': true }, function(windows) {
+		c5.windows.getAll({ 'populate': true }, (windows) => {
 
 			// CLOSE TAB LOGIC
 			if (!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging)
