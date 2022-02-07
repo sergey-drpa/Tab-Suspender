@@ -19,19 +19,20 @@
 	<script type="text/javascript" src="fancy-settings/source/lib/store.js"></script>
 	<script type="text/javascript" src="utils.js"></script>
 	<script type="text/javascript" src="modules/errorsProcessing.js"></script>
+	<script type="text/javascript" src="modules/pageOpener.js"></script>
 	<script type="text/javascript" src="previewTile.js"></script>
 	<script type="text/javascript" src="popup.js"></script>
 </head>
 <body style="width: 300px;margin: 0px;font-family: Segoe UI;" class="en_US">
 <div style="margin: 10px; margin-bottom: 0px;">
 	<input id="tabSuspenderActive" type="checkbox" class="checkbox" style="float: right; margin-right: 0px; margin-left: 3px;">
-	<label class="checkbox checkboxBig" for="tabSuspenderActive"
+	<label title="On/Off Automatic Suspend" class="checkbox checkboxBig" for="tabSuspenderActive"
 				 style="display: block;
     position: absolute;
     right: 8px;
     top: 7px;">Toggle</label>
 
-	<div style="width: 300px;height: 27px;text-align: center;user-select: none;">
+	<div style="width: 270px;height: 27px;text-align: center;user-select: none;">
 		<a id="link" target="_blank" title="Rate it, please."
 			 href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh/reviews"
 			 class="title MSG_extTitle__"></a>
@@ -54,7 +55,7 @@
 		<div style="width: 100%; line-height: 19px;">
 			<div class="tab-button checked">
 				<label class="tab-button-link"
-							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica;font-weight: 100; cursor: pointer;" title="">Close
+							 style="float: right; color: #999; font-size: 11px; padding-left: 7px; font-family: Helvetica;font-weight: 100; cursor: pointer; padding-right: 2px;" title="">Close
 					Unused Tabs Automatically
 					<!--<label class="checkbox" for="recicleTab"
 								 style="float: right; margin-right: 0px; margin-left: 1px;">Toggle</label-->
@@ -84,7 +85,7 @@
 	</div>
 
 	<div id="slider" style="width: 208px;height: 59px;margin-left: 10px;padding-left: 28px;position: relative;" class="">
-		<div class="slider-blocker" style="display: none;">Paused</div>
+		<div class="slider-blocker" style="display: none;">Automatic Suspend is Turned Off</div>
 		<div class="slider-background"></div>
 
 		<input type="text" class="js-range-slider" value="900" />
@@ -101,7 +102,7 @@
 	<img
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAYlJREFUOE+dk81KAlEUx2dj7VoZ2od4HefTCCMXUm1a9gy9RA9RWa0iAgsjkMSopTNNKmoYkrhLF7VtUfgO0+Cc7rkz4EejSQf+zOXe/+9czp1zuNGQDV6VSpF9sUja4iMxmeia7h3gmWv7HXN7IZ9c5NNKJQpqQwC5zIOkR5hwzfaqPNBkl/6sf8bFnNjpbvvW6kpFbUZBMhzIU/Qs1hRBNEhtob7UT7LRiqfxwBPyEHqFAskwWDDCq0r1j5tHRb3IRLRliRM1crzS8L49oAU8RRlAhn5TmOBdLBMGXHycwf1XHm67ubFCj6oLgAxl3zBBL/ywyBKYpgn2dw9syx4r9CS1BCCD7FACy7LAtqlxgtAznEDvl3D+cgr51g3kWtmxQk9Mo/VjCTqWoJOTcY84SewRdXLE8aWQpNT+8Rspg6zTCwVyzbrQy+wh9FLmisEY2MrxZ/lpmiTYhdRbm78Lzrq4E6FKcNphyux+JoeHaTC2XhM4zofU2BkY5w7dS22212OuzQ2O+wGXSeMZ7Ur3dgAAAABJRU5ErkJggg==">
 	<span class="menu add-whitelist-btn">
-		Do not Suspend this Site...
+		Don't Suspend this Site...
 	</span>
 	<span class="menu remove-whitelist-btn">
 		Site already in Whitelist
@@ -117,11 +118,11 @@
 
 <hr class="fullhr">
 <div id="ignodeCurrentTab" class="menu"
-		 title="The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).">
+		 title="The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist - upper menu button).">
 	<img
 		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACUUlEQVQ4T5WTzWsTQRjGn93uZmPSaIQURTz37EHFoxf1tH+AF0Hw4iWgttpusEkVWqyxEvQkIkkDKtFDkCJEqUI1rbTSU41pjGKaVCSxmM337s7sykQTiEhtBx7mHYbnx8v7weHP2T14+Kh+8NAJsY+3BEEEzwMC+2upINVNzk3U4ueVhQgAveNhN9d5HDh5Zpg/dnpKEnnY7LsgigIEzoLVKKOSS2PQaeC4h967MurzAtA6vi5gaNTn9Q4roVazCYMQUErQbDZRq1aRz32FulnC+XNnMTMTfjs0dFkul8vlngyu+f3eq4FAqNWoQ9f1rhr1Osqqio1CAR/TaXwr5JF4OXcpk81O9wD8fr83EAiEarVa22y0IQYMQ0e9XkelUsH6eg7ZTAaxJ099q6nUxDYAOnTDaMMajQZUVcWPUhGhO3eVZDI5uW1AJyMGYfGtYFB5Nju7cwAz8xyP4M0p5VEstnOApmlwuVyYmJxUotHo/wGUEMAkYEZd00AIgdvths/nuxh5+Pj2ljWwTIq1Lzm8WM3DJooQeA6CKMAm2rC4tPTuQ+bTe/KzWOoO0t9t5C0TcytpKMst7BvwwLPHCYckgRME6FwfmoITNPVmY0vA65UUri/XsH/Ag739dvTbbWBLonEiWqITxtpi4Z8A1ndK6e8J/F4EYMGiJqhpQrJLCD+I3H+eSEQtw2h1AWNjYxfGx8en2SSyYjGZlMKyrHbMdoMSCofDgRFFGQmHwzd6iijL8hFZlk9RSq222TR7BNMEYRlIEhePx1/Nz88vMMAvpe7VwCUyZr4AAAAASUVORK5CYII=">
 	<span class="menu _ignore-tab">
-		Do not Suspend this Tab (Ignore)
+		Don't Suspend this Tab (Ignore while tab alive)
 	</span>
 	<img class="checked"
 			 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAP9JREFUOE+V0b9LQlEYxvGblqUEgmBTmIPoEoQ4BUGL4OLY0B7o6Obo5q+2BrFdcGpqiEBxaXAyJ1uCbHBo9h+4fl85J9578Q4On8N9H95z77nndVzX3ccZRvjDGxK7moKk8IUHU9cw9jcFyeIbdyo7xlo3BbnCD0oqi+AFT1IcoYsp2qa2jddY4kZlMbyjhwMJBnhGGn3I5URRhGzOw26O4wMtm8myRtgGaGIO+eecyUQSM9RVtn3BKxo6RBUXqj7HAhWVbclyigkebeiTgZzmXmX/7MMJ5CRyFyGTiUvIBMoq89DFIYaGzFgm8Itb6D4PfyBf72CFTxTg71FcZwMwMWPUUopDQQAAAABJRU5ErkJggg==">
@@ -130,8 +131,7 @@
 <hr class="fullhr">
 
 <div class="menu no-clickable">
-	<img style="opacity: 0.7;"
-		src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
+	<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACsUlEQVQ4T5XSbUhTYRQH8P9zt6XbHanTIg01s2ymEEouSsykCDRQKAosYiBZH/oQvRmtF4xIEk3QwA8x0yChwIryS0JCJiYYmi2tfFmaOfJ1OnXXuz333ie2MPAFqfPxnP/z4zxwyNVMpKo4VCsMWlnBqeLXaMB/FLFkwpG4SRehURN02t2CLCPnbgPe/KtBrmVhcpdRbwji1RhxemEbEPo0JhgjeRSqKcrNFkyuhhFLFs7pA1V3TEY9r1ERNHe7Ztcls35VAJKYgu35V/B1VaCwEBxtw32NmpiTjTp+yiAgMi6Jzc5MzI2NDR3KL0DzqsDCsCgft9bH4kZSSgaJijGhpaRGnG4fnUQucUoSq+UoHuZZML4UI76GtQTHOY5Y96Rma8PCwtFf/gE/n/cisfIoQhOCMfTjk/jl83smM89TjinXzRfgWID+AKUwcwSlkRviedQyrex0Y2/NAQQYOIBoAVUIqMSju6uR2mxvZaLQOiqjyuHGOz/gq4oKBARVoFMfFbo1+8l5Fcf9AlThgDwKyA4o0gxEJQai14DhYRsbsNvcU5OO+b+Af5ObMG9J3lGZln5CB9oNEA5QXIA8BsHtxJzbCbcgIlC/GwoXhcaGB2OLgKpiRATyIfZjuZZAIr4EYxTUK0L0zGFecEEQpsEYgz7sCAYH7VJPT/uzRYBvi5oy0pWWcTIhmB+BV7BBoh54PAIURfJ/VReSCdGrR3NTnVuiknEZYL2H/UFrI+rT0g9r58YfQ5Fn/Q85tQF8yEFMuShra30xq1CanVeApmWAL1xdhpa4baaUzbHxGnGmFWt0RnCaaHzva5F6ezrGKbDv9EX0+rIrAo+KECoH4ONOU87GoGA95xjqpn193yRZEuspcPbMJUwsuoOVTtVaimgCdBCAAXglM9zOv4yBpdnfzqQkYA0ffzIAAAAASUVORK5CYII=">
 	<span class="menu no-clickable">
 		Suspend:
 	</span>
@@ -275,7 +275,7 @@
 
 
 
-<div style="color: #79bcff;
+<div id="sessionSection" style="color: #79bcff;
     font-size: 16px;
     margin-left: 7px;
     /* margin-top: 70px; */

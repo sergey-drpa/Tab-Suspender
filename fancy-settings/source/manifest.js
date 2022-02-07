@@ -245,7 +245,7 @@ this.manifest = {
 		},
 		{
 			'tab': 'Whitelist',
-			'group': 'White List example',
+			'group': 'Examples',
 			'name': 'pinned-description',
 			'type': 'description',
 			'text': 'For example to disable suspend function on all Google sites you can add next text on new line: <b>*.google.com*</b>,<br/>if you want to exclude for example all sites starting with subdomain "subdomain" just add <b>subdomain.*</b> on a new line'

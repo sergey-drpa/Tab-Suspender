@@ -16,7 +16,7 @@ my $closureCompiler = './closureJS/closure-compiler-v20211107.jar --warning_leve
 my $build_dir = './build_dir/';
 my $compile_check_dir = './compile_dir/';
 my $target_dir = './target_dir';
-my @files = ('lib', 'modules', 'img', 'fancy-settings', '_locales');
+my @files = ('lib', 'modules', 'img', 'fancy-settings', '_locales', 'video');
 
 try {
 
@@ -71,6 +71,8 @@ try {
     #`$command`;
 	#print STDERR "Ok\n";
 
+    #Park minimize
+    `java -jar $closureCompiler --js park.js --js_output_file $build_dir/park.js`;
 
     mkdir $target_dir or print SYSERR $!;
 

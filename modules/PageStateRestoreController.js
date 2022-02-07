@@ -63,7 +63,7 @@ PageStateRestoreController.prototype.collectPageState = async function(tabId) {
 			if (debug)
 				console.log('FData: ', response.formData);
 
-			if (response.formData && Object.keys(response.formData).length === 0 && response.formData.constructor === Object) {
+			if (response.formData && Object.keys(response.formData).length !== 0 && response.formData.constructor === Object) {
 				localStorage.setItem(self.PREFIX + tabId, JSON.stringify(response.formData));
 			}
 

@@ -23,7 +23,7 @@
 		</h1>
 	</header>
 	<div class="dialog-content-main">
-		<div step="1" class="dialog-content active-step" style="padding-top: 61px !important;">
+		<div step="1" class="dialog-content active-step" style="padding-top: 34px !important;">
 			<p class="header" style="margin-bottom: 10px; font-size: 15px !important;">
 				<span style="color: #558eab;">Tab Suspender</span>
 				- allows you to not worry about the huge number of opened tabs and their memory!
@@ -42,14 +42,14 @@
 			</ul>
 		</div>
 		<div step="2" class="dialog-content" style="display: none;">
-			<p class="header" style="height: 40px; margin-top: 40px !important;">After what idle amount of time you want to
+			<p class="header" style="height: 40px; margin-top: 16px !important;">After what idle amount of time you want to
 				move each unused tab to sleep?</p>
-			<div style="width: 60%; margin: auto;">
+			<div style="padding-top:48px; width: 60%; margin: auto;">
 				<input type="hidden" id="timeoutInput" class="js-range-slider-suspend-timeout" value="900" />
 			</div>
 		</div>
 		<div step="3" class="dialog-content" style="display: none;">
-			<p class="header" style="margin-bottom: 0px;">Do you want to allow Tab Suspender to look for most rarely used or
+			<p class="header" style="margin-bottom: 0px; padding-top: 16px;">Do you want to allow Tab Suspender to look for most rarely used or
 				forgotten tabs and smoothly close them automatically?</p>
 			<p
 				style="font-size: 11px !important; margin-top: 11px; color: #aaa; font-weight: 100 !important; padding-left: 0px;">
@@ -84,17 +84,17 @@
 			</div>
 		</div>
 		<div step="4" class="dialog-content" style="display: none;">
-			<div style="float:left; width: 285px;">
-				<p class="header" style="margin-bottom: 10px; !important;">Complete!</p>
-				<p class="header" style="margin-bottom: 10px; !important;"> Tab Suspender, now, starts automatically suspend
+			<div style="float: left; width: 265px; padding-top: 5px; padding-right: 17px;">
+				<p class="header" style="margin-bottom: 14px; !important;">Complete!</p>
+				<p class="header" style="margin-bottom: 18px; !important;"> Tab Suspender, now, starts automatically suspend
 					first unused tabs after <span id="resultTimeoutValue"
 																				style="text-decoration: underline; color: #48d648;">${}</span> from this moment.
 				</p>
 				<p style="margin-bottom: 10px">If you want to suspend tabs earlier, you can suspend any tab by click button as
-					shown on the screenshot:</p>
+					shown on the video:</p>
 			</div>
 			<div style="float:left; width: 130px;">
-				<img id="menuHelpImage" style="height: 217px;" src="/img/suspendTabScreenWithHand.png">
+				<video id="tutorialVideo" loop="true" src="./video/pinTsTutorial2.mp4" style="height: 326px"/>
 			</div>
 			<div>
 				<label class="tab-button-link"

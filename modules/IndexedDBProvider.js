@@ -238,8 +238,22 @@ IndexedDBProvider.prototype.getTransactionWithReconnect = function(e, tables, mo
 /**
  *
  */
+IndexedDBProvider.prototype.close = function() {
+	if(this.db != null) {
+		try {
+			this.db.close();
+			// eslint-disable-next-line no-empty
+		} catch (e) { }
+	}
+}
+
+/**
+ *
+ */
 IndexedDBProvider.prototype.open = function(options) {
-	'use strict';
+	let self = this;
+
+	this.close();
 
 	let openRequest = window.indexedDB.open('TSDB', 5);
 
@@ -267,7 +281,6 @@ IndexedDBProvider.prototype.open = function(options) {
 	};
 
 
-	let self = this;
 	this.initializedPromise = new Promise(function(resolve, reject) {
 		openRequest.onsuccess = function(e) {
 			console.log('running onsuccess');

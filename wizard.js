@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 		let stepListener = function(delta) {
+			restartVideo();
 
 			let currentElementStep = getCurrentStepNumber();
 			removeClass(stepElements[currentElementStep - 1], 'active-step');
@@ -292,11 +293,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		};
 
+		function restartVideo() {
+			const tutorialVideo = $('#tutorialVideo');
+			if (tutorialVideo.is(':visible')) {
+				tutorialVideo[0].play();
+			} else {
+				tutorialVideo[0].pause();
+				tutorialVideo[0].load();
+			}
+		}
+
 		function updatePage4() {
 			let BG = chrome.extension.getBackgroundPage();
 			let res = BG.popupQuery({ id: 0, url: '' });
 			let timeout = parseInt(res.timeout);
 			document.getElementById('resultTimeoutValue').innerText = timeoutPrettifer(timeout).trim();
+
+
+			restartVideo();
 		}
 
 		/* READ DEFAULT CONFIGURATION */

@@ -12,7 +12,7 @@ function drawPreviewTile(tile, bgpage, options) {
 	divLine.innerHTML =
 		'<div class="card">\n' +
 		'<a ' + (!options || !options.noHref ? 'href="' + tile.url + '"' : '') + ' target="_blank" class="card-img-a">' +
-		'  <img class="card-img-top">\n' +
+		`  <img class="card-img-top ${options && options.popuped ? 'popuped' : ''}">\n` +
 		'</a>' +
 		'  <div class="card-body">\n' +
 		(options && options.close ? '	<img src="/img/Close_Icon_24.png" class="delete-btn" title="Close Tab">' : '') +

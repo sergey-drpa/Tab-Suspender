@@ -42,7 +42,7 @@ var DEFAULT_SETTINGS = {
 	'startNormalTabsDiscarted': false,
 	'screenshotQuality': 80,
 	'discardTabAfterSuspendWithTimeout': true,
-	'discardTimeoutFactor': 0.2,
+	'discardTimeoutFactor': 0.05,
 	'openUnfocusedTabDiscarded': false,
 	'enableSuspendOnlyIfBattLvlLessValue': false,
 	'battLvlLessValue': 50,
@@ -51,5 +51,5 @@ var DEFAULT_SETTINGS = {
 	'restoreButtonView': 'roundIcon', /* Available: roundIcon, noIcon, topBar */
 	'sendErrors': true,
 	'ignoreCloseGroupedTabs': true,
-	'popup_showWindowSessionByDefault': true
+	'popup_showWindowSessionByDefault': false
 };

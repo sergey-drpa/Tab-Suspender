@@ -40,6 +40,7 @@ const INSTALLED = 'installed';
 	window.trackErrors = window.trackErrors || {};
 	window.DBProvider = window.DBProvider || {};
 	window.Store = window.Store || {};
+	window.focusOrOpenTSPage = window.focusOrOpenTSPage || {};
 
 
 	function createNewTabInfo(tab) {
@@ -343,15 +344,13 @@ const INSTALLED = 'installed';
 	window.getParkBgColor = function() {
 		'use strict';
 		let color = settings.get('parkBgColor');
-		if (color != null && color.search(/^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/) >= 0)
+		if (color != null && color.search(/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/) >= 0)
 			return color;
 		else
 			return window.DEFAULT_SETTINGS.parkBgColor;
 	};
 
 	function addToIgnoreTabList(tabId) {
-		'use strict';
-
 		ignoreTabList[tabId] = true;
 
 		new BrowserActionControl(settings, whiteList, globalMenuIdMap, pauseTics).synchronizeActiveTabs();
@@ -550,7 +549,7 @@ const INSTALLED = 'installed';
 						t5.sendMessage(closureTabId, {
 								method: '[AutomaticTabCleaner:ParkPageFromInject]',
 								'tabId': closureTab.id,
-							  'url': closureTab.url,
+								'url': closureTab.url,
 								'sessionId': window.TSSessionId,
 								'width': width,
 								'height': height
@@ -563,7 +562,9 @@ const INSTALLED = 'installed';
 									} else if (checkTabIsParked != null)
 										checkTabIsParked();
 								}
-								console.log('ParkPageFromInject response: ' + response);
+								if(debug) {
+									console.log('ParkPageFromInject response: ' + response);
+								}
 							});
 					});
 				};
@@ -899,7 +900,7 @@ const INSTALLED = 'installed';
 
 									let calculatedTabTimeFrame = timeoutSettings + timeoutSettings * tabInfo.parkedCount + (tabInfo.active_time + 1) * Math.log2(tabInfo.swch_cnt + 1) + (timeoutSettings / 4) * Math.log2(tabInfo.swch_cnt + 1);
 
-									if (extUrl !== 'chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html')
+									if (debug && extUrl !== 'chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html')
 										chrome.browserAction.setBadgeText({
 											text: '' + Math.round((calculatedTabTimeFrame - tabInfo.time) / 60) + '|' + tabInfo.swch_cnt,
 											tabId: tabId
@@ -1268,6 +1269,10 @@ const INSTALLED = 'installed';
 				settings.set('sendErrors', request.sendErrors);
 			else if (request.popup_showWindowSessionByDefault != null)
 				settings.set('popup_showWindowSessionByDefault', request.popup_showWindowSessionByDefault);
+			else if (request.restoreButtonView != null)
+				settings.set('restoreButtonView', request.restoreButtonView);
+			else if (request.parkBgColor != null)
+				settings.set('parkBgColor', request.parkBgColor);
 
 			reloadSettings();
 
@@ -1303,11 +1308,14 @@ const INSTALLED = 'installed';
 		} else if (request.method === '[AutomaticTabCleaner:removeUrlFromWhitelist]') {
 			removeUrlFromWhitelist(request.url);
 		} else if (request.method === '[AutomaticTabCleaner:donate]') {
-			google.payments.inapp.buy({
+			/*google.payments.inapp.buy({
 				'parameters': { 'env': 'prod' },
 				'sku': 'ts_user_donation_level_4',
 				'success': console.log,
 				'failure': console.log
+			});*/
+			chrome.tabs.create({
+				url: 'https://www.patreon.com/TabSuspender'
 			});
 		} else if (request.method === '[AutomaticTabCleaner:getFormRestoreDataAndRemove]') {
 			sendResponse(formRestoreController.getFormRestoreDataAndRemove(sender.tab.id));
@@ -1317,8 +1325,25 @@ const INSTALLED = 'installed';
 			getTabInfo(sender.tab).nonCmpltInput = false;
 		} else if (request.method === '[AutomaticTabCleaner:MarkPageAsNonCompleteInput]') {
 			getTabInfo(sender.tab).nonCmpltInput = true;
+		} else if (request.method === '[AutomaticTabCleaner:OpenSettingsPage]') {
+			openSettings();
+		} else if (request.method === '[AutomaticTabCleaner:OpenPopup]') {
+			window.open(e5.getURL('popup.html'), "extension_popup");
 		}
 	});
+
+	function openSettings() {
+		let manifest = chrome.runtime.getManifest();
+		focusOrOpenTSPage(manifest.options_page);
+	}
+
+	function openSuspendedHistory() {
+		focusOrOpenTSPage(e5.getURL('history.html'));
+	}
+
+	function openClosedHistory() {
+		focusOrOpenTSPage(e5.getURL('history.html') + '#closed');
+	}
 
 	function removeUrlFromWhitelist(url) {
 		if (url != null) {
@@ -1495,21 +1520,21 @@ const INSTALLED = 'installed';
 
 			let retries = 0;
 			let timeout;
-			timeout = setTimeout(()=> {
+			timeout = setInterval(()=> {
 				if(retries > 5) {
-					clearTimeout(timeout);
+					clearInterval(timeout);
 					console.error("Can't request Tab object on TabActivated (5 retries left)");
 					reject();
 					return;
 				}
-				//if(retries > 1) {
+				if(retries > 1) {
 					console.error(`Trying to request Tab object on TabActivated (${retries})`);
-				//}
+				}
 				retries++;
 				try {
 					t5.get(activeInfo.tabId, function(tab) {
 						if (tab != null) {
-							clearTimeout(timeout);
+							clearInterval(timeout);
 							resolve(tab);
 						}
 					});
@@ -1523,7 +1548,9 @@ const INSTALLED = 'installed';
 
 		processedPromise.then(tab => {
 
-			console.log(`OnTab Activated: ${activeInfo.tabId}`, tab);
+			if(debug) {
+				console.log(`OnTab Activated: ${activeInfo.tabId}`, tab);
+			}
 
 			getTabInfo(tab).swch_cnt++;
 			getTabInfo(tab).time = 0;
@@ -1754,6 +1781,23 @@ const INSTALLED = 'installed';
 
 				globalMenuIdMap = createSecondLevelMenu(menuId, commands, [
 					{
+						title: 'Suspend Tab',
+						contexts: ['all'],
+						onclick: function(info, tab) {
+							parkTab(tab, tab.id);
+						},
+						parentId: menuId,
+						documentUrlPatterns: ['http://*/*', 'https://*/*'],
+						_command: 'suspend-current'
+					},
+					{
+						type: 'separator',
+						title: 'Whitelist separator',
+						contexts: ['all'],
+						parentId: menuId,
+						documentUrlPatterns: ['http://*/*', 'https://*/*']
+					},
+					{
 						type: 'checkbox',
 						id: 'add_to_white_list',
 						title: 'Add to Whitelist...',
@@ -1768,7 +1812,7 @@ const INSTALLED = 'installed';
 								removeUrlFromWhitelist(tab.url);
 						},
 						parentId: menuId,
-						documentUrlPatterns: ['http://*/*', 'https://*/*'],
+						//documentUrlPatterns: ['http://*/*', 'https://*/*', `${rootExtensionUri}*/*`],
 						_command: 'add-to-white-list'
 					},
 					{
@@ -1789,17 +1833,7 @@ const INSTALLED = 'installed';
 						title: 'Whitelist separator',
 						contexts: ['all'],
 						parentId: menuId,
-						documentUrlPatterns: ['http://*/*', 'https://*/*']
-					},
-					{
-						title: 'Suspend Current Tab',
-						contexts: ['all'],
-						onclick: function(info, tab) {
-							parkTab(tab, tab.id);
-						},
-						parentId: menuId,
-						documentUrlPatterns: ['http://*/*', 'https://*/*'],
-						_command: 'suspend-current'
+						//documentUrlPatterns: ['http://*/*', 'https://*/*']
 					},
 					{
 						title: 'Suspend All',
@@ -1898,7 +1932,7 @@ const INSTALLED = 'installed';
 						title: 'Whitelist separator',
 						contexts: ['all'],
 						parentId: menuId,
-						documentUrlPatterns: ['http://*/*', 'https://*/*']
+						//documentUrlPatterns: ['http://*/*', 'https://*/*']
 					},
 					{
 						title: 'Change Hotkeys...',
@@ -1906,6 +1940,26 @@ const INSTALLED = 'installed';
 						onclick: function() {
 							chrome.tabs.create({ 'url': 'chrome://extensions/configureCommands' }, function() {
 							});
+						},
+						parentId: menuId
+					},
+					{
+						title: 'Suspended History...',
+						contexts: ['all'],
+						onclick: openSuspendedHistory,
+						parentId: menuId
+					},
+					{
+						title: 'Closed Tabs History...',
+						contexts: ['all'],
+						onclick: openClosedHistory,
+						parentId: menuId
+					},
+					{
+						title: 'Settings...',
+						contexts: ['all'],
+						onclick: function() {
+							openSettings();
 						},
 						parentId: menuId
 					}

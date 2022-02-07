@@ -52,17 +52,20 @@ BrowserActionControl.prototype.updateStatus = function(tab) {
 	let whitelistedTab = false;
 	if (this.whiteList != null && this.globalMenuIdMap != null) {
 		if (ignoredTab == window.isTabInIgnoreTabList(tab.id)) {
-			chrome.contextMenus.update(this.globalMenuIdMap['ignore-current-tab'], { checked: true });
+			chrome.contextMenus.update(this.globalMenuIdMap['ignore-current-tab'], {
+				checked: true,
+				title: 'Already Ignored (For current session only)'
+			});
 		} else {
 			chrome.contextMenus.update(this.globalMenuIdMap['ignore-current-tab'], { checked: false });
 		}
 
-		if (whitelistedTab = this.whiteList.isURIException(tab.url)) {
+		if (whitelistedTab = (this.whiteList.isURIException(tab.url) || this.whiteList.isURIException(parseUrlParam(tab.url, 'url')))) {
 			this.setBrowserActionTitle(tab.id, this.extensionTitle + ': Page is in Whitelist');
 
 			chrome.contextMenus.update(this.globalMenuIdMap['add_to_white_list'], {
 				checked: true,
-				title: 'Already in Whitelist'
+				title: 'Already in Whitelist (Click to remove)'
 			});
 		} else {
 			this.setBrowserActionTitle(tab.id, this.extensionTitle);

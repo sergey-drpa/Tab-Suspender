@@ -10,7 +10,7 @@
 var chrome = window.chrome || {};
 var drawAddPageToWhiteListDialog = window.drawAddPageToWhiteListDialog || {};
 // eslint-disable-next-line no-redeclare
-let debug = false;
+let DEBUG = false;
 let debugPerformance = false;
 
 if (debugPerformance) {
@@ -34,9 +34,11 @@ let bgScreen = null; /* TEMPORARLY VARDON'T FORGGOT TO CLEAN AFTER DRAW! */
 let screenshotDevicePixelRatio;
 let isTabMarkedForUnsuspend = false;
 let parkedUrl;
+let screenPromise;
+let faviconDrawed;
 
-let loaded = new Promise(function(resolve) {
-	window.addEventListener('load', function() {
+let loaded = new Promise((resolve) => {
+	window.addEventListener('load', () => {
 		if (debugPerformance)
 			console.log('onload: ', Date.now());
 
@@ -45,8 +47,8 @@ let loaded = new Promise(function(resolve) {
 });
 
 let DOMContentLoaded;
-window.domLoadedPromise = new Promise(function(resolve) {
-	document.addEventListener('DOMContentLoaded', function() {
+window.domLoadedPromise = new Promise((resolve) => {
+	document.addEventListener('DOMContentLoaded', () => {
 		if(DOMContentLoaded) return;
 		DOMContentLoaded = true;
 
@@ -68,27 +70,41 @@ if (debugPerformance)
 	console.log('getBackgroundPage: ', Date.now());
 
 try {
-	chrome.runtime.getBackgroundPage(function(bgpage) {
+	chrome.runtime.getBackgroundPage((bgpage) => {
 		if (debugPerformance)
 			console.log('getBackgroundPage Loaded: ', Date.now());
 
-		window.domLoadedPromise.then(function() {
+		tabId = parseUrlParam('tabId');
+
+		screenPromise = new Promise(resolve => {
+			bgpage.getScreen(tabId, parseUrlParam('sessionId'), (scr, pixRat) => {
+				resolve({ scr, pixRat });
+			});
+		});
+
+		window.domLoadedPromise.then(() => {
 
 			try {
 				let isStartDiscarted = bgpage.getStartDiscarted();
 
-				console.log('bgpage.getStartDiscarted(): ', isStartDiscarted);
-
-				tabId = parseUrlParam('tabId');
+				if(DEBUG) {
+					console.log('bgpage.getStartDiscarted(): ', isStartDiscarted);
+				}
 
 				if (isStartDiscarted == true) {
 					if ((Date.now() - bgpage.getStartedAt()) < 15000) {
-						console.log('(new Date().getTime() - bgpage.getStartedAt()) < 15000: ', (Date.now() - bgpage.getStartedAt()) < 15000);
+						if(DEBUG) {
+							console.log('(new Date().getTime() - bgpage.getStartedAt()) < 15000: ', (Date.now() - bgpage.getStartedAt()) < 15000);
+						}
 						if (bgpage.isFirstTimeTabDiscard(tabId)) {
-							console.log('bgpage.isFirstTimeTabDiscard(tabId): ', bgpage.isFirstTimeTabDiscard(tabId));
-							chrome.tabs.getCurrent(function(tab) {
+							if(DEBUG) {
+								console.log('bgpage.isFirstTimeTabDiscard(tabId): ', bgpage.isFirstTimeTabDiscard(tabId));
+							}
+							chrome.tabs.getCurrent((tab) => {
 								if (tab.active === false) {
-									console.log('tab.active: ', tab.active);
+									if(DEBUG) {
+										console.log('tab.active: ', tab.active);
+									}
 									window.stop();
 									chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:DiscardTab]' });
 									return;
@@ -105,7 +121,8 @@ try {
 				console.error(e);
 
 				applyRestoreButtonView(bgpage);
-				setTimeout(() => { drawContent(bgpage);}, 0);
+				//setTimeout(() => { drawContent(bgpage);}, 0);
+				drawContent(bgpage);
 				setTimeout(continueStart, 0);
 			}
 
@@ -114,12 +131,12 @@ try {
 				if (debugPerformance)
 					console.log('Continue Chaeck: ', Date.now());
 
-				chrome.tabs.getCurrent(function(tab) {
+				chrome.tabs.getCurrent((tab) => {
 					parkedUrl = bgpage.getTabInfo(tab).parkedUrl;
 				});
 
 				isTabMarkedForUnsuspend = bgpage.isTabMarkedForUnsuspend(tabId, parseUrlParam('sessionId'), { 'remove': true });
-				if (debug)
+				if (DEBUG)
 					console.log('isTabMarkedForUnsuspend: ', isTabMarkedForUnsuspend);
 
 				if (isTabMarkedForUnsuspend) {
@@ -134,7 +151,8 @@ try {
 					tabIconStatusVisualize = bgpage.getTabIconStatusVisualize();
 					tabIconOpacityChange = bgpage.getTabIconOpacityChange();
 
-					bgpage.getScreen(tabId, parseUrlParam('sessionId'), function(scr, pixRat) {
+					//bgpage.getScreen(tabId, parseUrlParam('sessionId'), (scr, pixRat) => {
+					screenPromise.then(({scr, pixRat}) => {
 						try {
 							if (debugPerformance)
 								console.log('Get Screen Loaded: ', Date.now());
@@ -151,12 +169,14 @@ try {
 							}
 							/* EXPERIMANTAL */
 							setTimeout(() => { drawContent(bgpage);}, 0);
+							//drawContent(bgpage);
 							setTimeout(continueStart, 0);
 						} catch (e) {
 							console.error(e);
 
-							applyRestoreButtonView(bgpage);
+							//applyRestoreButtonView(bgpage);
 							setTimeout(() => { drawContent(bgpage);}, 0);
+							//drawContent(bgpage);
 							setTimeout(continueStart, 0);
 						}
 					});
@@ -165,7 +185,6 @@ try {
 						console.log('Apply background: ', Date.now());
 
 					applysSreenshotCssStyle(bgpage.getScreenshotCssStyle());
-					applyBackground('#' + bgpage.getParkBgColor());
 					//applyRestoreButtonView(bgpage.getRestoreButtonView());
 					restoreEvent = bgpage.getRestoreEvent();
 					reloadTabOnRestore = bgpage.getReloadTabOnRestore();
@@ -180,7 +199,7 @@ try {
 } catch (e) {
 	console.error(e);
 
-	window.domLoadedPromise.then(function() {
+	window.domLoadedPromise.then(() => {
 		applyRestoreButtonView();
 		setTimeout(drawContent, 0);
 		setTimeout(continueStart, 0);
@@ -190,7 +209,9 @@ try {
 function applysUserDisplayHeight(height) {
 	let resoteImg = document.getElementById('resoteImg');
 
-	console.log('DisplayHeight: ', height);
+	if(DEBUG) {
+		console.log('DisplayHeight: ', height);
+	}
 	if (height != null) {
 		if (height <= 600) {
 			resoteImg.width = '128';
@@ -216,53 +237,53 @@ function applyRestoreButtonView(bgpage, restoreButtonView) {
 	let screen = document.getElementById('screen');
 	let resroreImg = document.getElementById('resoteImg');
 
-	let initOriginalUrlBlock = function() {
+	let initOriginalUrlBlock = () => {
 		/* Native Url Block */
 		document.body.classList.add('always-visible');
-		document.getElementById('nativeUrlSpan').onclick = document.getElementById('nativeUrl').onclick = function() {
+		document.getElementById('nativeUrlSpan').onclick /*= document.getElementById('nativeUrl').onclick*/ = () => {
 			window.getSelection().selectAllChildren(document.getElementById('nativeUrlSpan'));
 		};
 	};
 
-	if (restoreButtonView == null || restoreButtonView == 'roundIcon') {
+	if (restoreButtonView == null || restoreButtonView === 'roundIcon') {
 		resroreImg.style.display = 'block';
 		resroreImg.style.opacity = null;
 		document.getElementById('topRestore').style.display = 'none';
 
 		initOriginalUrlBlock();
 
-		resroreImg.onmouseover = function() {
-			if (restoreEvent == 'hover') {
+		resroreImg.onmouseover = () => {
+			if (restoreEvent === 'hover') {
 				goBack();
 				resroreImg.className = 'restore inprogress';
 				screen.classList.add('inprogress');
 			}
 		};
 
-		resroreImg.onclick = function() {
-			if (restoreEvent == 'click') {
+		resroreImg.onclick = () => {
+			if (restoreEvent === 'click') {
 				goBack();
 				resroreImg.className = 'restore inprogress';
 				screen.classList.add('inprogress');
 			}
 		};
-	} else if (restoreButtonView == 'topBar') {
+	} else if (restoreButtonView === 'topBar') {
 		resroreImg.style.display = 'none';
 		document.getElementById('topRestore').style.display = 'block';
 
-		document.getElementById('topRestore').onclick = function() {
+		document.getElementById('topRestore').onclick = () => {
 			goBack();
 			document.getElementById('topRestore').className = 'topRestore inprogress';
 			screen.classList.add('inprogress');
 		};
-	} else if (restoreButtonView == 'noIcon') {
+	} else if (restoreButtonView === 'noIcon') {
 		resroreImg.style.display = 'none';
 		document.getElementById('topRestore').style.display = 'none';
 
 		initOriginalUrlBlock();
 	}
 
-	document.getElementById('screenDiv').onclick = function() {
+	document.getElementById('screenDiv').onclick = () => {
 		goBack();
 		resroreImg.className = 'restore inprogress';
 		screen.classList.add('inprogress');
@@ -274,12 +295,18 @@ function applyBackground(color) {
 }
 
 function applysSreenshotCssStyle(cssText) {
-	document.getElementById('screen').style.cssText = cssText;
-	applyPixelRatio();
+	const screenImgElement = document.getElementById('screen');
+	screenImgElement.style.cssText = cssText;
+	applyPixelRatio(screenImgElement);
 }
 
 function createTitleAndIcon(force) {
-	console.log('createTitleAndIcon...');
+	if(DEBUG) {
+		console.log('createTitleAndIcon...');
+	}
+
+	if(faviconDrawed)
+		return;
 
 	if (title == null)
 		title = parseUrlParam('title');
@@ -289,7 +316,7 @@ function createTitleAndIcon(force) {
 	link = document.getElementById('faviconLink');
 
 	if (link != null && !force)
-		if (link.href != null && link.href.indexOf('img/icon16_off.png') == -1)
+		if (link.href != null && link.href.indexOf('img/icon16_off.png') === -1)
 			return;
 
 	if (link == null) {
@@ -299,7 +326,7 @@ function createTitleAndIcon(force) {
 	}
 
 	if (favicon == null || force) {
-		generateFaviconUri(parseUrlParam('icon', false), function(proccesedIcon) {
+		generateFaviconUri(parseUrlParam('icon', false), (proccesedIcon) => {
 			favicon = proccesedIcon;
 			link.href = proccesedIcon;
 			if (link.id !== 'faviconLink') {
@@ -307,9 +334,11 @@ function createTitleAndIcon(force) {
 				document.getElementsByTagName('head')[0].appendChild(link);
 			}
 		});
+		faviconDrawed = true;
 	} else {
-		if (favicon != null)
+		if (favicon != null) {
 			link.href = favicon;
+		}
 	}
 }
 
@@ -334,10 +363,12 @@ function parseUrlParam(name, doNotCache) {
 }
 
 function generateFaviconUri(url, callback) {
-	console.log('generateFaviconUri...');
+	if(DEBUG) {
+		console.log('generateFaviconUri...');
+	}
 	let img = new Image();
 	let onCorruptedUrlTimeout = setTimeout(()=>{img.onerror();}, 3000);
-	img.onload = function() {
+	img.onload = () => {
 		clearTimeout(onCorruptedUrlTimeout);
 		let canvas, ctx;
 		canvas = window.document.createElement('canvas');
@@ -350,7 +381,8 @@ function generateFaviconUri(url, callback) {
 			ctx.globalAlpha = 1;
 		}
 		ctx.drawImage(img, 0, 0);
-		console.log('tabIconStatusVisualize: ' + tabIconStatusVisualize);
+		if(DEBUG)
+			console.log('tabIconStatusVisualize: ' + tabIconStatusVisualize);
 		if (tabIconStatusVisualize) {
 			drawWaterMark(canvas, ctx, img.width, callback);
 		} else {
@@ -359,7 +391,7 @@ function generateFaviconUri(url, callback) {
 	};
 	img.onerror = (e) => {
 		clearTimeout(onCorruptedUrlTimeout);
-		console.log('Loading Favicon Error');
+		console.log('Loading Favicon Error', e);
 		img.src = chrome.extension.getURL('img/new_page.png');
 	};
 	img.src = url && url != 'undefined' ? url : chrome.extension.getURL('img/new_page.png');
@@ -367,14 +399,16 @@ function generateFaviconUri(url, callback) {
 }
 
 function drawWaterMark(canvas, ctx, width, callback) {
-	console.log('drawWaterMark...');
+	if(DEBUG) {
+		console.log('drawWaterMark...');
+	}
 	let img = new Image();
 	if (width !== 64) {
 		console.error('Unexpected: Favicon image != 64x64 -> ' + width);
 		callback(canvas.toDataURL());
 		return;
 	}
-	img.onload = function() {
+	img.onload = () => {
 		ctx.globalAlpha = 0.95;
 
 		ctx.drawImage(img, 49, 49);
@@ -387,11 +421,12 @@ function cssScale() {
 	return 'scale(' + 1 / screenshotDevicePixelRatio + ', ' + 1 / screenshotDevicePixelRatio + ')';
 }
 
-function applyPixelRatio() {
-	let screenImg = document.getElementById('screen');
+function applyPixelRatio(screenImg) {
 
 	try {
-		console.log('screenshotDevicePixelRatio: ', screenshotDevicePixelRatio);
+		if (DEBUG) {
+			console.log('screenshotDevicePixelRatio: ', screenshotDevicePixelRatio);
+		}
 		if (screenshotDevicePixelRatio > 1)
 			screenImg.style.transform = cssScale();
 	} catch (e) {
@@ -407,12 +442,14 @@ function drawContent(bgpage) {
 
 	screenImg.onload = () => {
 		applyRestoreButtonView(bgpage);
+		applyBackground('#' + bgpage.getParkBgColor());
 	}
 	screenImg.onerror = () => {
 		applyRestoreButtonView(bgpage);
+		applyBackground('#' + bgpage.getParkBgColor());
 	}
 
-	applyPixelRatio();
+	applyPixelRatio(screenImg);
 
 	if (bgScreen == null) {
 		screenImg.style.display = 'none';
@@ -421,6 +458,8 @@ function drawContent(bgpage) {
 		document.getElementById('favicon').src = favicon;
 		document.getElementById('title_div').style.display = 'block';
 		document.getElementById('nativeUrl').classList.add('visible');
+
+		screenImg.onerror();
 	} else
 		screenImg.src = bgScreen;
 
@@ -437,7 +476,7 @@ function drawContent(bgpage) {
 
 function continueStart() {
 	if (isTabMarkedForUnsuspend) {
-		if (debug)
+		if (DEBUG)
 			console.log('Prepare to go Back!');
 
 		goBack({ force: true });
@@ -448,9 +487,13 @@ function continueStart() {
 	/****
 	 * TODO: Looks like document.readyState === "complete" != window.addEventListener('load'
 	 */
-	console.log('Waiting for Page load...', Date.now());
+	if(DEBUG) {
+		console.log('Waiting for Page load...', Date.now());
+	}
 	loaded.then(()=>{
-		console.log('Page Already loaded');
+		if(DEBUG) {
+			console.log('Page Already loaded');
+		}
 		startEX();
 	});
 }
@@ -460,36 +503,38 @@ function startEX() {
 		console.log('Start begun...!', Date.now());
 	favicon = null;
 
-	chrome.runtime.onMessage.addListener(function(message) {
+	chrome.runtime.onMessage.addListener((message) => {
 
 		if (message.method === '[AutomaticTabCleaner:RestoreMessage]') {
 			if (message.anyWay)
 				goBack();
 			else
-				chrome.tabs.getCurrent(function(tab) {
+				chrome.tabs.getCurrent((tab) => {
 					if (message.tab.id == tab.id)
 						goBack();
 				});
 		} else if (message.method === '[AutomaticTabCleaner:UpdateTabsSettings]') {
-			if (message.restoreEvent != null)
-				restoreEvent = message.restoreEvent;
+			loaded.then(() => {
+				if (message.restoreEvent != null)
+					restoreEvent = message.restoreEvent;
 
-			if (message.reloadTabOnRestore != null)
-				reloadTabOnRestore = message.reloadTabOnRestore;
+				if (message.reloadTabOnRestore != null)
+					reloadTabOnRestore = message.reloadTabOnRestore;
 
-			if (message.parkBgColor != null)
-				applyBackground('#' + message.parkBgColor);
+				if (message.parkBgColor != null)
+					applyBackground('#' + message.parkBgColor);
 
-			if (message.screenshotCssStyle != null)
-				applysSreenshotCssStyle(message.screenshotCssStyle);
+				if (message.screenshotCssStyle != null)
+					applysSreenshotCssStyle(message.screenshotCssStyle);
 
-			if (message.restoreButtonView != null)
-				applyRestoreButtonView(null, message.restoreButtonView);
+				if (message.restoreButtonView != null)
+					applyRestoreButtonView(null, message.restoreButtonView);
 
-			if (message.tabIconStatusVisualize != null) {
-				tabIconStatusVisualize = message.tabIconStatusVisualize;
-				createTitleAndIcon(true);
-			}
+				if (message.tabIconStatusVisualize != null) {
+					tabIconStatusVisualize = message.tabIconStatusVisualize;
+					createTitleAndIcon(true);
+				}
+			});
 		} else if (message.method === '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]') {
 			// eslint-disable-next-line no-undef
 			drawAddPageToWhiteListDialog();
@@ -509,19 +554,22 @@ function startEX() {
 	secondTime = isSecondTime();
 
 	document.getElementById('title').onclick =
-		document.getElementById('titleImg').onclick = function() {
+		document.getElementById('titleImg').onclick = () => {
 			goBack();
 			return false;
 		};
 
 	let url = parseUrlParam('url');
+	let title = parseUrlParam('title');
 
-	if (url.indexOf('http://') == 0)
+	if (url.indexOf('http://') === 0)
 		url = url.substr(7);
-	if (url.indexOf('https://') == 0)
+	if (url.indexOf('https://') === 0)
 		url = url.substr(8);
 
-	document.getElementById('nativeUrlSpan').innerText = url;
+	const nativeUrlSpan = document.getElementById('nativeUrlSpan');
+	nativeUrlSpan.innerText = url;
+	nativeUrlSpan.title = `Title: "${title}"`;
 
 	initNativeUrlAnimation();
 }
@@ -534,16 +582,16 @@ function goBack(options) {
 		'url': targetUrl
 	});
 
-	if (!backProcessed || options != null && options.force == true) {
-		if (reloadTabOnRestore == false &&
+	if (!backProcessed || options != null && options.force === true) {
+		if (reloadTabOnRestore === false &&
 			!isFromHistory() &&
 			parkedUrl != null
 			/* TODO: Rework this logic && window.history.length > 2 && !secondTime*/) {
-			if (debug)
+			if (DEBUG)
 				console.log('Back');
 			historyFallback(parseUrlParam('url'));
 		} else {
-			if (debug)
+			if (DEBUG)
 				console.log('Reload');
 			window.location.replace(parseUrlParam('url'));
 		}
@@ -554,20 +602,22 @@ function goBack(options) {
 function historyFallback(fallbackUrl) {
 	let hasHistory = false;
 
-	window.onbeforeunload = function() {
+	window.onbeforeunload = () => {
 		hasHistory = true;
 	};
 
 	window.history.go(-1);
 
-	setInterval(function() {
-		console.log('hasHistory: ' + hasHistory);
-	}, 100);
+	if(DEBUG) {
+		setInterval(() => {
+			console.log('hasHistory: ' + hasHistory);
+		}, 100);
+	}
 
-	setTimeout(function() {
+	setTimeout(() => {
 		if (hasHistory != true) {
 			window.location.assign(fallbackUrl);
-			if (debug)
+			if (DEBUG)
 				console.log('Force Back 500ms!!!');
 		}
 	}, 500);
@@ -615,13 +665,13 @@ function initNativeUrlAnimation() {
 		return;
 
 
-	newNativeUrlElement.onmouseover = function() {
+	newNativeUrlElement.onmouseover = () => {
 		nativeUrlElementHover = true;
 		if (nativeUrlTimerCloseAfterTimeout)
 			clearTimeout(nativeUrlTimerCloseAfterTimeout);
 	};
 
-	newNativeUrlElement.onmouseout = function(event) {
+	newNativeUrlElement.onmouseout = (event) => {
 		if (event) {
 			let e = event.toElement || event.relatedTarget;
 			if (e) {
@@ -634,19 +684,19 @@ function initNativeUrlAnimation() {
 		if (nativeUrlTimerCloseAfterTimeout)
 			clearTimeout(nativeUrlTimerCloseAfterTimeout);
 
-		nativeUrlTimerCloseAfterTimeout = setTimeout(function() {
+		nativeUrlTimerCloseAfterTimeout = setTimeout(() => {
 			hideNativeUrl();
 		}, 5000);
 	};
 
 
-	hideNativeUrl = function() {
+	hideNativeUrl = () => {
 		if (nativeUrlVisible != true)
 			return;
 
 		nativeUrlTimer = null;
 
-		nativeUrlTimerClose = setInterval(function() {
+		nativeUrlTimerClose = setInterval(() => {
 			newNativeUrlElement.style.top = --nativeUrlPosition + 'px';
 			if (nativeUrlPosition <= -27) {
 				nativeUrlVisible = false;
@@ -656,7 +706,7 @@ function initNativeUrlAnimation() {
 		}, 10);
 	};
 
-	showNativeUrl = function(options) {
+	showNativeUrl = (options) => {
 		if (!options || !options.permanent)
 			clearTimeout(nativeUrlTimerCloseAfterTimeout);
 		nativeUrlTimerCloseAfterTimeout = null;
@@ -668,7 +718,7 @@ function initNativeUrlAnimation() {
 			window.getSelection().selectAllChildren(document.getElementById('nativeUrlSpan'));
 
 			nativeUrlPosition = -27;
-			nativeUrlTimer = setInterval(function() {
+			nativeUrlTimer = setInterval(() => {
 				newNativeUrlElement.style.top = ++nativeUrlPosition + 'px';
 
 				if (nativeUrlPosition >= 0) {
@@ -678,7 +728,7 @@ function initNativeUrlAnimation() {
 					if (nativeUrlTimerCloseAfterTimeout)
 						clearTimeout(nativeUrlTimerCloseAfterTimeout);
 					if (!options || !options.permanent)
-						nativeUrlTimerCloseAfterTimeout = setTimeout(function() {
+						nativeUrlTimerCloseAfterTimeout = setTimeout(() => {
 							if (!nativeUrlElementHover)
 								hideNativeUrl();
 						}, 5000);
@@ -688,13 +738,145 @@ function initNativeUrlAnimation() {
 	};
 
 	document.getElementById('nativeUrlButton').onclick = showNativeUrl;
+
+
+	const loadJsCssFile = (filename, filetype) => {
+		return new Promise((resolve, reject) => {
+			let fileRef;
+			if (filetype === "js") { //if filename is a external JavaScript file
+				fileRef = document.createElement('script')
+				fileRef.setAttribute("type", "text/javascript")
+				fileRef.setAttribute("src", filename);
+				fileRef.onload = () => {
+					resolve();
+				};
+			} else if (filetype === "css") { //if filename is an external CSS file
+				fileRef = document.createElement("link")
+				fileRef.setAttribute("rel", "stylesheet")
+				fileRef.setAttribute("type", "text/css")
+				fileRef.setAttribute("href", filename);
+				fileRef.onload = () => {
+					resolve();
+				};
+			}
+			if (typeof fileRef != "undefined")
+				document.getElementsByTagName("head")[0].appendChild(fileRef);
+			else
+				reject();
+		});
+	}
+
+	/* Load Main Menu */
+	document.getElementById('pauseIcon').onclick = () => {
+		Promise.all([loadJsCssFile('utils.js', 'js')])
+			.then(() => {
+
+				const isDarkMode = window.isDarkMode();
+
+				const mainMenuDiv = document.createElement('div');
+				const mainMenuOverlay = document.createElement('div');
+				mainMenuOverlay.style.cssText = `position: fixed;
+				top: 0%;
+				left: 0%;
+				width: 100%;
+				height: 100%;
+				background-color: #555;
+				z-index: 1000;
+				opacity: .40;`;
+				const mainMenuDivInner = document.createElement('div');
+				if(isDarkMode) {
+					mainMenuDivInner.classList.add('blackThemeInner');
+				}
+				mainMenuDivInner.style.cssText = `border-radius: 10px;
+				overflow: hidden;
+				background-color: #fff`;
+
+				const mainMenuIframe = document.createElement('iframe');
+				mainMenuIframe.src = "./popup.html?showSessions=no";
+				mainMenuIframe.style.cssText = `border: 0px;
+				width: 300px;
+				height: 423px;`;
+				mainMenuDivInner.appendChild(mainMenuIframe);
+
+				if(isDarkMode) {
+					mainMenuDiv.classList.add('blackTheme');
+				}
+				mainMenuDiv.classList.add('mainMenuDiv');
+				mainMenuDiv.style.cssText = `position: absolute;
+				z-index: 1001;
+				top: 47px;
+				left: 25px;
+				height: 100%;
+				width: 300px;
+				/*border-radius: 10px;
+				overflow: hidden;*/`;
+				mainMenuDiv.appendChild(mainMenuDivInner);
+				document.body.classList.add('blur');
+				document.body.parentElement.appendChild(mainMenuDiv);
+				document.body.parentElement.appendChild(mainMenuOverlay);
+
+				mainMenuOverlay.onclick = () => {
+					mainMenuDiv.parentElement.removeChild(mainMenuDiv);
+					mainMenuOverlay.parentElement.removeChild(mainMenuOverlay);
+					document.body.classList.remove('blur');
+				}
+		});
+	};
+
+
+	document.getElementById('settingsBtn').onclick = () => {
+
+		if(document.getElementById('options').style.display === 'none') {
+			document.getElementById('options').style.display = 'block';
+
+			Promise.all([
+				loadJsCssFile('lib/coloris/coloris.min.js', 'js'),
+				loadJsCssFile('lib/coloris/coloris.min.css', 'css'),
+				loadJsCssFile('part-options.css', 'css'),
+			]).then(() => {
+				chrome.runtime.getBackgroundPage((bgpage) => {
+
+					/* Blue Circle options */
+					const restoreButtonView = bgpage.getRestoreButtonView();
+					const showRestoreButtonChecked = (restoreButtonView === 'roundIcon');
+					document.getElementById('showCircleInput').checked = showRestoreButtonChecked;
+					document.getElementById('showCircleInput').onchange = () => {
+						const restoreButtonView = (document.getElementById('showCircleInput').checked ? 'roundIcon' : 'noIcon');
+						chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', restoreButtonView: restoreButtonView });
+					}
+
+
+					/* Color Option */
+					document.getElementById('colorisInput').value = '#' + bgpage.getParkBgColor();
+					// eslint-disable-next-line no-undef
+					Coloris({
+						el: '.coloris'
+					});
+					document.getElementById('colorisInput').oninput = () => {
+						const parkBgColor = document.getElementById('colorisInput').value.split('#');
+						if(parkBgColor.length >= 1)
+							chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', parkBgColor: parkBgColor[1] });
+					}
+
+					/* All Settings */
+					document.getElementById('allSettings').onclick = () => {
+						chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:OpenSettingsPage]' });
+					};
+
+				});
+			});
+
+		} else {
+			document.getElementById('options').style.display = 'none';
+		}
+	}
 }
 
 /************************/
 /*     Util Methods     */
 /************************/
 
-window.drawAddPageToWhiteListDialog = function() {
+window.drawAddPageToWhiteListDialog = () => {
 	if (document.getElementById('ATCSDialogiFrame'))
 		return;
 

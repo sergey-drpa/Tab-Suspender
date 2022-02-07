@@ -124,6 +124,10 @@ div.menu:hover:not(.disabled) {
     background-color: #ccc;
 }
 
+div.menu:hover img  {
+    opacity: 1;
+}
+
 .menu:hover:not(.disabled) span.menu {
     color: #fff !important;
 }
@@ -271,7 +275,7 @@ img.checked {
 
 .slider-background {
     position: absolute;
-    width: 301px;
+    width: 300px;
     height: 80px;
     left: -20px;
     z-index: -10000;
@@ -294,8 +298,8 @@ img.checked {
     opacity: 0.4;
     background-color: #eee;
     text-align: center;
-    font-size: 20px;
-    color: #000;
+    font-size: 16px;
+    color: #ff0000;
     top: -47px;
     line-height: 104px;
     cursor: default;
@@ -331,6 +335,10 @@ img.checked {
 
 .title:hover {
     color: #6ea9ec;
+}
+
+.title.disabled {
+    filter: grayscale(1);
 }
 
 .recicle-section {

@@ -34,6 +34,12 @@
     width: calc(100% - 4em);
 }
 
+.card-img-top.popuped {
+    padding-left: 200px;
+    padding-right: 200px;
+    margin-left: -200px;
+}
+
 .card-img-top:not(.clicked):not(.zoom):hover {
     transform: scale(1.3); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
     transition: transform .2s;
@@ -44,7 +50,6 @@
 .card-img-top.zoom {
     transform: scale(2.5) !important;
     border: solid 2px #262626 !important;
-    background-color: #fff;
     border-radius: 5px;
 }
 

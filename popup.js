@@ -23,6 +23,11 @@ window.$ = window.$ || {};
  **************** ONLOAD ****************
  ****************************************/
 
+let showSessions = true;
+if(parseUrlParam(location.href, "showSessions")==="no") {
+	showSessions = false;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
 	const isDarkModeEnabled = isDarkMode();
@@ -87,9 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				$('.tab-button').removeClass('checked');
 			}
 
-			if (res.popup_showWindowSessionByDefault) {
+			if (res.popup_showWindowSessionByDefault && showSessions) {
 				$('#showWindowSessionByDefault').prop('checked', true);
 				setTimeout(()=>{ toggleShowWindowSessions(true); }, 10 );
+			}
+
+			if(!showSessions) {
+				document.getElementById("sessionSection").style.display = 'none';
 			}
 
 			if (tabs[0].url.indexOf(chrome.extension.getURL('park.html')) == 0)
@@ -343,7 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
 								//close: true,
 								noHref: true,
 								noTitle: true,
-								noUrl: true
+								noUrl: true,
+								popuped: true,
 							});
 
 							divLine.getElementsByClassName('card-img-a')[0].onclick = function() {
@@ -367,8 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
 										mousePosition[0] -= e.movementX;
 										mousePosition[1] -= e.movementY;
 									}
-									e.target.style.setProperty("transform", `scale(2.5) translateX(${mousePosition[0]}px)`, "important")
-									//e.target.style.transform = `scale(2.5) translate(${mousePosition[0]}px, ${mousePosition[1]}px) !important`;
+									e.target.style.setProperty("transform", `scale(2.5) translateX(${parseInt(mousePosition[0]*1.4)}px)`, "important")
 								} else {
 									mousePosition = null;
 									e.target.style.transform = "";
@@ -417,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.querySelector('#settings').onclick = function(options) {
 
 		let manifest = chrome.runtime.getManifest();
-		focuseOrOpenTSPage(manifest.options_page, options);
+		focusOrOpenTSPage(manifest.options_page, options);
 
 		/*let extviews = chrome.extension.getViews();
 
@@ -440,36 +449,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 
 	document.querySelector('#suspendHistory').onclick = function(options) {
-		focuseOrOpenTSPage('history.html#suspended', options);
+		focusOrOpenTSPage('history.html#suspended', options);
 		return false;
 	};
 
 	document.querySelector('#closeHistory').onclick = function(options) {
-		focuseOrOpenTSPage('history.html#closed', options);
+		focusOrOpenTSPage('history.html#closed', options);
 		return false;
 	};
 
-	function focuseOrOpenTSPage(pageLocalUrl, options) {
-		chrome.windows.getCurrent({ 'populate': true }, function(currentWindow) {
-			for (let i = 0; i <= currentWindow.tabs.length; i++) {
-				const tab = currentWindow.tabs[i];
-				if (tab && tab.url.indexOf(chrome.extension.getURL(pageLocalUrl)) === 0) {
-					if (tab.active)
-						chrome.tabs.reload(tab.id, {});
-					else if (options == null || options.reloadOnly == null || options.reloadOnly === false)
-						chrome.tabs.update(tab.id, { 'active': true });
-					break;
-				} else if (i === currentWindow.tabs.length - 1) {
-					// Create new tab if past end of list and none open
-					if (options == null || options.reloadOnly == null || options.reloadOnly === false)
-						chrome.tabs.create({ 'url': pageLocalUrl, 'active': true });
-				}
-			}
-		});
-	}
-
 	document.querySelector('#sessionManager').onclick = document.querySelector('#sessionManagerLink').onclick = function(options) {
-		focuseOrOpenTSPage('sessions.html', options);
+		focusOrOpenTSPage('sessions.html', options);
 		return false;
 	};
 
@@ -817,6 +807,13 @@ function recalculatePauseStatus() {
 }
 
 function changePausedUI(paused) {
+
+	if(paused) {
+		document.getElementById('link').classList.add('disabled');
+	} else {
+		document.getElementById('link').classList.remove('disabled');
+	}
+
 	let sliders = document.querySelectorAll('#slider');
 
 	for (let i in sliders)
