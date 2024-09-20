@@ -79,7 +79,6 @@ const INSTALLED = 'installed';
 	let sessionsPageUrl = e5.getURL('sessions.html');
 	let historyPageUrl = e5.getURL('history.html');
 	let database;
-	let webSqlDatabase;
 	let tabs = {}; // list of tabIDs with inactivity time {'id', 'time', 'active_time', 'swch_cnt', 'screen', 'parkTrys'}
 	let HISTORY_KEEP_LAST_N_ITEMS = 300;
 	let parkHistory = [];
@@ -106,7 +105,6 @@ const INSTALLED = 'installed';
 	// eslint-disable-next-line no-undef
 	let historyOpenerController = new HistoryOpenerController();
 	let batteryLevel = -1.0;
-	let dbMovedFromWebSqlToIndexedDB = false;
 	let getScreenCache = null;
 	let wizardPageUrl = e5.getURL('wizard_background.html');
 	let settingsInitedResolve, settingsInitedPromise = new Promise(function(resolve) {
@@ -226,11 +224,7 @@ const INSTALLED = 'installed';
 				getScreenCache = null;
 		}
 
-		let currentDB;
-		if (dbMovedFromWebSqlToIndexedDB == true || isCurrentSessionAfter(sessionId))
-			currentDB = database;
-		else
-			currentDB = webSqlDatabase;
+		const currentDB = database;
 
 		currentDB.queryIndex(
 			{
@@ -270,11 +264,7 @@ const INSTALLED = 'installed';
 		if (sessionId == null)
 			sessionId = window.TSSessionId;
 
-		let currentDB;
-		if (dbMovedFromWebSqlToIndexedDB == true)
-			currentDB = database;
-		else
-			currentDB = webSqlDatabase;
+		const currentDB = database;
 
 		currentDB.queryIndexCount(
 			{
@@ -285,7 +275,7 @@ const INSTALLED = 'installed';
 					},
 				WebSQL:
 					{
-						query: 'select count(*) from screens where id = ? and sessionId = ?'
+						//query: 'select count(*) from screens where id = ? and sessionId = ?'
 					},
 				params: [parseInt(id), parseInt(sessionId)]
 			},
@@ -1836,7 +1826,7 @@ const INSTALLED = 'installed';
 						//documentUrlPatterns: ['http://*/*', 'https://*/*']
 					},
 					{
-						title: 'Suspend All',
+						title: 'Suspend all',
 						contexts: ['all'],
 						onclick: function() {
 							parkTabs(null);
@@ -1844,7 +1834,7 @@ const INSTALLED = 'installed';
 						parentId: menuId
 					},
 					{
-						title: 'Suspend All Other',
+						title: 'Suspend all Other',
 						contexts: ['all'],
 						onclick: function(info, tab) {
 							parkTabs(tab);
@@ -1863,7 +1853,7 @@ const INSTALLED = 'installed';
 						_command: 'suspend-all-window'
 					},
 					{
-						title: 'Unsuspend All Tabs',
+						title: 'Unsuspend all Tabs',
 						contexts: ['all'],
 						onclick: function() {
 							unsuspendTabs();
@@ -2179,92 +2169,6 @@ const INSTALLED = 'installed';
 	/**
 	 *
 	 */
-	let lastRow = -1;
-
-	function copyWebSqlToIndexedDB() {
-
-		let cleanAndCloseWebSql = function() {
-			console.log('DB Moved From WebSql To IndexedDB !!!!!!!!!!!!!');
-
-			dbMovedFromWebSqlToIndexedDB = true;
-			localStorage.setItem('dbMovedFromWebSqlToIndexedDB', true);
-			/* DELETE * FORM WEBSQL... */
-
-			webSqlDatabase.executeDelete({
-				WebSQL:
-					{
-						query: 'DROP TABLE screens',
-						params: []
-					}
-			});
-
-			webSqlDatabase = null;
-			console.log('WebSqlDB removed && closed !!!!!!!!!!!!!');
-		};
-
-		let copyFromWebSqlToIndexedDBOneByOne;
-		copyFromWebSqlToIndexedDBOneByOne = function(offset) {
-			webSqlDatabase.getAll({
-					WebSQL:
-						{
-							query: 'select id, sessionId, added_on, screen from screens LIMIT ' + offset + ', 2',
-							params: null
-						}
-
-				}, function(resultsRowsArray) {
-					if (resultsRowsArray != null) {
-						let callPut = function(curI) {
-							setTimeout(function() {
-
-								if (resultsRowsArray[curI] != null) {
-									let data =
-										{
-											'id': parseInt(resultsRowsArray[curI].id),
-											'sessionId': resultsRowsArray[curI].sessionId,
-											'added_on': resultsRowsArray[curI].added_on,
-											'screen': resultsRowsArray[curI].screen
-										};
-
-									database.put(
-										{
-											IDB:
-												{
-													table: 'screens',
-													data: data
-												}
-										}
-									);
-								}
-
-								console.log('Moved ' + curI + ' from ' + lastRow + ' records.');
-
-								if (lastRow == offset)
-									cleanAndCloseWebSql();
-
-							}, 1500 * offset);
-						};
-
-						callPut(0);
-
-						if (resultsRowsArray.length > 1)
-							copyFromWebSqlToIndexedDBOneByOne(offset + 1);
-						else
-							lastRow = offset;
-					}
-				},
-				function(e) {
-					console.log('Error when open WebSqlDB: ', e);
-					console.log('Removing WebSqlDB...');
-					cleanAndCloseWebSql();
-				});
-		};
-
-		copyFromWebSqlToIndexedDBOneByOne(0);
-	}
-
-	/**
-	 *
-	 */
 	function cleanupDB() {
 		console.log('DB Cleanup started...');
 
@@ -2323,8 +2227,8 @@ const INSTALLED = 'installed';
 					},
 				WebSQL:
 					{
-						query: 'select sessionId from screens where sessionId NOT IN ("' + Object.keys(usedSessionIds).join('","') + '") group by sessionId',
-						params: null
+						//query: 'select sessionId from screens where sessionId NOT IN ("' + Object.keys(usedSessionIds).join('","') + '") group by sessionId',
+						//params: null
 					}
 
 			}, function(resultsRowsArray) {
@@ -2349,8 +2253,8 @@ const INSTALLED = 'installed';
 										},
 									WebSQL:
 										{
-											query: 'delete from screens where sessionId = ?',
-											params: [resultsRowsArray[curI].sessionId]
+											//query: 'delete from screens where sessionId = ?',
+											//params: [resultsRowsArray[curI].sessionId]
 										}
 								});
 							}, 2000 * curI);
@@ -2406,16 +2310,6 @@ const INSTALLED = 'installed';
 
 		/* Connect DB */
 		database = new DBProvider('IndexedDB');
-
-		dbMovedFromWebSqlToIndexedDB = JSON.parse(localStorage.getItem('dbMovedFromWebSqlToIndexedDB'));
-		if (dbMovedFromWebSqlToIndexedDB != true) {
-			webSqlDatabase = new DBProvider('WebSQl', { skipSchemaCreation: true });
-			console.log('Moving to IndexedDB...');
-			setTimeout(function() {
-				database.getInitializedPromise().then(copyWebSqlToIndexedDB);
-			}, DELAY_BEFORE_DB_MIGRATE_TO_INDEXEDDB);
-		} else
-			console.log('Already moved to IndexedDB.');
 
 		setTimeout(cleanupDB, DELAY_BEFORE_DB_CLEANUP);
 

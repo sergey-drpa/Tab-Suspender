@@ -283,7 +283,7 @@ IndexedDBProvider.prototype.open = function(options) {
 
 	this.initializedPromise = new Promise(function(resolve, reject) {
 		openRequest.onsuccess = function(e) {
-			console.log('running onsuccess');
+			console.log('IDB Connected successfully');
 			self.db = e.target.result;
 			self.initialized = true;
 			resolve();

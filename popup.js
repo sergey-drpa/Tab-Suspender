@@ -28,6 +28,11 @@ if(parseUrlParam(location.href, "showSessions")==="no") {
 	showSessions = false;
 }
 
+$(window).load(function() {
+	document.getElementById("slider").focus();
+	document.getElementById("main-slider").focus();
+});
+
 document.addEventListener('DOMContentLoaded', function() {
 
 	const isDarkModeEnabled = isDarkMode();

@@ -13,10 +13,7 @@ function DBProvider(dbImplementation, options) {
 
 	this.concreteDBProvider = null;
 
-	if (dbImplementation == 'WebSQl')
-		// eslint-disable-next-line no-undef
-		this.concreteDBProvider = new WebSQlProvider(options);
-	else if (dbImplementation == 'IndexedDB')
+	if (dbImplementation == 'IndexedDB')
 		// eslint-disable-next-line no-undef
 		this.concreteDBProvider = new IndexedDBProvider(options);
 	else

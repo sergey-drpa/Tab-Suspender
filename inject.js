@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	let originalFaviconUrl;
 	let originalCanvas;
-	let currentFaviconUrl;
+	//let currentFaviconUrl;
 
 	let originalIconUrlBase64;
 
@@ -331,6 +331,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 	function extractIconBase64(faviconUrl, retries) {
+
+		if(originalIconUrlBase64 != null) {
+			return;
+		}
+
 		let xhr = new XMLHttpRequest();
 		xhr.open('GET', faviconUrl ? faviconUrl : faviconInfo.faviconUrl, true);
 
@@ -349,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				let base64 = window.btoa(data);
 
 				originalIconUrlBase64 = 'data:image/png;base64,' + base64;
-				prepareIcon();
+				prepareIcon(originalIconUrlBase64);
 			} else if (!retries)
 				extractIconBase64(chrome.extension.getURL('img/new_page.ico'), 1);
 
@@ -357,16 +362,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		try {
 			xhr.send();
-		} catch (e) {
-			console.debug(e);
-		}
+			// eslint-disable-next-line no-empty
+		} catch (e) {}
 	}
 
-	function prepareIcon(highliteInfo) {
-		if (currentFaviconUrl != null && highliteInfo == null)
-			injectFaviconUrl(currentFaviconUrl);
-		else
+	function prepareIcon(iconUrlBase64, highliteInfo) {
+		if (iconUrlBase64) {
 			generateFaviconUri(highliteInfo);
+			injectFaviconUrl(iconUrlBase64);
+		}
 	}
 
 	function insertFaviconDomElement() {
@@ -379,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function injectFaviconUrl(proccesedIcon) {
-		currentFaviconUrl = proccesedIcon;
+		//currentFaviconUrl = proccesedIcon;
 
 		if(links.length === 0){
 			insertFaviconDomElement();
