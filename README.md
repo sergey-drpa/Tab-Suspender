@@ -1,5 +1,9 @@
 # Tab Suspender Chrome Extension
 
+## ⚠️ Working on V3 update to support last Chrome versions in progress...
+
+## Beta release will be available here soon
+
 Chrome Store: https://chromewebstore.google.com/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh
 
 Site: https://www.tab-suspender.com/
