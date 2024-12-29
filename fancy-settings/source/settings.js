@@ -2,7 +2,7 @@
 function changeFancySettingsHandler(){
 	console.log('settingsChaged');	
 	//TODO:!!!!!!!!!
-	chrome.extension.sendRequest({method: "[AutomaticTabCleaner:ReloadSettings]"});
+	chrome.runtime.sendMessage({method: "[AutomaticTabCleaner:ReloadSettings]"});
 	//FIREFOX support 
     //chrome.extension.getBackgroundPage().reloadSettingsEvent();
 	console.log('ReloadMessageSended!');
@@ -21,7 +21,7 @@ window.addEvent("domready", function () {
     document.getElementById('donateButton').onclick = function () {
         "use strict";
 
-        chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:donate]'});
+        chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:donate]'});
         //setTimeout(function(){window.close();}, 300);
 
         return false;

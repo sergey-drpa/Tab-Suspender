@@ -1,5 +1,5 @@
-var pinTabExampleHref = chrome.extension.getURL('/img/pin-tab-example.png');
-var audibleTabExampleHref = chrome.extension.getURL('/img/audible-tab-example.png');
+var pinTabExampleHref = chrome.runtime.getURL('/img/pin-tab-example.png');
+var audibleTabExampleHref = chrome.runtime.getURL('/img/audible-tab-example.png');
 
 function secondsHumanise(seconds) {
 	var numDays = Math.floor((seconds / 86400));
@@ -485,7 +485,7 @@ this.manifest = {
 			'text': 'Reset All Settings to default',
 			'onclick': function() {
 				if (window.confirm('Are you sure that you want to reset all Tab Suspender settings?'))
-					chrome.extension.sendRequest({ method: '[AutomaticTabCleaner:resetAllSettings]' });
+					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:resetAllSettings]' });
 			}
 		},
 		{
@@ -515,7 +515,7 @@ this.manifest = {
 					document.body.removeChild(element);
 				}
 
-				chrome.extension.sendRequest({ method: '[AutomaticTabCleaner:exportAllSettings]' }, function(response) {
+				chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:exportAllSettings]' }, function(response) {
 					download('TabSuspender.cfg', response.settings);
 				});
 			}
@@ -552,7 +552,7 @@ this.manifest = {
 						console.log(settings);
 						if (window.confirm('Are you sure that you want to Import New Tab Suspender settings?')) {
 							debugger;
-							chrome.extension.sendRequest({
+							chrome.runtime.sendMessage({
 								method: '[AutomaticTabCleaner:importAllSettings]',
 								settings: JSON.parse(settings)
 							});

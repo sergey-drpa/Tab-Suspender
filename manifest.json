@@ -1,8 +1,9 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
 	"name": "__MSG_extName__",
 	"short_name": "Tab Suspender",
     "version": "1.4.12",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuNEkrBy9aFGgcUssLSWYc+jDDfgAB+/mZcDBu8dl/Fxg8/A/vMkBAg7qrouRfPcJ4uqw3QSxMDaTIL49owqgm8uvCCFYdDVUWY7aU13YrxOn/diY33ejzfyDaCHDKMlEIPsch2P5mHxF/CUZ1vWAsKguPQHyHYwVPg22558wx9cdn3JvRI9mMLq8dB0p99PQfIFL9dpwKa11OXfEWgQbYfFYbK5+tD1xZL+oo6St8J23+pPGdz2QfXIceOT6znGj+gbmid78lT/61RX4qYT+zBhnRsY99uAFW3w+wdw7YYh76uoJI43L4RL3dDxpll5ktdZrBo1ENVVr9IXK2XDgrQIDAQAB",
 
     "description": "__MSG_extDescription__",
     "default_locale": "en",
@@ -15,36 +16,63 @@
 		"128": "img/icon128.png"
     },
 
-	 "browser_action": {
+	 "action": {
         "default_icon": "img/icon16.png",
         "default_title": "Tab Suspender",
 		"default_popup": "popup.html"
     },
     "options_page": "fancy-settings/source/index.html",
-    "background": {"page": "background.html"},
+
+    "background": {
+      "service_worker": "worker.js"
+    },
+
     "incognito": "split",
 	"offline_enabled": true,
-    "minimum_chrome_version": "54",
+    "minimum_chrome_version": "100",
     "permissions": [
 		"tabs",
 		"notifications",
-		"<all_urls>",
 		"unlimitedStorage",
         "contextMenus",
-        "storage"
+        "storage",
+        "scripting",
+        "favicon"
 		],
     "optional_permissions": [
     ],
+    "host_permissions": [
+      "*://*/*",
+      "<all_urls>"
+    ],
 	"content_scripts": [
     {
-		"matches": ["https://*/*","http://*/*"],
+		"matches": ["<all_urls>"],
 		"js": ["lib/h2c.js","inject.js"],
+        "match_origin_as_fallback": true,
 		"run_at": "document_end",
 		"all_frames" : false
     }
 	],
-    "web_accessible_resources": ["*.html", "*.js", "*.css", "/img/*.png", "img/*.ico"],
-	"content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "_favicon/*",
+          "fancy-settings/source/index.html",
+          "*.html",
+          "*.js",
+          "*.js.map",
+          "*.css",
+          "/img/*.png",
+          "img/*.ico"
+        ],
+        "matches": ["<all_urls>"],
+        "extension_ids": ["*"]
+      }
+    ],
+	"content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self';"
+    },
     "commands": {
         "suspend-current": {
             "suggested_key": {
