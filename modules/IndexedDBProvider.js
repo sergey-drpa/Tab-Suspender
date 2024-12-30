@@ -255,7 +255,7 @@ IndexedDBProvider.prototype.open = function(options) {
 
 	this.close();
 
-	let openRequest = window.indexedDB.open('TSDB', 5);
+	let openRequest = indexedDB.open('TSDB', 5);
 
 	openRequest.onupgradeneeded = function(e) {
 		let thisDB = e.target.result;

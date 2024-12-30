@@ -17,7 +17,7 @@
             document.getElementsByTagName('body')[0].classList.add("dark");
     });
 
-    settings = new Store("tabSuspenderSettings", undefined, true);
+    settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, undefined, true);
     Bundle = new Class({
         // Attributes:
         // - tab
@@ -43,7 +43,9 @@
             this.addEvents();
 
             if (this.params.name !== undefined) {
-                this.set(settings.get(this.params.name), true);
+                settings.get(this.params.name).then(value => {
+                    this.set(value, true);
+                })
             }
 
             this.params.searchString = this.params.searchString.toLowerCase();
@@ -272,7 +274,7 @@
 				if(value == "")
 					value = "mail.google.com";
 
-				chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:uriExceptionCheck]', uri: "http://"+value}, function(res) {
+				chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:uriExceptionCheck]', uri: "http://"+value}, function(res) {
 					if(res.isException)
 					{
 						document.getElementById("exceptionCheckResult").innerHTML = "In the White List (This link will not be suspended)";
@@ -395,7 +397,7 @@
                 if(value == "")
                     value = "mail.google.com";
 
-                chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:uriExceptionCheck]', uri: "http://"+value}, function(res) {
+                chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:uriExceptionCheck]', uri: "http://"+value}, function(res) {
                     if(res.isException)
                     {
                         document.getElementById("exceptionCheckResult").innerHTML = "In the White List (This link will not be suspended)";
@@ -476,7 +478,7 @@
                 this.fireEvent("action", this.get());
 
 				if(this.params.remoteCall)
-					chrome.extension.sendRequest({method: this.params.remoteCall});
+					chrome.runtime.sendMessage({method: this.params.remoteCall});
             }).bind(this);
 
             this.element.addEvent("change", change);
@@ -552,7 +554,9 @@
             this.addEvents();
 
             if (this.params.name !== undefined) {
-                this.set((settings.get(this.params.name) || 0), true);
+                settings.get(this.params.name).then(value => {
+                    this.set((value || 0), true);
+                })
             } else {
                 this.set(0, true);
             }

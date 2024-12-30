@@ -1,12 +1,12 @@
 'use strict';
 
-const extensionUrl = chrome.extension.getURL('');
+const extensionUrl = chrome.runtime.getURL('');
+const emptyScreen = '/img/no_preview_available.png';
+const chromeStore = '/img/Chrome-Store-Logo.png';
+const extension = '/img/Chrome-Extension.jpg';
 
-// eslint-disable-next-line no-redeclare,no-unused-vars
-function drawPreviewTile(tile, bgpage, options) {
-	let emptyScreen = '/img/no_preview_available.png';
-	let chromeStore = '/img/Chrome-Store-Logo.png';
-	let extension = '/img/Chrome-Extension.jpg';
+// eslint-disable-next-line no-redeclare,no-unused-vars,@typescript-eslint/no-unused-vars
+function drawPreviewTile(tile, options) {
 	let divLine = document.createElement('div');
 	divLine.classList.add('mx-auto');
 	divLine.innerHTML =
@@ -66,12 +66,12 @@ function drawPreviewTile(tile, bgpage, options) {
 
 		if (tile.tabId != null && tile.sessionId != null) {
 
-			bgpage.getScreen(tile.tabId, tile.sessionId, function(scr) {
+			void chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId: tile.tabId, sessionId: tile.sessionId /*parseUrlParam('sessionId')*/ }).then(({scr}) => {
 				if (scr != null)
 					imgElement.src = scr;
-				else if (tile.url.indexOf('https://chrome.google.com/webstore') == 0)
+				else if (tile.url.indexOf('https://chrome.google.com/webstore') === 0)
 					imgElement.src = chromeStore;
-				else if (tile.url.indexOf('chrome://extensions') == 0 || tile.url.indexOf('chrome-extension://') == 0)
+				else if (tile.url.indexOf('chrome://extensions') === 0 || tile.url.indexOf('chrome-extension://') === 0)
 					imgElement.src = extension;
 				else
 					imgElement.src = emptyScreen;

@@ -2,20 +2,110 @@
   "name": "tab-suspender",
   "version": "1.0.0",
   "license": "MIT",
-  "scripts": {},
+  "type": "module",
+  "scripts": {
+    "watch": "copy-files-from-to && tsc-watch --build ./ --onSuccess 'copy-files-from-to --silent'",
+    "watch2": "tsc *.ts --watch",
+    "build": "tsc --build ./",
+    "watch1": "webpack ./inject.js -o ./inject.c.js --watch",
+    "copy-files": "copyfiles -u 1 ./**/*.js ./built/ && copyfiles -u 1 ./**/*.html ./built/ && copyfiles -u 1 ./**/**/**/*.css ./built/"
+  },
+  "copyFiles": [
+    {
+      "from": [
+        "./manifest.json",
+        "./_locales/**",
+        "./*.js",
+        "./*.ts",
+        "./*.html",
+        "./*.css",
+        "./fancy-settings/**",
+        "./modules/**",
+        "./lib/**",
+        "./img/**"
+      ],
+      "to": "./built/"
+    }
+  ],
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
+  },
   "private": true,
   "dependencies": {
     "html-minifier": "^4.0.0"
   },
   "devDependencies": {
-    "eslint": "^7.19.0",
-    "eslint-config-prettier": "6.0.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-loader": "3.0.3",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "3.1.2",
-    "eslint-plugin-promise": "^4.3.1"
+    "@eslint/js": "^9.11.1",
+    "@types/chrome": "0.0.271",
+    "@types/jest": "^29.5.13",
+    "@types/jquery": "1.10.45",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "copy-files-from-to": "^3.11.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^8.57.1",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-jest-mocker": "^1.0.0",
+    "tsc-watch": "^5.0.3",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.7.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": [
+        "./tsconfig.json"
+      ]
+    },
+    "rules": {
+      "@typescript-eslint/no-floating-promises": [
+        "error"
+      ],
+      "@typescript-eslint/ban-ts-comment": [
+        "off"
+      ]
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "globals": {
+      "chrome": "readonly",
+      "google": "readonly",
+      "getTabInfo": "readonly",
+      "isScreenExist": "readonly",
+      "isTabParked": "readonly",
+      "addScreen": "readonly",
+      "getScreen": "readonly",
+      "isTabInIgnoreTabList": "readonly",
+      "extractHostname": "readonly",
+      "parseUrlParam": "readonly",
+      "hasLastError": "readonly",
+      "versionCompare": "readonly",
+      "trackErrors": "readonly",
+      "trackError": "readonly",
+      "trackView": "readonly",
+      "sql_error": "readonly",
+      "debug": "readonly",
+      "Store": "readonly",
+      "BrowserActionControl": "readonly",
+      "WhiteList": "readonly",
+      "DBProvider": "readonly",
+      "ADDED_ON_INDEX_NAME": "readonly",
+      "SCREENS_BINARY_DB_NAME": "readonly",
+      "drawPreviewTile": "readonly",
+      "html2canvas": "readonly",
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    }
   },
   "$schema": "https://json.schemastore.org/package"
 }

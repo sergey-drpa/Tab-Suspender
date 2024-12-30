@@ -4,6 +4,10 @@
  * Zadorozhniy.Sergey@gmail.com
  */
 
+// DELETE->
+/*chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+	arguments[arguments.length - 1](x);\n" +*/
+
 document.addEventListener('DOMContentLoaded', function() {
 	(function() {
 		'use strict';
@@ -14,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		trackErrors('wizard', true);
 
-		chrome.extension.sendMessage({
+		chrome.runtime.sendMessage({
 			method: '[AutomaticTabCleaner:installed]'
 		});
 
@@ -186,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 					console.log('onFinish', data);
-					chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
+					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
 				}
 			});
 		})();
@@ -214,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 
-					chrome.extension.sendMessage({
+					chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						limitOfOpenedTabs: data.from
 					});
@@ -252,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				onFinish: function(data) {
 					console.log('onFinish', data);
 
-					chrome.extension.sendMessage({
+					chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						closeTimeout: data.from
 					});
@@ -268,14 +272,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		$('input[type="radio"].closeRadio').on('change', function() {
 			if ($(this).hasClass('no') && $(this).prop('checked')) {
 				$('.close-sliders').addClass('hidden');
-				chrome.extension.sendMessage({
+				chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: false
 				});
 			}
 			if ($(this).hasClass('yes') && $(this).prop('checked')) {
 				$('.close-sliders').removeClass('hidden');
-				chrome.extension.sendMessage({
+				chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: true
 				});
@@ -287,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		 */
 
 		document.getElementById('debugCheckbox').onchange = () => {
-			chrome.extension.sendMessage({
+			chrome.runtime.sendMessage({
 				method: '[AutomaticTabCleaner:updateTimeout]',
 				sendErrors: document.getElementById('debugCheckbox').checked === true
 			});

@@ -49,6 +49,7 @@
 
 .card-img-top.zoom {
     transform: scale(2.5) !important;
+    transition: transform .2s;
     border: solid 2px #262626 !important;
     border-radius: 5px;
 }

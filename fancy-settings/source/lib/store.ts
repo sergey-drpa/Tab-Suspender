@@ -4,17 +4,22 @@
 // License: MIT-license
 //
 
-(function () {
-    var Store = this.Store = function (name, defaults, isNotMainSettings) {
-        var key;
-        this.name = name;
-        this.onStorageInitialized = undefined;
+let SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats in fancy-settings/../settings.js */
+
+// eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
+// @ts-ignore
+class SettingsStore {
+    private readonly namespace: string;
+    private onStorageInitialized: Promise<void>;
+
+    constructor(namespace, defaults, isNotMainSettings?) {
+        this.namespace = (namespace ? namespace : SETTINGS_STORAGE_NAMESPACE);
         this.onStorageInitialized = new Promise(resolve => {
 
             if(!isNotMainSettings) {
 
                 // Retrieve data from Sync
-                chrome.storage.sync.get(null, (items) => {
+                chrome.storage.sync.get(null as string).then(async (items) => {
                     // Pass any observed errors down the promise chain.
                     /* TODO: Implement sync from sync server
                     if (!chrome.runtime.lastError) {
@@ -41,10 +46,10 @@
 
 
                     if (defaults !== undefined) {
-                        for (key in defaults) {
+                        for (const key in defaults) {
                             if (defaults.hasOwnProperty(key)) {
-                                if (this.get(key) === undefined) {
-                                    this.set(key, defaults[key], true);
+                                if (await this.get(key) == undefined) {
+                                    await this.set(key, defaults[key], true);
                                 }
                                 /* NO NEED DEFAULTS IN SYNC
                                 ((localKey) => {
@@ -63,7 +68,7 @@
 
                     chrome.storage.onChanged.addListener(function(changes, namespace) {
                         if (namespace === 'sync') {
-                            for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+                            for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
                                 // TODO: Implement sync from sync server
                                 console.log(
                                   `Storage key "${key}" in namespace "${namespace}" changed.`,
@@ -74,32 +79,34 @@
                     });
 
                     resolve();
-                });
+                }).catch(console.error);
             }
         });
-    };
+    }
 
-    Store.prototype.getOnStorageInitialized = function () { return this.onStorageInitialized; }
+    getOnStorageInitialized() {
+        return this.onStorageInitialized;
+    }
 
-    Store.prototype.getSync = function (name) {
+    getSync(name) {
         return new Promise(resolve => {
             chrome.storage.sync.get([name], function(result) {
                 console.log(`[GET] Sync Value currently is [${name}]: ` + result[name]);
                 try {
-                    resolve(JSON.parse(result[name]), name);
-                } catch (e) {
-                    resolve(null, name);
+                    resolve(JSON.parse(result[name]));
+                } catch {
+                    resolve(null);
                 }
             });
         });
-    };
+    }
 
-    function checkTypeAndCast (name, value) {
-        if(window.SETTINGS_TYPES == null) {
+    checkTypeAndCast(name, value) {
+        if(SETTINGS_TYPES == null) {
             console.error(`window.SETTINGS_TYPES not defined!!!`);
             try {
                 return JSON.parse(value);
-            } catch (e) {
+            } catch {
                 return value;
             }
         }
@@ -107,21 +114,21 @@
             return value;
         }
 
-        switch (window.SETTINGS_TYPES[name]) {
-            case window.NUMBER_TYPE:
+        switch (SETTINGS_TYPES[name]) {
+            case NUMBER_TYPE:
                 if (typeof value !== "number") {
                     try {
                         return parseFloat(value);
-                    } catch (e) {
+                    } catch {
                         return value;
                     }
                 }
                 break;
-            case window.STRING_TYPE:
+            case STRING_TYPE:
                 if(value.startsWith("\"")) {
                     try {
                         return JSON.parse(value);
-                    } catch (e) {
+                    } catch {
                         return value;
                     }
                 }
@@ -130,7 +137,7 @@
                 if (typeof value !== "boolean") {
                     try {
                         return JSON.parse(value);
-                    } catch (e) {
+                    } catch {
                         return value;
                     }
                 }
@@ -139,29 +146,40 @@
         return value;
     }
 
-    Store.get = Store.prototype.get = function (name, namespace) {
-        const initialName = name;
-        name = "store." + (namespace ? namespace : this.name) + "." + name;
-        const value = localStorage.getItem(name);
-        if (value === null) { return undefined; }
-        try {
-            return checkTypeAndCast(initialName, JSON.parse(value));
-        } catch (e) {
-            console.error(e)
-            return value;
-        }
-    };
+    static async get(name, namespace): Promise<any> {
 
-    Store.prototype.set = function (name, value, skipSync) {
+        if (DEFAULT_SETTINGS[name] === undefined) {
+            throw new Error(`SettingsStore.get(): Unknown property '${name}'`);
+        }
+
+        name = this.genName(name, namespace);
+
+        // TODO-v3: check availability to red old settings: const value = localStorage.getItem(name);
+        return (await chrome.storage.local.get([name]))[name];
+    }
+
+    private static genName(name, namespace) {
+        return 'store.' + (namespace ? namespace : SETTINGS_STORAGE_NAMESPACE) + '.' + name;
+    }
+
+    async get(name): Promise<any> {
+        return SettingsStore.get(name, this.namespace);
+    }
+
+    async set(name, value, skipSync?) {
+
+        if (DEFAULT_SETTINGS[name] === undefined) {
+            throw new Error(`SettingsStore.get(): Unknown property '${name}'`);
+        }
 
         if(debug) {
-            console.log(`[SET]: Local previous value for [${name}] was: ${this.get(name)}`);
+            console.log(`[SET]: Local previous value for [${name}] was: `, await this.get(name));
         }
 
         if (value === undefined) {
             this.remove(name);
         } else {
-            if (typeof value === "function") {
+            /*if (typeof value === "function") {
                 value = null;
             } else {
                 try {
@@ -169,83 +187,76 @@
                 } catch (e) {
                     value = null;
                 }
-            }
+            }*/
 
-            localStorage.setItem("store." + this.name + "." + name, value);
+            chrome.storage.local.set({
+                [SettingsStore.genName(name, this.namespace)]: value
+            }).catch(console.error);
 
             if(!skipSync) {
-                this.setSync(name, value);
+                this.setSync(name, value).catch(console.error);
             }
         }
 
         return this;
-    };
+    }
 
-    Store.prototype.setSync = async function (name, value) {
-        return new Promise( (resolve) => {
+    async setSync(name, value) {
+        return new Promise( (resolve, reject) => {
             if(debug) {
                 this.getSync(name).then(currentValue => {
-                    console.log(`[SET]: Sync previous value for [${name}] was: ${currentValue}`);
-                });
+                    console.log(`[SET]: Sync previous value for [${name}] was:`, currentValue);
+                }).catch((e) => { console.error(e); });
             }
             const object = {};
             object[name] = value;
-            chrome.storage.sync.set(object, function() {
+            chrome.storage.sync.set(object).then(()=>{
                 console.log(`[SET]: Sync Value for [${name}] is set to: ${value}`);
-                resolve(name, value);
-            });
-        });
-    };
-
-    Store.prototype.remove = function (name) {
-        this.removeSync(name);
-        localStorage.removeItem("store." + this.name + "." + name);
-        return this;
-    };
-
-    Store.prototype.removeSync = function (name) {
-        return new Promise(resolve => {
-            chrome.storage.sync.remove([name], function() {
-                console.log('Sync Value removed: ' + name);
                 resolve(name);
-            });
+            }).catch((e) => { console.error(`Error when sync.set(${object})`, e); reject(e); });
         });
-    };
+    }
 
-    Store.prototype.removeAll = function () {
-        var name, i;
+    remove(name, skipSync?) {
+        chrome.storage.local.remove(SettingsStore.genName(name, this.namespace)).catch(console.error);
 
-        this.removeAllSync();
+        if (!skipSync) {
+            void this.removeSync(name);
+        }
+        return this;
+    }
 
-        name = "store." + this.name + ".";
-        for (i = (localStorage.length - 1); i >= 0; i--) {
+    removeSync(name): Promise<void> {
+        return chrome.storage.sync.remove([name]).then(function() {
+            console.log('Sync Value removed: ' + name);
+        }).catch(console.error);
+    }
+
+    async removeAll() {
+        await this.removeAllSync();
+
+        const name = "store." + this.namespace + ".";
+        for (let i = (localStorage.length - 1); i >= 0; i--) {
             if (localStorage.key(i).substring(0, name.length) === name) {
                 localStorage.removeItem(localStorage.key(i));
             }
         }
 
         return this;
-    };
+    }
 
-    Store.prototype.removeAllSync = function () {
-        return new Promise(resolve => {
-            chrome.storage.sync.clear(function() {
-                console.log('Sync Value removedAll: ');
-                resolve();
-            });
-        });
-    };
+    removeAllSync(): Promise<void> {
+        return chrome.storage.sync.clear().then(function() {
+            console.log('Sync Value removedAll: ');
+        }).catch(console.error);
+    }
 
-    Store.prototype.toObject = function () {
-        var values,
-            name,
-            i,
-            key,
-            value;
+    toObject() {
+        let key, value;
+        const values = {};
+        const name = "store." + this.namespace + ".";
 
-        values = {};
-        name = "store." + this.name + ".";
-        for (i = (localStorage.length - 1); i >= 0; i--) {
+        for (let i = (localStorage.length - 1); i >= 0; i--) {
             if (localStorage.key(i).substring(0, name.length) === name) {
                 key = localStorage.key(i).substring(name.length);
                 value = this.get(key);
@@ -254,9 +265,9 @@
         }
 
         return values;
-    };
+    }
 
-    Store.prototype.fromObject = function (values, merge) {
+    /*fromObject(values, merge) {
         if (merge !== true) { this.removeAll(); }
         for (var key in values) {
             if (values.hasOwnProperty(key)) {
@@ -265,5 +276,15 @@
         }
 
         return this;
-    };
-}());
+    }*/
+}
+
+// @ts-ignore
+if (typeof global !== "undefined") global.SettingsStore = SettingsStore;
+
+
+
+
+
+
+

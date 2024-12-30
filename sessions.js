@@ -6,8 +6,8 @@
 
 (function() {
 	let pageSize = 30;
-	let parkUrl = chrome.extension.getURL('park.html');
-	let sessionsUrl = chrome.extension.getURL('sessions.html');
+	let parkUrl = chrome.runtime.getURL('park.html');
+	let sessionsUrl = chrome.runtime.getURL('sessions.html');
 	let scrollYPosition = 0;
 	const isDarkModeEnabled = isDarkMode();
 
@@ -25,10 +25,13 @@
 
 	let drawContent = function() {
 		return new Promise(function(resolve) {
-			chrome.runtime.getBackgroundPage(function(bgpage) {
+			//chrome.runtime.getBackgroundPage(function(bgpage) {
+			chrome.runtime.sendMessage({ method: '[TS:getSessionPageConfig]' }, function(res) {
+
+				let TSSessionId = res.TSSessionId;
+
 				chrome.windows.getCurrent({ 'populate': true }, function(currentWindow) {
 					chrome.windows.getAll({ 'populate': true }, function(windows) {
-						let TSSessionId = bgpage.TSSessionId;
 
 						windows = windows.filter((wind)=>wind.id!==currentWindow.id);
 						windows.unshift(currentWindow);
@@ -46,7 +49,7 @@
 											title: tab.title,
 											url: (parked ? parseUrlParam(tab.url, 'url') : tab.url),
 											tabId: (parked ? parseUrlParam(tab.url, 'tabId') : tab.id),
-											sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : TSSessionId),
+											sessionId: (parked ? parseUrlParam(tab.url, 'sessionId') : null /*TSSessionId*/),
 											nativeTabId: tab.id,
 											nativeWindowId: windows[wi].id
 										});
@@ -69,7 +72,7 @@
 
 								document.getElementById('container').appendChild(divWindow);
 
-								new DrawHistory(tabs, 'park' + wi, bgpage, 0, 150);
+								new DrawHistory(tabs, 'park' + wi, 0, 150);
 							}
 						}
 
@@ -85,7 +88,7 @@
 	trackErrors('history_page', true);
 
 	setTimeout(function() {
-		chrome.extension.onMessage.addListener(function(request) {
+		chrome.runtime.onMessage.addListener(function(request) {
 			if (request.method == '[AutomaticTabCleaner:updateSessions]') {
 				console.log('updateSessions..');
 				redraw();
@@ -109,16 +112,16 @@
 	}
 
 
-	function DrawHistory(tabs, targetDiv, bgpage, from, to) {
-		this.drawNextPage(tabs, targetDiv, bgpage, from, to);
+	function DrawHistory(tabs, targetDiv, from, to) {
+		this.drawNextPage(tabs, targetDiv, from, to);
 	}
 
-	DrawHistory.prototype.drawNextPage = function(tabs, targetDiv, bgpage, from, to) {
+	DrawHistory.prototype.drawNextPage = function(tabs, targetDiv, from, to) {
 		this.to = to;
 		let self = this;
 		if (tabs) {
 			for (let i = from; i < to && i < tabs.length; i++) {
-				let divLine = drawPreviewTile(tabs[i], bgpage, { noTime: true, close: true });
+				let divLine = drawPreviewTile(tabs[i], { noTime: true, close: true });
 
 				(function(i, divLine) {
 					divLine.getElementsByClassName('card-img-a')[0].onclick = function() {
@@ -151,7 +154,7 @@
 				next.href = '#';
 				next.innerText = 'More History...';
 				next.onclick = function() {
-					self.drawNextPage(tabs, targetDiv, bgpage, self.to, self.to + pageSize);
+					self.drawNextPage(tabs, targetDiv, self.to, self.to + pageSize);
 					return false;
 				};
 				document.getElementById(targetDiv + 'Container').appendChild(next);

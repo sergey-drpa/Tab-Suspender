@@ -23,36 +23,36 @@
 	}
 
 	const drawContent = () => {
-		chrome.runtime.getBackgroundPage(function(bgpage) {
-			chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:getParkHistory]' }, function(res) {
+		//chrome.runtime.getBackgroundPage(function(bgpage) {
+		chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:getParkHistory]' }, function(res) {
 
-				let parkHistory = res.parkHistory;
-				let closeHistory = res.closeHistory;
+			let parkHistory = res.parkHistory;
+			let closeHistory = res.closeHistory;
 
-				new DrawHistory(parkHistory, 'park', bgpage, 0, 30);
+			new DrawHistory(parkHistory, 'park', 0, 30);
 
-				new DrawHistory(closeHistory, 'close', bgpage, 0, 30);
+			new DrawHistory(closeHistory, 'close', 0, 30);
 
-				trackErrors('history_page', true);
+			trackErrors('history_page', true);
 
-				if (window.location.hash === '#suspended') {
-					setTimeout(() => {
-						document.getElementById("suspended").scrollIntoView();
-					}, 150);
-				}
-				if (window.location.hash === '#closed') {
-					setTimeout(() => {
-						document.getElementById("closed").scrollIntoView();
-					}, 150);
-				}
-			});
+			if (window.location.hash === '#suspended') {
+				setTimeout(() => {
+					document.getElementById("suspended").scrollIntoView();
+				}, 150);
+			}
+			if (window.location.hash === '#closed') {
+				setTimeout(() => {
+					document.getElementById("closed").scrollIntoView();
+				}, 150);
+			}
 		});
+		//});
 	};
 
 	drawContent();
 
 	setTimeout(function() {
-		chrome.extension.onMessage.addListener(function(request) {
+		chrome.runtime.onMessage.addListener(function(request) {
 			if (request.method === '[AutomaticTabCleaner:updateHistoryPage]') {
 				console.log('updateHistoryPage..');
 				drawContent();
@@ -62,17 +62,18 @@
 		});
 	}, 5000);
 
-	function DrawHistory(closeHistory, targetDiv, bgpage, from, to) {
-		this.drawNextPage(closeHistory, targetDiv, bgpage, from, to);
+	function DrawHistory(closeHistory, targetDiv, from, to) {
+		this.drawNextPage(closeHistory, targetDiv, from, to);
 	}
 
-	DrawHistory.prototype.drawNextPage = function(closeHistory, targetDiv, bgpage, from, to) {
+	DrawHistory.prototype.drawNextPage = function(closeHistory, targetDiv, from, to) {
 		this.to = to;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let self = this;
 		document.getElementById(targetDiv + 'Div').innerHTML = '';
 		if (closeHistory) {
 			for (let i = from; i < to && i < closeHistory.length; i++) {
-				let divLine = drawPreviewTile(closeHistory[i], bgpage);
+				let divLine = drawPreviewTile(closeHistory[i]);
 
 				let currentDiv = document.getElementById(targetDiv + 'Div');
 				currentDiv.appendChild(divLine);
@@ -84,7 +85,7 @@
 				next.href = '#';
 				next.innerText = 'More History...';
 				next.onclick = function() {
-					self.drawNextPage(closeHistory, targetDiv, bgpage, self.to, self.to + pageSize);
+					self.drawNextPage(closeHistory, targetDiv, self.to, self.to + pageSize);
 					return false;
 				};
 				document.getElementById(targetDiv + 'Container').appendChild(next);
