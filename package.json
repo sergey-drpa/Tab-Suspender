@@ -8,7 +8,8 @@
     "watch2": "tsc *.ts --watch",
     "build": "tsc --build ./",
     "watch1": "webpack ./inject.js -o ./inject.c.js --watch",
-    "copy-files": "copyfiles -u 1 ./**/*.js ./built/ && copyfiles -u 1 ./**/*.html ./built/ && copyfiles -u 1 ./**/**/**/*.css ./built/"
+    "copy-files": "copyfiles -u 1 ./**/*.js ./built/ && copyfiles -u 1 ./**/*.html ./built/ && copyfiles -u 1 ./**/**/**/*.css ./built/",
+    "test": "jest"
   },
   "copyFiles": [
     {

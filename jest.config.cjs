@@ -1,6 +1,9 @@
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'jsdom',
+	"roots": [
+		"<rootDir>/test"
+	],
 	setupFilesAfterEnv: [
 		// External Libraries
 		"<rootDir>/test/lib/Chrome.ts",
