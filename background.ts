@@ -9,7 +9,6 @@ const INSTALLED = 'installed';
 
 	const Copyright = 'Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy. Zadorozhniy.Sergey@gmail.com';
 	const TS_SESSION_ID_KEY = 'TSSessionId';
-	const DELAY_BEFORE_DB_CLEANUP = 60 * 1000;
 
 	const TSSessionId = Date.now();
 	let previousTSSessionId;

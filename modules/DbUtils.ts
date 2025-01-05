@@ -1,6 +1,48 @@
 const TWO_WEEKS_MS = 1000 * 60 * 60 * 24 * 14;
 const debugDBCleanup = true;
 
+let DELAY_BEFORE_DB_CLEANUP = 60 * 1000;
+if(debugDBCleanup) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	DELAY_BEFORE_DB_CLEANUP = 5 * 1000;
+}
+type AddedOnIndexKeyType = [number, number, Date];
+
+function dbCleanup_filterScreenResults(usedSessionIds: {[key: number]: boolean}, usedTabIds: {[key: number]: number}) {
+	// TODO-v3: Need  to add tests to next function - Buggy (Maybe should ignore no only by session+tabId, but by tabId to)
+	return function(result: AddedOnIndexKeyType[]) {
+		const filtredResult = [];
+		const filterdSessionKeysArray = Object.keys(usedSessionIds);
+		console.log(`Cleanup Screens: filterdSessionKeysArray: `, filterdSessionKeysArray);
+		/* [sessionId NOT IN] IMPLEMENTATION */
+		let isScreenActual;
+		for (let i = 0; i < result.length; i++) {
+			isScreenActual = false;
+
+			if (result[i][0] == undefined || result[i][1] == null || result[i][2] == undefined) {
+				console.error(`Cleanup Screens: Some of metadata is null: `, result[i]);
+			}
+
+			if (usedSessionIds[result[i][1]] !== undefined || usedTabIds[result[i][0]] !== undefined) {
+				if (usedTabIds[result[i][0]] !== undefined) {
+					isScreenActual = true;
+					// @ts-ignore
+					// TODO: result[i][2] is not working - need to iterate by value with ts instead key where no ts
+				} else if (Math.abs(new Date() - result[i][2]) > TWO_WEEKS_MS) {
+					isScreenActual = false;
+				} else {
+					isScreenActual = true;
+				}
+			}
+
+			if (!isScreenActual)
+				filtredResult.push(result[i]);
+		}
+
+		return filtredResult;
+	};
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function cleanupDB() {
 	console.log('DB Cleanup started...');
@@ -8,19 +50,28 @@ function cleanupDB() {
 	// schedule next cleanup in next days
 	setTimeout(cleanupDB, 1000 * 60 * 60 * 24);
 
-	const usedSessionIds = {};
-	const usedTabIds = {};
+	const usedSessionIds: {[key: number]: boolean} = {};
+	const usedTabIds:{[key: number]: number} = {};
 
 	chrome.tabs.query({}, function(tabs) {
 		for (const i in tabs)
 			if (tabs.hasOwnProperty(i))
 				if (tabs[i].url.indexOf(parkUrl) == 0) {
-					const sessionId = parseUrlParam(tabs[i].url, 'sessionId');
-					const tabId = parseUrlParam(tabs[i].url, 'tabId');
-					if (sessionId != null)
-						usedSessionIds[sessionId] = true;
-					if (tabId != null)
-						usedTabIds[tabId] = sessionId;
+					let sessionId: number;
+					try {
+						sessionId = parseInt(parseUrlParam(tabs[i].url, 'sessionId'));
+						if (sessionId != null)
+							usedSessionIds[sessionId] = true;
+					} catch (e) {
+						console.error(e);
+					}
+					try {
+						const tabId = parseInt(parseUrlParam(tabs[i].url, 'tabId'));
+						if (tabId != null)
+							usedTabIds[tabId] = sessionId;
+					} catch (e) {
+						console.error(e);
+					}
 				}
 
 		usedSessionIds[TSSessionId] = true;
@@ -32,34 +83,7 @@ function cleanupDB() {
 					table: 'screens',
 					index: ADDED_ON_INDEX_NAME,
 					predicate: 'getAllKeys',
-					// TODO-v3: Need  to add tests to next function - Buggy (Maybe should ignore no only by session+tabId, but by tabId to)
-					predicateResultLogic: function(result) {
-						const filtredResult = [];
-						const filterdSessionKeysArray = Object.keys(usedSessionIds);
-						console.log(`Cleanup Screens: filterdSessionKeysArray: `, filterdSessionKeysArray);
-						/* [sessionId NOT IN] IMPLEMENTATION */
-						let isScreenActual;
-						for (let i = 0; i < result.length; i++) {
-							isScreenActual = false;
-
-							if (usedSessionIds[result[i][1]]) {
-								if (usedTabIds[result[i][0]]) {
-									isScreenActual = true;
-									// @ts-ignore
-									// TODO: result[i][2] is not working - need to iterate by value with ts instead key where no ts
-								} else if (Math.abs(new Date() - result[i][2]) > TWO_WEEKS_MS) {
-									isScreenActual = false;
-								} else {
-									isScreenActual = true;
-								}
-							}
-
-							if (!isScreenActual)
-								filtredResult.push(result[i]);
-						}
-
-						return filtredResult;
-					}
+					predicateResultLogic: dbCleanup_filterScreenResults(usedSessionIds, usedTabIds),
 				},
 			WebSQL:
 				{
@@ -103,7 +127,7 @@ function cleanupDB() {
 	});
 
 
-	/* TODO-v3:
+	/*
 	const factor = new Date();
 	factor.toString = function() {
 		this.on = true;
@@ -119,3 +143,10 @@ function cleanupDB() {
 		}
 	}, 1740 * 1000);*/
 }
+
+if (typeof module != "undefined")
+	module.exports = {
+		TWO_WEEKS_MS,
+		dbCleanup_filterScreenResults,
+		cleanupDB,
+	};

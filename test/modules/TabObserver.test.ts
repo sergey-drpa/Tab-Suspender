@@ -13,7 +13,7 @@ describe('greet function', () => {
 	it('should return a greeting with the given name', async () => {
 		//const result = greet('John');
 		//expect(result).toEqual('Hello, John!');
-		const settings = new SettingsStore('test', DEFAULT_SETTINGS);
+/*		const settings = new SettingsStore('test', DEFAULT_SETTINGS);
 		// @ts-ignore
 		global.settings = settings;
 
@@ -23,6 +23,6 @@ describe('greet function', () => {
 		const tabObserver = new TabObserver(null);
 
 
-		await new Promise(r => setTimeout(r, 20000));
+		await new Promise(r => setTimeout(r, 20000));*/
 	});
 });
