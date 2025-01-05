@@ -4,7 +4,7 @@
 // License: MIT-license
 //
 
-let SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats in fancy-settings/../settings.js */
+const SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats in fancy-settings/../settings.js */
 
 // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
 // @ts-ignore
@@ -46,6 +46,27 @@ class SettingsStore {
 
 
                     if (defaults !== undefined) {
+
+                        const localStorageMigrator = new LocalStorageMigrator();
+
+                        if (!await this.get('localStorageMigrated')) {
+                            const oldSettings = await localStorageMigrator.extractOldSettings(Object.keys(defaults));
+
+                            console.log(`Old Settings: `, oldSettings);
+
+                            for (const key in oldSettings) {
+                                if (oldSettings.hasOwnProperty(key)) {
+                                    if (await this.get(key) == undefined) {
+                                        await this.set(key, oldSettings[key], true);
+                                    }
+                                }
+                            }
+
+                            await this.set('localStorageMigrated', true);
+                        }
+
+                        void this.cleanLocalStorageFormData(localStorageMigrator);
+
                         for (const key in defaults) {
                             if (defaults.hasOwnProperty(key)) {
                                 if (await this.get(key) == undefined) {
@@ -63,6 +84,8 @@ class SettingsStore {
                                 })(key);*/
                             }
                         }
+                    } else {
+                        console.error(`Default Settings is null!`);
                     }
 
 
@@ -82,6 +105,13 @@ class SettingsStore {
                 }).catch(console.error);
             }
         });
+    }
+
+    private async cleanLocalStorageFormData(localStorageMigrator: LocalStorageMigrator) {
+        if (!await this.get('localStorageFormDataCleaned')) {
+            await localStorageMigrator.cleanupFormDatas();
+            await this.set('localStorageFormDataCleaned', true);
+        }
     }
 
     getOnStorageInitialized() {

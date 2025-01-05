@@ -253,7 +253,7 @@ const INSTALLED = 'installed';
 
 		if (debug)
 			console.warn('********************************************************************************************************');
-			console.warn('* Starting...');
+			console.warn('* Starting...   ', new Date());
 			console.warn('********************************************************************************************************');
 
 		trackErrors('background', false);
@@ -320,7 +320,14 @@ const INSTALLED = 'installed';
 							LocalStore.set(INSTALLED, true).catch(console.error);
 						}
 					}
-				}).catch(console.error);
+				})
+					.catch(console.error)
+					.finally(() => {
+						if (debug)
+							setTimeout(preInit, 1000);
+						else
+							setTimeout(preInit, 500);
+					});
 				// eslint-disable-next-line no-empty
 			} catch (e) {
 				console.error(e);
@@ -352,18 +359,13 @@ const INSTALLED = 'installed';
 												console.error('Discard error', e);
 											}
 							}
-
 					}
 				}
 			});
-
-			if (debug)
-				setTimeout(preInit, 2000);
-			else
-				setTimeout(preInit, 1000);
 		};
 
 		/* Adjust DEFAULT_SETTINGS.limitOfOpenedTabs according of Screen size */
+		// TODO-v3: move to Settings before apply DEFAULT_SETTINGS
 		if (chrome.system?.display)
 			try {
 				chrome.system.display.getInfo(function(displayInfo) {

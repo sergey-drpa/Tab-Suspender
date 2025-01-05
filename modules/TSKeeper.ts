@@ -20,7 +20,7 @@ async function runHeartbeat() {
  */
 async function startHeartbeat() {
 	// Run the heartbeat once at service worker startup.
-	runHeartbeat().then(() => {
+	void runHeartbeat().then(() => {
 		// Then again every 20 seconds.
 		heartbeatInterval = setInterval(runHeartbeat, 20 * 1000);
 	});

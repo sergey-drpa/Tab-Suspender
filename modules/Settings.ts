@@ -53,6 +53,9 @@ class Settings {
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
 	popup_showWindowSessionByDefault: boolean;
+	// v2.0.0
+	localStorageMigrated: boolean;
+	localStorageFormDataCleaned: boolean;
 }
 
 //type ISettingsFields = { [Property in keyof ISettings]?: boolean };
@@ -94,7 +97,10 @@ const DEFAULT_SETTINGS: Settings = {
 	restoreButtonView: 'roundIcon', /* Available: roundIcon, noIcon, topBar */
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
-	popup_showWindowSessionByDefault: false
+	popup_showWindowSessionByDefault: false,
+	// v2.0.0
+	localStorageMigrated: null,
+	localStorageFormDataCleaned: null,
 };
 
 // @ts-ignore

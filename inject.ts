@@ -203,7 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				document.body.style.width = width + 'px';
 
 			// @ts-ignore
-			html2canvas(document.body).then(async function(canvas) {
+			html2canvas(document.body, {
+				'onrendered': async function(canvas) {
 					document.body.appendChild(canvas);
 
 					try {
@@ -226,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						console.error('Failed to process `html2canvas` result: ', e);
 						sendResponse({ result: 'fail', error: e });
 					}
-				}/*,
+				}}/*,
 				'width': (width != null ? width : window.outerWidth),//window.innerWidth,
 				'height': (window.outerHeight > 0 ? window.outerHeight : height)//window.innerHeight//  //document.height
 			}*/);

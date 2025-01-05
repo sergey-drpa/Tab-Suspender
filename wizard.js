@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		trackErrors('wizard', true);
 
-		chrome.runtime.sendMessage({
+		void chrome.runtime.sendMessage({
 			method: '[AutomaticTabCleaner:installed]'
 		});
 
 		overlay.addEventListener('click', closeDialog = function() {
-			chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
+			void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
 		});
 
 		let WIZARD_TITLE = 'Tab Suspender Wizard';
@@ -104,15 +104,17 @@ document.addEventListener('DOMContentLoaded', function() {
 								activeIndex = tabs[i].index;
 						}
 						if (activeIndex != null)
-							chrome.tabs.update(indexes[activeIndex - 1].id, { 'active': true });
+							void chrome.tabs.update(indexes[activeIndex - 1].id, { 'active': true });
 						// eslint-disable-next-line no-empty
 					} catch (e) {
+						console.warn(e);
 					}
 
 					window.close();
 					top.window.close();
 				});
 			} catch (e) {
+				console.warn(e);
 				window.close();
 				top.window.close();
 			}
@@ -190,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 					console.log('onFinish', data);
-					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
+					void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
 				}
 			});
 		})();
@@ -218,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 
-					chrome.runtime.sendMessage({
+					void chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						limitOfOpenedTabs: data.from
 					});
@@ -256,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				onFinish: function(data) {
 					console.log('onFinish', data);
 
-					chrome.runtime.sendMessage({
+					void chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						closeTimeout: data.from
 					});
@@ -272,14 +274,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		$('input[type="radio"].closeRadio').on('change', function() {
 			if ($(this).hasClass('no') && $(this).prop('checked')) {
 				$('.close-sliders').addClass('hidden');
-				chrome.runtime.sendMessage({
+				void chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: false
 				});
 			}
 			if ($(this).hasClass('yes') && $(this).prop('checked')) {
 				$('.close-sliders').removeClass('hidden');
-				chrome.runtime.sendMessage({
+				void chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: true
 				});
@@ -291,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		 */
 
 		document.getElementById('debugCheckbox').onchange = () => {
-			chrome.runtime.sendMessage({
+			void chrome.runtime.sendMessage({
 				method: '[AutomaticTabCleaner:updateTimeout]',
 				sendErrors: document.getElementById('debugCheckbox').checked === true
 			});

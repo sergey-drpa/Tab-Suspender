@@ -31,12 +31,13 @@ class BGMessageListener {
 
 		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
+			/* Screen from h2c, always devicePixelRatio=1*/
 		  if (typeof request == 'string') {
 				console.warn('Screen Requested', request.length);
 				if (request === 'data:,')
 					console.error(new Error(`Damaged screen [data:,]!!! id: ${sender.tab.id}`), {favIconUrl: undefined, ...sender.tab});
 
-				ScreenshotController.addScreen(sender.tab.id, request, TabCapture.lastWindowDevicePixelRatio[sender.tab.windowId]);
+				ScreenshotController.addScreen(sender.tab.id, request, 1/*TabCapture.lastWindowDevicePixelRatio[sender.tab.windowId]*/);
 			} else if (request.method === '[TS:getScreen]') {
 				ScreenshotController.getScreen(request.tabId, request.sessionId, (scr, pixRat) => {
 					sendResponse({ scr, pixRat });

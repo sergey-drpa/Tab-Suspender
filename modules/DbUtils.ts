@@ -32,10 +32,11 @@ function cleanupDB() {
 					table: 'screens',
 					index: ADDED_ON_INDEX_NAME,
 					predicate: 'getAllKeys',
+					// TODO-v3: Need  to add tests to next function - Buggy (Maybe should ignore no only by session+tabId, but by tabId to)
 					predicateResultLogic: function(result) {
 						const filtredResult = [];
 						const filterdSessionKeysArray = Object.keys(usedSessionIds);
-						console.log(filterdSessionKeysArray);
+						console.log(`Cleanup Screens: filterdSessionKeysArray: `, filterdSessionKeysArray);
 						/* [sessionId NOT IN] IMPLEMENTATION */
 						let isScreenActual;
 						for (let i = 0; i < result.length; i++) {
@@ -45,6 +46,7 @@ function cleanupDB() {
 								if (usedTabIds[result[i][0]]) {
 									isScreenActual = true;
 									// @ts-ignore
+									// TODO: result[i][2] is not working - need to iterate by value with ts instead key where no ts
 								} else if (Math.abs(new Date() - result[i][2]) > TWO_WEEKS_MS) {
 									isScreenActual = false;
 								} else {
