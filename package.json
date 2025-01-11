@@ -23,7 +23,8 @@
         "./fancy-settings/**",
         "./modules/**",
         "./lib/**",
-        "./img/**"
+        "./img/**",
+        "./video/**"
       ],
       "to": "./built/"
     }

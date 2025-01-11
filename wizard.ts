@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.querySelector('#defaultsButton').addEventListener('click', closeDialog);
 
 		document.onkeydown = function(evt) {
+			// @ts-ignore
 			evt = evt || window.event;
 			if (evt.keyCode == 27) {
 				closeDialog();
@@ -168,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let timeoutPrettifer;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-suspend-timeout').ionRangeSlider({
 				grid: true,
 				min: 0,
@@ -199,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let prettifyVarCountRecicleKeep = 0;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-recicle-keep').ionRangeSlider({
 				grid: true,
 				force_edges: true,
@@ -231,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let prettifyVarCountRecicleAfter = 0;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-recicle-after').ionRangeSlider({
 				grid: true,
 				force_edges: true,
@@ -295,6 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById('debugCheckbox').onchange = () => {
 			void chrome.runtime.sendMessage({
 				method: '[AutomaticTabCleaner:updateTimeout]',
+			  // @ts-ignore
 				sendErrors: document.getElementById('debugCheckbox').checked === true
 			});
 		};
@@ -302,16 +307,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		function restartVideo() {
 			const tutorialVideo = $('#tutorialVideo');
 			if (tutorialVideo.is(':visible')) {
+				// @ts-ignore
 				tutorialVideo[0].play();
 			} else {
+				// @ts-ignore
 				tutorialVideo[0].pause();
+				// @ts-ignore
 				tutorialVideo[0].load();
 			}
 		}
 
-		function updatePage4() {
-			let BG = chrome.extension.getBackgroundPage();
-			let res = BG.popupQuery({ id: 0, url: '' });
+		async function updatePage4() {
+			//let BG = chrome.extension.getBackgroundPage();
+			//let res = BG.popupQuery({ id: 0, url: '' });
+			const res: PopupQueryBGResponse = await chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:popupQuery]', tab: { id: 0, url: '' } });
+			// @ts-ignore
 			let timeout = parseInt(res.timeout);
 			document.getElementById('resultTimeoutValue').innerText = timeoutPrettifer(timeout).trim();
 
@@ -320,9 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		/* READ DEFAULT CONFIGURATION */
-		(function() {
-			let BG = chrome.extension.getBackgroundPage();
-			let res = BG.popupQuery({ id: 0, url: '' });
+		void (async function() {
+			//let BG = chrome.extension.getBackgroundPage();
+			//let res = BG.popupQuery({ id: 0, url: '' });
+			const res: PopupQueryBGResponse = await chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:popupQuery]', tab: { id: 0, url: '' } });
 			$('.js-range-slider-suspend-timeout').data('ionRangeSlider').update({ from: res.timeout });
 			prettifyVarCountRecicleKeep = 0;
 			$('.js-range-slider-recicle-keep').data('ionRangeSlider').update({ from: res.limitOfOpenedTabs });
@@ -334,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			else
 				$('input:radio[name=closeRadio][value=no]').click();//.attr('checked', 'checked');
 
+			// @ts-ignore
 			document.getElementById('debugCheckbox').checked = res.sendErrors;
 		})();
 

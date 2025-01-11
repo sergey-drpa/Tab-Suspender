@@ -1,3 +1,5 @@
+const debugScreenCache = true;
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ScreenshotController {
 
@@ -62,9 +64,7 @@ class ScreenshotController {
 				getScreenCache = null;
 		}
 
-		const currentDB = database;
-
-		currentDB.queryIndex(
+		database.queryIndex(
 			{
 				IDB:
 					{

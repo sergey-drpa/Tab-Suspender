@@ -9,7 +9,6 @@ if(debugDBCleanup) {
 type AddedOnIndexKeyType = [number, number, Date];
 
 function dbCleanup_filterScreenResults(usedSessionIds: {[key: number]: boolean}, usedTabIds: {[key: number]: number}) {
-	// TODO-v3: Need  to add tests to next function - Buggy (Maybe should ignore no only by session+tabId, but by tabId to)
 	return function(result: AddedOnIndexKeyType[]) {
 		const filtredResult = [];
 		const filterdSessionKeysArray = Object.keys(usedSessionIds);

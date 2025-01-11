@@ -65,17 +65,20 @@ class TabManager {
 		const self = this;
 		chrome.storage.local.get(this.TAB_INFOS_KEY).then(async (result) => {
 			const loadedITabInfosCompressedBase64: string  = result[self.TAB_INFOS_KEY];
-			const iTabInfosCompressedArrayBuffer = this.base64ToArrayBuffer(loadedITabInfosCompressedBase64);
-			const iTabInfosJson = await this.decompress(iTabInfosCompressedArrayBuffer);
-			const loadedITabInfos: { [key: number]: ITabInfo } = JSON.parse(iTabInfosJson);
-			//const loadedITabInfos: { [key: number]: ITabInfo } = result[self.TAB_INFOS_KEY];
 
-			for (const propertyName in loadedITabInfos) {
-				if (loadedITabInfos.hasOwnProperty(propertyName)) {
-					self.tabInfos[propertyName] = TabInfo.fromObject(loadedITabInfos[propertyName]);
+			if (loadedITabInfosCompressedBase64 != null && loadedITabInfosCompressedBase64.trim().length > 0) {
+				const iTabInfosCompressedArrayBuffer = this.base64ToArrayBuffer(loadedITabInfosCompressedBase64);
+				const iTabInfosJson = await this.decompress(iTabInfosCompressedArrayBuffer);
+				const loadedITabInfos: { [key: number]: ITabInfo } = JSON.parse(iTabInfosJson);
+				//const loadedITabInfos: { [key: number]: ITabInfo } = result[self.TAB_INFOS_KEY];
+
+				for (const propertyName in loadedITabInfos) {
+					if (loadedITabInfos.hasOwnProperty(propertyName)) {
+						self.tabInfos[propertyName] = TabInfo.fromObject(loadedITabInfos[propertyName]);
+					}
 				}
+				console.log(`tabInfos loaded`);
 			}
-			console.log(`tabInfos loaded`);
 		}).catch(console.error);
 	}
 
@@ -148,7 +151,7 @@ class TabManager {
 					const sessionId = parseUrlParam(tab.url, 'sessionId');
 					const tabId = parseUrlParam(tab.url, 'tabId');
 					if (sessionId != null && tabId != null) {
-						/* TODO-v3: Extract this business logic from TabManager */
+						/* TODO-v4: Extract this business logic from TabManager to ScreenshotController.ts */
 						getScreenCache = {
 							sessionId: sessionId,
 							tabId: tabId,
@@ -295,7 +298,7 @@ class TabManager {
 
 				self.markTabActivated(tab);
 
-				/* TODO-v3: This is business logic -> need to be moved form TabManager */
+				/* TODO-v4: This is business logic -> need to be moved form TabManager */
 				try {
 					if (TabManager.isTabParked(tab)) {
 						if (await settings.get('autoRestoreTab'))
@@ -314,7 +317,7 @@ class TabManager {
 						if (!tab.discarded)
 							(function(closureTab) {
 								setTimeout(function() {
-									tabCapture.captureTab(closureTab, <CaptureTabOptions>{ checkActiveTabNotChanged: true });
+									void tabCapture.captureTab(closureTab, <CaptureTabOptions>{ checkActiveTabNotChanged: true });
 								}, 400);
 							})(tab);
 

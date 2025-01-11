@@ -58,7 +58,7 @@ class TabObserver {
 			}
 		}
 
-// TODO-v3: Make as struct..
+// TODO-v4: Make as struct..
 		const pinnedSettings = await settings.get('pinned');
 		const timeoutSettings = await settings.get('timeout');
 		const closeTimeout = await settings.get('closeTimeout');

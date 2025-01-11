@@ -65,7 +65,8 @@
           "*.js.map",
           "*.css",
           "/img/*.png",
-          "img/*.ico"
+          "img/*.ico",
+          "video/*.mp4"
         ],
         "matches": ["<all_urls>"],
         "extension_ids": ["*"]

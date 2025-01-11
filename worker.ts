@@ -31,7 +31,7 @@ try {
 		'modules/BGMessageListener.js',
 		'modules/pageOpener.js',
 		'modules/DbUtils.js',
-		'modules/LocalStorageMigrator.js',
+		'modules/OffscreenDocumentProvider.js',
 		'background.js'
 	);
 } catch (e) {

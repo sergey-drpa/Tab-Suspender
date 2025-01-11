@@ -6,7 +6,7 @@ class IgnoreList {
 	addToIgnoreTabList(tabId) {
 		this.ignoreTabList[tabId] = true;
 
-		/* TODO-v3: Why BrowserActionControl() do not receive ignoreTabList? */
+		/* TODO-v4: Why BrowserActionControl() do not receive ignoreTabList? */
 		new BrowserActionControl(settings, whiteList, ContextMenuController.menuIdMap, pauseTics).synchronizeActiveTabs();
 	}
 

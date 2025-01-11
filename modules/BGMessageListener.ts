@@ -74,7 +74,7 @@ class BGMessageListener {
 						sendResponse(null);
 						return;
 					}
-					// TODO-v3: Add icon cache
+					// TODO-v4: Add icon cache
 					fetch(tab.favIconUrl/* ? tab.favIconUrl : request.url*/,
 						{
 							method: 'get'
@@ -128,6 +128,12 @@ class BGMessageListener {
 				chrome.tabs.update(request.tabId, { 'url': request.url }).catch(console.error);
 
 				tabManager.markTabParkedFromInject(request.tabId);
+			} else if (request.method === '[TS:offscreenDocument:batteryStatusChanged]') {
+				if ((request.battery as BatteryStatusMessage).isCharging != null)
+					isCharging = (request.battery as BatteryStatusMessage).isCharging;
+				if ((request.battery as BatteryStatusMessage).level != null)
+					batteryLevel = (request.battery as BatteryStatusMessage).level
+				console.log(`BGListener - Charging status: ${isCharging}, Level: ${batteryLevel}`);
 			} else if (request.method === '[AutomaticTabCleaner:addExceptionPatterns]') {/* DEPREACTED! */
 				if (debug)
 					console.log('AddExceptionPatterns info Requested.');
@@ -324,7 +330,7 @@ class BGMessageListener {
 				SettingsPageController.reloadSettings({ fromSettingsPage: true }).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:resetAllSettings]') {
 				settings.removeAll().then(()=>{
-					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, DEFAULT_SETTINGS);
+					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, DEFAULT_SETTINGS, offscreenDocumentProvider);
 					LocalStore.set(INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);
@@ -332,7 +338,7 @@ class BGMessageListener {
 				sendResponse({settings: JSON.stringify(settings.toObject(), null, 2)});
 			} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
 				settings.removeAll().then(()=>{
-					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings });
+					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings }, offscreenDocumentProvider);
 					LocalStore.set(INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);

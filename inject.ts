@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}*/
 
-		// TODO-v3: Try to first get url from header: <link rel="shortcut icon" href="https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196">
+		// TODO-v3-old: Try to first get url from header: <link rel="shortcut icon" href="https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196">
 		/*const urls: string[] = faviconUrl ? [faviconUrl] : genPageFaviconURL();
 
 		void (async () => {

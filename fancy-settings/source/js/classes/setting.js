@@ -17,7 +17,7 @@
             document.getElementsByTagName('body')[0].classList.add("dark");
     });
 
-    settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, undefined, true);
+    settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, undefined, undefined, true);
     Bundle = new Class({
         // Attributes:
         // - tab

@@ -3,6 +3,53 @@ for (let i = 0; i < 50000; i++) {
 }
 console.log(`Total localStorage objects: ${Object.keys(localStorage).length}`);
 
+const batteryDebug = true;
+
+type BatteryStatusMessage = {
+	isCharging: boolean;
+	level: number;
+};
+
+setTimeout(startBatteryStatusNotifier, 3500);
+
+function startBatteryStatusNotifier() {
+	try {
+		// @ts-ignore
+		(navigator as (Navigator)).getBattery().then(function(battery) {
+			battery.onchargingchange = function(event) {
+				if (batteryDebug)
+					console.log(`Charging event: ${event.target.charging}`);
+				void chrome.runtime.sendMessage({
+					method: '[TS:offscreenDocument:batteryStatusChanged]',
+					battery: {
+						isCharging: event.target.charging,
+					} as BatteryStatusMessage,
+				});
+			};
+			battery.onlevelchange = () => {
+				if (batteryDebug)
+					console.log(`Battery level event: ${battery.level}`);
+
+				void chrome.runtime.sendMessage({
+					method: '[TS:offscreenDocument:batteryStatusChanged]',
+					battery: {
+						level: battery.level,
+					} as BatteryStatusMessage,
+				});
+			}
+
+			console.log(`Startup Charging status: ${battery.charging}`);
+			void chrome.runtime.sendMessage({
+				method: '[TS:offscreenDocument:batteryStatusChanged]',
+				battery: {
+					isCharging: battery.charging
+				} as BatteryStatusMessage,
+			});
+		});
+	} catch (e) {
+		console.log('navigator.getBattery() does not support by browser!', e);
+	}
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 

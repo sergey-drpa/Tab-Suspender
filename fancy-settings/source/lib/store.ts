@@ -10,13 +10,15 @@ const SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats
 // @ts-ignore
 class SettingsStore {
     private readonly namespace: string;
-    private onStorageInitialized: Promise<void>;
+    private readonly offscreenDocumentProvider: OffscreenDocumentProvider;
+    private readonly onStorageInitialized: Promise<void>;
 
-    constructor(namespace, defaults, isNotMainSettings?) {
+    constructor(namespace: string, defaults: Settings, offscreenDocumentProvider?: OffscreenDocumentProvider, isNotMainSettings?: boolean) {
         this.namespace = (namespace ? namespace : SETTINGS_STORAGE_NAMESPACE);
+        this.offscreenDocumentProvider = offscreenDocumentProvider;
         this.onStorageInitialized = new Promise(resolve => {
 
-            if(!isNotMainSettings) {
+            if(!isNotMainSettings || offscreenDocumentProvider) {
 
                 // Retrieve data from Sync
                 chrome.storage.sync.get(null as string).then(async (items) => {
@@ -47,10 +49,8 @@ class SettingsStore {
 
                     if (defaults !== undefined) {
 
-                        const localStorageMigrator = new LocalStorageMigrator();
-
                         if (!await this.get('localStorageMigrated')) {
-                            const oldSettings = await localStorageMigrator.extractOldSettings(Object.keys(defaults));
+                            const oldSettings = await offscreenDocumentProvider.extractOldSettings(Object.keys(defaults));
 
                             console.log(`Old Settings: `, oldSettings);
 
@@ -65,8 +65,11 @@ class SettingsStore {
                             await this.set('localStorageMigrated', true);
                         }
 
-                        void this.cleanLocalStorageFormData(localStorageMigrator);
+                        void this.cleanLocalStorageFormData();
 
+                        this.calculateDisplayBasedDefaultSettings();
+
+                        // Store DEFAULT_SETTINGS
                         for (const key in defaults) {
                             if (defaults.hasOwnProperty(key)) {
                                 if (await this.get(key) == undefined) {
@@ -107,9 +110,35 @@ class SettingsStore {
         });
     }
 
-    private async cleanLocalStorageFormData(localStorageMigrator: LocalStorageMigrator) {
+    private calculateDisplayBasedDefaultSettings() {
+        // TODO-v4: compute limits for each display and map it with opened windows
+        /*if (chrome.system?.display)
+            try {
+                chrome.system.display.getInfo(function(displayInfo) {
+                    try {
+                        if (displayInfo != null) {
+                            const displayWidth = displayInfo[0].workArea.width;
+
+                            if (displayWidth != null && displayWidth > 0)
+                                DEFAULT_SETTINGS.limitOfOpenedTabs = displayWidth / 90.29;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
+
+                    void prepare();
+                });
+            } catch (e) {
+                console.error(e);
+                void prepare();
+            }
+        else
+            void prepare();*/
+    }
+
+    private async cleanLocalStorageFormData() {
         if (!await this.get('localStorageFormDataCleaned')) {
-            await localStorageMigrator.cleanupFormDatas();
+            await this.offscreenDocumentProvider.cleanupFormDatas();
             await this.set('localStorageFormDataCleaned', true);
         }
     }
@@ -184,7 +213,6 @@ class SettingsStore {
 
         name = this.genName(name, namespace);
 
-        // TODO-v3: check availability to red old settings: const value = localStorage.getItem(name);
         return (await chrome.storage.local.get([name]))[name];
     }
 

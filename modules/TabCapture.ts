@@ -197,9 +197,6 @@ class TabCapture {
 			}).then(() => {
 				hasLastError(TabCapture.expectedInjectExceptions);
 
-				if (debug && debugInit) {
-					console.log(closureId);
-				}
 				/*chrome.scripting.executeScript({
 					target: {tabId: closureId},
 					files: ['inject.js'],

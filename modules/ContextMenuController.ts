@@ -41,15 +41,15 @@ class ContextMenuController {
 
 		const idsMap: { [key: string | number]: string | number } = {};
 		const commandMap = {};
-		// TODO-v3:
+		// TODO-v4:
 		// let menuSpaceWidth = getTextWidth('a a') - getTextWidth('aa');
 		const menuSpaceWidth = 5;
 		let maxMenuLen = 0;
 
 		for (const j in this.menus) {
-			// TODO-v3:
+			// TODO-v4:
 			if (true/*this.menus[j].type == null || this.menus[j].type !== 'hidden'*/) {
-				// TODO-v3:
+				// TODO-v4:
 				// this.menus[j]._width = getTextWidth(this.menus[j].title);
 				this.menus[j]._width = 5;
 				if (this.menus[j]._width > maxMenuLen)
@@ -87,7 +87,7 @@ class ContextMenuController {
 			if (this.menus[j]._width != null)
 				delete this.menus[j]['_width'];
 
-			// TODO-v3:
+			// TODO-v4:
 			if (true/*this.menus[j].type == null || this.menus[j].type !== 'hidden'*/) {
 				const id = chrome.contextMenus.create({
 					...this.menus[j] as chrome.contextMenus.CreateProperties,
