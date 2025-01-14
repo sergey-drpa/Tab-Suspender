@@ -2,7 +2,7 @@
 
 ### ⚠️ Working on V3 update to support last Chrome versions in progress...
 
-### Beta release will be available here soon
+### Alfa/Beta releases available here: https://github.com/sergey-drpa/Tab-Suspender/releases.
 
 Chrome Store: https://chromewebstore.google.com/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh
 
