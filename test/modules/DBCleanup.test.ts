@@ -40,7 +40,8 @@ describe('DBCleanup Tests', () => {
 		]);
 	});
 
-	it('Test two unused screens should be removed by expire', async () => {
+
+	it('Test two unused screens should be removed by expire', () => {
 
 		const usedSessionIds: {[sessionId: number]: boolean} = {
 			222: true,
@@ -59,13 +60,17 @@ describe('DBCleanup Tests', () => {
 
 		const screensFromDb: AddedOnIndexKeyType[] = [
 			// [tabId, sessionId]
-			[0, 0, today], // <- Should be deleted/returned
+			[0, 0, today],
+			[0, 100, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS + 1 * dayMs))], // <- Should be deleted/returned as expired
 			[1, 0, new Date(today.getTime() - (5 * dayMs))],
-			[5, 111, new Date(today.getTime() - (6 * dayMs))], // <- Should be deleted/returned
+			[5, 111, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS + 1 * dayMs))], // <- Should be deleted/returned as expired
 			[2, 222, new Date(today.getTime() - (7 * dayMs))],
-			[3, 222, new Date(today.getTime() - (8 * dayMs))],
+			// Should be not deleted by expired > 2 weeks cause tabId 3 exists in usedTabIds
+			[3, 222, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS + 1 * dayMs))],
 			[4, 333, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS + 1 * dayMs))], // <- Should be deleted/returned as expired
 			[6, 333, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS - 1 * dayMs))],
+			// No tabId and sessionId correlation but earler 2 weeks - do not delete
+			[7, 444, new Date(today.getTime() - (DbUtils.TWO_WEEKS_MS - 1 * dayMs))],
 		];
 
 		console.log(`screensFromDb: `, screensFromDb);
@@ -76,7 +81,7 @@ describe('DBCleanup Tests', () => {
 		console.log(`Results: `, result);
 
 		expect(result).toStrictEqual([
-			[ 0, 0, expect.any(Date)],
+			[ 0, 100, expect.any(Date)],
 			[ 5, 111, expect.any(Date) ],
 			[ 4, 333, expect.any(Date) ],
 		]);

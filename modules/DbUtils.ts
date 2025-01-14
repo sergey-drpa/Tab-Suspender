@@ -10,9 +10,9 @@ type AddedOnIndexKeyType = [number, number, Date];
 
 function dbCleanup_filterScreenResults(usedSessionIds: {[key: number]: boolean}, usedTabIds: {[key: number]: number}) {
 	return function(result: AddedOnIndexKeyType[]) {
-		const filtredResult = [];
-		const filterdSessionKeysArray = Object.keys(usedSessionIds);
-		console.log(`Cleanup Screens: filterdSessionKeysArray: `, filterdSessionKeysArray);
+		const filteredResult = [];
+		console.log(`Cleanup Screens: usedSessionIds: `, usedSessionIds);
+		console.log(`Cleanup Screens: usedTabIds: `, usedTabIds);
 		/* [sessionId NOT IN] IMPLEMENTATION */
 		let isScreenActual;
 		for (let i = 0; i < result.length; i++) {
@@ -22,23 +22,24 @@ function dbCleanup_filterScreenResults(usedSessionIds: {[key: number]: boolean},
 				console.error(`Cleanup Screens: Some of metadata is null: `, result[i]);
 			}
 
-			if (usedSessionIds[result[i][1]] !== undefined || usedTabIds[result[i][0]] !== undefined) {
-				if (usedTabIds[result[i][0]] !== undefined) {
-					isScreenActual = true;
-					// @ts-ignore
-					// TODO: result[i][2] is not working - need to iterate by value with ts instead key where no ts
-				} else if (Math.abs(new Date() - result[i][2]) > TWO_WEEKS_MS) {
-					isScreenActual = false;
-				} else {
-					isScreenActual = true;
+			if (usedTabIds[result[i][0]] !== undefined) {
+				if (debugDBCleanup) {
+					console.log(`Skip Cleanup because TabId[${result[i]} in usedTabIds`);
 				}
+				isScreenActual = true;
+				// @ts-ignore
+			} else if (Math.abs(new Date() - result[i][2]) <= TWO_WEEKS_MS) {
+				if (debugDBCleanup) {
+					console.log(`Skip Cleanup because screen date[${result[i][2]}] not earler 2 weeks`);
+				}
+				isScreenActual = true;
 			}
 
 			if (!isScreenActual)
-				filtredResult.push(result[i]);
+				filteredResult.push(result[i]);
 		}
 
-		return filtredResult;
+		return filteredResult;
 	};
 }
 
