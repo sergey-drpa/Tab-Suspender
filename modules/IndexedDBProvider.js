@@ -25,24 +25,30 @@ function IndexedDBProvider(options) {
  *
  */
 IndexedDBProvider.prototype.getAll = function(query, callback, errorCallback) {
-	this.getTransaction([query.IDB.table], 'readonly')
+	void this.getTransaction([query.IDB.table], 'readonly')
 		.then(function(transaction) {
 			let objectStore = transaction.objectStore(query.IDB.table);
 
 			let resultsRowsArray = [];
 
 			if (query.IDB.predicate != null) {
-				if (query.IDB.predicate == 'getAllKeys') {
-					let getAllKeysRequest = objectStore.index(query.IDB.index).getAllKeys();
+				if (query.IDB.predicate === 'getAllKeys') {
+					let cursor = objectStore.index(query.IDB.index).openKeyCursor();
 
-					getAllKeysRequest.onsuccess = function() {
-						if (query.IDB.predicateResultLogic != null)
-							callback(query.IDB.predicateResultLogic(getAllKeysRequest.result));
-						else
-							callback(getAllKeysRequest.result);
+					cursor.onsuccess = function(e) {
+						if (!e.target.result) {
+							if (query.IDB.predicateResultLogic != null)
+								return callback(query.IDB.predicateResultLogic(resultsRowsArray));
+							else
+								return callback(resultsRowsArray);
+						}
+
+						let res = e.target.result;
+						resultsRowsArray.push(res.key);
+						res['continue']();
 					};
 
-					getAllKeysRequest.onerror = function(e) {
+					cursor.onerror = function(e) {
 						console.error('Error', e.target.error);
 						(errorCallback != null ? errorCallback : sql_error)(e);
 					};
@@ -255,7 +261,7 @@ IndexedDBProvider.prototype.open = function(options) {
 
 	this.close();
 
-	let openRequest = window.indexedDB.open('TSDB', 5);
+	let openRequest = indexedDB.open('TSDB', 5);
 
 	openRequest.onupgradeneeded = function(e) {
 		let thisDB = e.target.result;
@@ -295,3 +301,10 @@ IndexedDBProvider.prototype.open = function(options) {
 		};
 	});
 };
+
+
+
+if (typeof module != "undefined")
+	module.exports = {
+		ADDED_ON_INDEX_NAME,
+	}

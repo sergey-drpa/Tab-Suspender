@@ -4,6 +4,10 @@
  * Zadorozhniy.Sergey@gmail.com
  */
 
+// DELETE->
+/*chrome.tabs.query({ currentWindow: true, active: true }, async function (tabs) {
+	arguments[arguments.length - 1](x);\n" +*/
+
 document.addEventListener('DOMContentLoaded', function() {
 	(function() {
 		'use strict';
@@ -14,12 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		trackErrors('wizard', true);
 
-		chrome.extension.sendMessage({
+		void chrome.runtime.sendMessage({
 			method: '[AutomaticTabCleaner:installed]'
 		});
 
 		overlay.addEventListener('click', closeDialog = function() {
-			chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
+			void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
 		});
 
 		let WIZARD_TITLE = 'Tab Suspender Wizard';
@@ -27,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.querySelector('#defaultsButton').addEventListener('click', closeDialog);
 
 		document.onkeydown = function(evt) {
+			// @ts-ignore
 			evt = evt || window.event;
 			if (evt.keyCode == 27) {
 				closeDialog();
@@ -100,15 +105,17 @@ document.addEventListener('DOMContentLoaded', function() {
 								activeIndex = tabs[i].index;
 						}
 						if (activeIndex != null)
-							chrome.tabs.update(indexes[activeIndex - 1].id, { 'active': true });
+							void chrome.tabs.update(indexes[activeIndex - 1].id, { 'active': true });
 						// eslint-disable-next-line no-empty
 					} catch (e) {
+						console.warn(e);
 					}
 
 					window.close();
 					top.window.close();
 				});
 			} catch (e) {
+				console.warn(e);
 				window.close();
 				top.window.close();
 			}
@@ -162,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let timeoutPrettifer;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-suspend-timeout').ionRangeSlider({
 				grid: true,
 				min: 0,
@@ -186,13 +194,14 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 					console.log('onFinish', data);
-					chrome.extension.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
+					void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:updateTimeout]', timeout: data.from });
 				}
 			});
 		})();
 
 		let prettifyVarCountRecicleKeep = 0;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-recicle-keep').ionRangeSlider({
 				grid: true,
 				force_edges: true,
@@ -214,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				onFinish: function(data) {
 
-					chrome.extension.sendMessage({
+					void chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						limitOfOpenedTabs: data.from
 					});
@@ -225,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		let prettifyVarCountRecicleAfter = 0;
 		(function() {
+			// @ts-ignore
 			$('.js-range-slider-recicle-after').ionRangeSlider({
 				grid: true,
 				force_edges: true,
@@ -252,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				onFinish: function(data) {
 					console.log('onFinish', data);
 
-					chrome.extension.sendMessage({
+					void chrome.runtime.sendMessage({
 						method: '[AutomaticTabCleaner:updateTimeout]',
 						closeTimeout: data.from
 					});
@@ -268,14 +278,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		$('input[type="radio"].closeRadio').on('change', function() {
 			if ($(this).hasClass('no') && $(this).prop('checked')) {
 				$('.close-sliders').addClass('hidden');
-				chrome.extension.sendMessage({
+				void chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: false
 				});
 			}
 			if ($(this).hasClass('yes') && $(this).prop('checked')) {
 				$('.close-sliders').removeClass('hidden');
-				chrome.extension.sendMessage({
+				void chrome.runtime.sendMessage({
 					method: '[AutomaticTabCleaner:updateTimeout]',
 					isCloseTabsOn: true
 				});
@@ -287,8 +297,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		 */
 
 		document.getElementById('debugCheckbox').onchange = () => {
-			chrome.extension.sendMessage({
+			void chrome.runtime.sendMessage({
 				method: '[AutomaticTabCleaner:updateTimeout]',
+			  // @ts-ignore
 				sendErrors: document.getElementById('debugCheckbox').checked === true
 			});
 		};
@@ -296,16 +307,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		function restartVideo() {
 			const tutorialVideo = $('#tutorialVideo');
 			if (tutorialVideo.is(':visible')) {
+				// @ts-ignore
 				tutorialVideo[0].play();
 			} else {
+				// @ts-ignore
 				tutorialVideo[0].pause();
+				// @ts-ignore
 				tutorialVideo[0].load();
 			}
 		}
 
-		function updatePage4() {
-			let BG = chrome.extension.getBackgroundPage();
-			let res = BG.popupQuery({ id: 0, url: '' });
+		async function updatePage4() {
+			//let BG = chrome.extension.getBackgroundPage();
+			//let res = BG.popupQuery({ id: 0, url: '' });
+			const res: PopupQueryBGResponse = await chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:popupQuery]', tab: { id: 0, url: '' } });
+			// @ts-ignore
 			let timeout = parseInt(res.timeout);
 			document.getElementById('resultTimeoutValue').innerText = timeoutPrettifer(timeout).trim();
 
@@ -314,9 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		/* READ DEFAULT CONFIGURATION */
-		(function() {
-			let BG = chrome.extension.getBackgroundPage();
-			let res = BG.popupQuery({ id: 0, url: '' });
+		void (async function() {
+			//let BG = chrome.extension.getBackgroundPage();
+			//let res = BG.popupQuery({ id: 0, url: '' });
+			const res: PopupQueryBGResponse = await chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:popupQuery]', tab: { id: 0, url: '' } });
 			$('.js-range-slider-suspend-timeout').data('ionRangeSlider').update({ from: res.timeout });
 			prettifyVarCountRecicleKeep = 0;
 			$('.js-range-slider-recicle-keep').data('ionRangeSlider').update({ from: res.limitOfOpenedTabs });
@@ -328,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			else
 				$('input:radio[name=closeRadio][value=no]').click();//.attr('checked', 'checked');
 
+			// @ts-ignore
 			document.getElementById('debugCheckbox').checked = res.sendErrors;
 		})();
 

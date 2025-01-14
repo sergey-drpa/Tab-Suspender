@@ -11,9 +11,9 @@
 
 /* Definitions for Syntax Check */
 // eslint-disable-next-line no-redeclare
-window.chrome = window.chrome || {};
+//window.chrome = window.chrome || {};
 // eslint-disable-next-line no-redeclare
-window.html2canvas = window.html2canvas || {};
+//window.html2canvas = window.html2canvas || {};
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -23,14 +23,16 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
 	'use strict';
 
-	/* Genaral */
-	let WIZARD_FRAME_ID = 'ATCSDialogWizadriFrame';
-	let ADD_TO_WHITELIST_FRAME_ID = 'ATCSDialogiFrame';
-	let waitWindow = 1000;
+	/* General */
+	const ICON_DIMENSION = 16;
+	const WIZARD_FRAME_ID = 'ATCSDialogWizadriFrame';
+	const ADD_TO_WHITELIST_FRAME_ID = 'ATCSDialogiFrame';
+	const waitWindow = 1000;
 	let count = 0;
-	let debug = false;
+	const debug = false;
 
-	let notCompleteInputs = [];
+	let lockImg = null;
+	const notCompleteInputs = [];
 
 	resotreForm();
 
@@ -44,17 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		return true;
 	}
 
-	let changeEventCallback = function() {
-		chrome.extension.sendMessage({ 'method': '[AutomaticTabCleaner:TabChangedRequestFromInject]' });
+	const changeEventCallback = function() {
+		chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:TabChangedRequestFromInject]' });
 	};
 
-	let onevent = function(e) {
+	const onevent = function(e) {
 		if (riseEvent())
 			dropEvent(e);
 	};
 
 	function resotreForm() {
-		chrome.extension.sendMessage({ 'method': '[AutomaticTabCleaner:getFormRestoreDataAndRemove]' }, function(response) {
+		chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:getFormRestoreDataAndRemove]' }, function(response) {
 			if (response == null) {
 				return;
 			}
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				return;
 			}
 
-			let formDataToRestore = response.formData;
+			const formDataToRestore = response.formData;
 
 
 			//TODO: Test on this case: http://obraz.pro/register/#registration
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function errorLog(exception) {
-		chrome.extension.sendMessage({
+		chrome.runtime.sendMessage({
 			'method': '[AutomaticTabCleaner:trackError]',
 			message: 'Error in Inject: ' + (exception ? exception.message : ''),
 			stack: (exception ? exception.stack : '')
@@ -81,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function fireEvent(domElement, eventCode) {
-		let evt = document.createEvent('HTMLEvents');
+		const evt = document.createEvent('HTMLEvents');
 		evt.initEvent(eventCode, false, true);
 		domElement.dispatchEvent(evt);
 	}
@@ -91,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	 * Down event
 	 */
 	let interval = null;
-	let dropEventIntervalController = function() {
+	const dropEventIntervalController = function() {
 		if (count == 0) {
 			if (interval != null) {
 				clearInterval(interval);
@@ -127,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function calcNotCompleteInputsLength() {
 		let totalScore = 0;
-		for (let i in notCompleteInputs) {
+		for (const i in notCompleteInputs) {
 			if (notCompleteInputs[i].type === 'textarea')
 				totalScore += 3;
 			else
@@ -137,30 +139,32 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	document.body.addEventListener('change', function(e) {
+		//@ts-ignore
 		if (e.target.tagName != null && (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') && e.target.hidden != true) {
-			if (calcNotCompleteInputsLength(notCompleteInputs) <= 3) {
-				for (let i in notCompleteInputs) {
+			if (calcNotCompleteInputsLength() <= 3) {
+				for (const i in notCompleteInputs) {
 					if (!document.body.contains(notCompleteInputs[i]) || notCompleteInputs[i].value == null || notCompleteInputs[i].value == '') {
-						let element = notCompleteInputs.splice(i, 1);
+						const element = notCompleteInputs.splice(Number(i), 1);
 						if (debug)
 							console.log('Input removed: ', element);
-						chrome.extension.sendMessage({ 'method': '[AutomaticTabCleaner:UnmarkPageAsNonCompleteInput]' });
+						chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:UnmarkPageAsNonCompleteInput]' });
 					}
 				}
 			}
 
-			if (calcNotCompleteInputsLength(notCompleteInputs) > 2)
+			if (calcNotCompleteInputsLength() > 2)
 				return;
 
-			for (let i in notCompleteInputs)
+			for (const i in notCompleteInputs)
 				if (notCompleteInputs[i] === e.target)
 					return;
 
+			//@ts-ignore
 			if (e.target.value != null && e.target.value != '')
 				notCompleteInputs.push(e.target);
 
-			if (calcNotCompleteInputsLength(notCompleteInputs) > 2) {
-				chrome.extension.sendMessage({ 'method': '[AutomaticTabCleaner:MarkPageAsNonCompleteInput]' });
+			if (calcNotCompleteInputsLength() > 2) {
+				chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:MarkPageAsNonCompleteInput]' });
 				if (debug)
 					console.log('Input Changed 3 times: Page Marked As Non Complete');
 			}
@@ -175,50 +179,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	let suspendedPagesUrls = [];
 
-	chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+	chrome.runtime.onMessage.addListener(function(request: any, sender, sendResponse) {
 		if (request.method === '[AutomaticTabCleaner:backupSuspendedPagesUrls]') {
 			suspendedPagesUrls = request.suspendedUrls;
 			console.log('susPgsUrls: ', suspendedPagesUrls.length);
 		}
 		if (request.method === '[AutomaticTabCleaner:ParkPageFromInject]') {
-			let closureTabId = request.tabId;
-			let width = request.width;
-			let height = request.height;
+			const _request: RequestParkPageFromInject = request as RequestParkPageFromInject;
+			const closureTabId = _request.tabId;
+			const width = _request.width;
+			const height = _request.height;
 			/* Try to change origin */
 			try {
-				let elements = document.getElementsByTagName('img');
+				const elements = document.getElementsByTagName('img');
 				for (let i = 0; i < elements.length; i++) {
 					elements[i].setAttribute('crossOrigin', 'Anonymous');
 				}
-				// eslint-disable-next-line no-empty
-			} catch (e) {}
+			} catch (e) {
+				console.error('[AutomaticTabCleaner:ParkPageFromInject]: ', e);
+			}
 
 			if (width != null)
 				document.body.style.width = width + 'px';
 
+			// @ts-ignore
 			html2canvas(document.body, {
-				'onrendered': function(canvas) {
+				'onrendered': async function(canvas) {
 					document.body.appendChild(canvas);
 
-					let url = chrome.extension.getURL('park.html') + '?title=' + encodeURIComponent(document.title);
-					url += '&url=' + encodeURIComponent(request.url ? request.url : window.location.href);
-					url += '&tabId=' + encodeURIComponent(closureTabId);
-					url += '&sessionId=' + encodeURIComponent(request.sessionId);
-					url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());
+					try {
+						let url = chrome.runtime.getURL('park.html') + '?title=' + encodeURIComponent(document.title);
+						url += '&url=' + encodeURIComponent(_request.url ? _request.url : window.location.href);
+						url += '&tabId=' + encodeURIComponent(closureTabId);
+						url += '&sessionId=' + encodeURIComponent(_request.sessionId);
+						url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());
 
-					chrome.extension.sendMessage(closureTabId + '/' + canvas.toDataURL());
+						await chrome.runtime.sendMessage(canvas.toDataURL("image/jpeg", _request.screenshotQuality/100));
 
-					chrome.extension.sendMessage({
-						'method': '[AutomaticTabCleaner:ParkPageFromInjectFinished]',
-						'url': url,
-						'tabId': closureTabId/*, 'screen': canvas.toDataURL()*/
-					});
-				},
+						await chrome.runtime.sendMessage({
+							'method': '[AutomaticTabCleaner:ParkPageFromInjectFinished]',
+							'url': url,
+							'tabId': closureTabId
+						});
+
+						sendResponse({ result: 'successful' });
+					} catch (e) {
+						console.error('Failed to process `html2canvas` result: ', e);
+						sendResponse({ result: 'fail', error: e });
+					}
+				}}/*,
 				'width': (width != null ? width : window.outerWidth),//window.innerWidth,
 				'height': (window.outerHeight > 0 ? window.outerHeight : height)//window.innerHeight//  //document.height
-			});
-
-			sendResponse({ 'result': 'successful' });
+			}*/);
+			return true;
 		} else if (request.method === '[AutomaticTabCleaner:getOriginalFaviconUrl]') {
 			sendResponse(getOriginalFaviconUrl());
 		} else if (request.method === '[AutomaticTabCleaner:highliteFavicon]') {
@@ -269,16 +282,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		document.getElementsByTagName('body')[0].style.filter = 'blur(1px)';
 
-		let iframe = document.createElement('iframe');
+		const iframe = document.createElement('iframe');
 		iframe.id = WIZARD_FRAME_ID;
-		iframe.src = chrome.extension.getURL('wizard.html?dialog=page&url=' + document.location.href);
+		iframe.src = chrome.runtime.getURL('wizard.html?dialog=page&url=' + document.location.href);
 		iframe.style.position = 'fixed';
 		iframe.style.top = '0px';
 		iframe.style.left = '0px';
 		iframe.style.width = '100%';
 		iframe.style.height = '100%';
+		//@ts-ignore
 		iframe.style.zIndex = 10000000;
-		iframe.frameBorder = 0;
+		iframe.frameBorder = 'none';
 		document.getElementsByTagName('html')[0].appendChild(iframe);
 	}
 
@@ -293,26 +307,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		document.getElementsByTagName('body')[0].style.filter = 'blur(1px)';
 
-		let iframe = document.createElement('iframe');
+		const iframe = document.createElement('iframe');
 		iframe.id = ADD_TO_WHITELIST_FRAME_ID;
-		iframe.src = chrome.extension.getURL('dialog.html?dialog=page&url=' + document.location.href);
+		iframe.src = chrome.runtime.getURL('dialog.html?dialog=page&url=' + document.location.href);
 		iframe.style.position = 'fixed';
 		iframe.style.top = '0px';
 		iframe.style.left = '0px';
 		iframe.style.width = '100%';
 		iframe.style.height = '100%';
+		//@ts-ignore
 		iframe.style.zIndex = 10000000;
-		iframe.frameBorder = 0;
+		iframe.frameBorder = 'none';
 		document.getElementsByTagName('html')[0].appendChild(iframe); //document.body.appendChild(iframe);
 	}
 
 	/************************************/
 	/*				FAVICON                   */
 	/************************************/
-	let lockImgSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAYAAAD+WDajAAAACXBIWXMAAAsSAAALEgHS3X78AAAA70lEQVQYlU3JP2qFMBwA4CQELeSlprwDlE5WeoAsBUHFtVfQ8zxwkQ5d39DF5R3iba2DFQ+h0CwqiX/SX6dCv/VDAICKorjjnL8GQfDped5bVVVHAEAIAFCSJOcsyy5d173keX5J0/QdABBqmuZRSnnVWt/O84yMMQcp5bWu6yfS973gnOuyLClj7Hg6nRwhxDgMg4fDMDy3bfustf7e950QQhBjTPi+/0GVUg8AgIQQAgAwIQSMMVgpdU8ppYu1FrZt2wEAY4zBWosJIQsdx9Gdpom6rvvzl+u60mmabmgURe2yLAfHcdZ/6cRx/PUL8ROEMEM1AFcAAAAASUVORK5CYII=';
-	let faviconInfo = getFaviconInfo();
-	let links = faviconInfo.domFavicons;
-	let img = new Image();
+	const lockImgSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAJCAYAAAD+WDajAAAACXBIWXMAAAsSAAALEgHS3X78AAAA70lEQVQYlU3JP2qFMBwA4CQELeSlprwDlE5WeoAsBUHFtVfQ8zxwkQ5d39DF5R3iba2DFQ+h0CwqiX/SX6dCv/VDAICKorjjnL8GQfDped5bVVVHAEAIAFCSJOcsyy5d173keX5J0/QdABBqmuZRSnnVWt/O84yMMQcp5bWu6yfS973gnOuyLClj7Hg6nRwhxDgMg4fDMDy3bfustf7e950QQhBjTPi+/0GVUg8AgIQQAgAwIQSMMVgpdU8ppYu1FrZt2wEAY4zBWosJIQsdx9Gdpom6rvvzl+u60mmabmgURe2yLAfHcdZ/6cRx/PUL8ROEMEM1AFcAAAAASUVORK5CYII=';
+	const faviconInfo = getFaviconInfo();
+	const links = faviconInfo.domFavicons;
+	const img = new Image();
 
 	let originalFaviconUrl;
 	let originalCanvas;
@@ -329,46 +344,240 @@ document.addEventListener('DOMContentLoaded', function() {
 		return originalFaviconUrl;
 	}
 
+	function genPageFaviconURL() {
 
-	function extractIconBase64(faviconUrl, retries) {
+		/*		chrome.runtime.sendMessage({
+					method: '[AutomaticTabCleaner:getPageFavicon]',
+					origin: document.location.origin,
+				}, function(response) {
+					if (response == null) {
+						return;
+					}*/
 
-		if(originalIconUrlBase64 != null) {
-			return;
+		let url: string;
+
+		try {
+			for (let i = 0; i < document.head.children.length; i++) {
+				const childElement = document.head.children[i];
+
+				const rel = childElement.getAttribute('rel');
+
+				if (rel != null && rel.indexOf("icon") >= 0) {
+					url = childElement.getAttribute('href');
+					if (url.indexOf('//') == 0) {
+						url = document.location.protocol + url;
+					}
+					break;
+				}
+
+				// Выполнение действий с каждым дочерним элементом
+				console.log(childElement.textContent);
+			}
+		} catch (e) {
+			console.log(`Error occurred while extracting icon url from header`, e);
 		}
 
-		let xhr = new XMLHttpRequest();
-		xhr.open('GET', faviconUrl ? faviconUrl : faviconInfo.faviconUrl, true);
+		  const alternativeUrl = new URL(chrome.runtime.getURL("/_favicon/"));
+			alternativeUrl.searchParams.set("pageUrl", document.location.origin);
+			alternativeUrl.searchParams.set("size", String(ICON_DIMENSION));
+			return [url, alternativeUrl.toString()];
+		//return 'https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196';
+		//});
+
+
+	}
+
+	/*function extractIconBase64(faviconUrl, retries)
+	{
+		const url = faviconUrl ? faviconUrl : faviconInfo.faviconUrl;
+
+		fetch(url,
+			{
+				method: 'get',
+				mode: 'no-cors',
+				headers: {'Content-Type':'image/x-icon'}
+			})
+			//          .then(response => parseResults(response.results))
+			.then(response => console.log(response.body))
+			.catch(console.error);
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('GET', url, true);
 
 		xhr.responseType = 'arraybuffer';
 
 		xhr.onload = function() {
 			if (this.status == 200) {
-				let uInt8Array = new Uint8Array(this.response);
+				const uInt8Array = new Uint8Array(this.response);
 				let i = uInt8Array.length;
-				let binaryString = new Array(i);
-				while (i--) {
+				const binaryString = new Array(i);
+				while (i--)
+				{
 					binaryString[i] = String.fromCharCode(uInt8Array[i]);
 				}
-				let data = binaryString.join('');
+				const data = binaryString.join('');
 
-				let base64 = window.btoa(data);
+				const base64 = window.btoa(data);
 
-				originalIconUrlBase64 = 'data:image/png;base64,' + base64;
+				originalIconUrlBase64 = "data:image/png;base64,"+base64;
 				prepareIcon(originalIconUrlBase64);
-			} else if (!retries)
-				extractIconBase64(chrome.extension.getURL('img/new_page.ico'), 1);
+			}
+			else
+			if(!retries)
+				extractIconBase64(chrome.runtime.getURL('img/new_page.ico') ,1);
 
 		};
 
 		try {
 			xhr.send();
-			// eslint-disable-next-line no-empty
-		} catch (e) {}
+		} catch (e) {
+			console.debug(e);
+		}
+	}*/
+
+	function normalizeUrl(url: string): string {
+		if (url.indexOf('http') != 0 && url.indexOf('file') != 0 && url.indexOf('chrome') != 0) {
+			url = document.location.origin + '/' + url;
+		}
+		return url;
 	}
 
-	function prepareIcon(iconUrlBase64, highliteInfo) {
+	function extractIconBase64(faviconUrl?, retries?) {
+
+		if (retries == null) {
+			retries = 1;
+		}
+
+		if (--retries < 0) {
+			return;
+		}
+
+		/*if(originalIconUrlBase64 != null) {
+			return;
+		}*/
+
+		// TODO-v3-old: Try to first get url from header: <link rel="shortcut icon" href="https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196">
+		/*const urls: string[] = faviconUrl ? [faviconUrl] : genPageFaviconURL();
+
+		void (async () => {
+			for (const i in urls) {
+				const url = urls[i];
+				if (url == null)
+					continue;
+
+				await new Promise<void>(async (resolve, reject) => {
+					try {
+						if (url.startsWith('data:')) {
+							originalIconUrlBase64 = url;
+						} else {*/
+							chrome.runtime.sendMessage({ method: '[TS:fetchFavicon]'/*, url: normalizeUrl(url)*/ })
+								.then(dataUrl => {
+									if (dataUrl == null)
+										return;
+									originalIconUrlBase64 = dataUrl;
+									prepareIcon(originalIconUrlBase64);
+								})
+								.catch((e) => {
+									console.error(e);
+									extractIconBase64(chrome.runtime.getURL('img/new_page.ico') ,1);
+								});
+						/*}*/
+
+
+						/*fetch(url,
+							{
+								method: 'get',
+								//mode: 'no-cors',
+								//headers: {'Content-Type':'image/x-icon'}
+							})
+							//          .then(response => parseResults(response.results))
+							.then(async response => {
+
+								const arrayBuffer = null; //await response.arrayBuffer();
+
+								// eslint-disable-next-line @typescript-eslint/no-unused-vars
+								const b = await response.blob();
+
+								console.log('Blob', b);
+
+								const base64 = btoa(
+									new Uint8Array(await response.arrayBuffer())
+										.reduce((data, byte) => data + String.fromCharCode(byte), '')
+								);
+
+								console.log('Blob', base64);
+
+								const blob = new Blob([arrayBuffer]);
+								const reader = new FileReader();
+
+								reader.onload = (event) => {
+									// eslint-disable-next-line @typescript-eslint/no-unused-vars
+									const dataUrl = event.target.result;
+								};
+
+								reader.readAsDataURL(blob);
+
+								/!*const base64 = btoa(
+									new Uint8Array(await response.arrayBuffer())
+										.reduce((data, byte) => data + String.fromCharCode(byte), '')
+								);*!/
+
+								/!*const uInt8Array = response.body; //new Uint8Array(this.response);
+								let i = uInt8Array.length;
+								const binaryString = new Array(i);
+								while (i--)
+								{
+									binaryString[i] = String.fromCharCode(uInt8Array[i]);
+								}
+								const data = binaryString.join('');
+
+								const base64 = window.btoa(data);*!/
+
+								originalIconUrlBase64 = "data:image/png;base64,"+base64;
+								prepareIcon(originalIconUrlBase64);
+
+								console.log(response.body);
+							})
+							.catch(console.error);*/
+
+						/*const img = document.createElement('img');
+						document.body.appendChild(img);
+						img.crossOrigin="anonymous";
+						img.src = url;
+
+						img.onload = () => {
+							try {
+								const canvas = document.createElement('canvas');
+								canvas.width = ICON_DIMENSION;
+								canvas.height = ICON_DIMENSION;
+								const ctx = canvas.getContext('2d');
+								ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+								originalIconUrlBase64 = canvas.toDataURL();
+								resolve();
+								prepareIcon(originalIconUrlBase64);
+							} catch (e) {
+								reject(e);
+							}
+						};
+
+						img.onerror = (error) => {
+							reject(error);
+							extractIconBase64([chrome.runtime.getURL('img/new_page.ico')], retries-1);
+						};*/
+						//document.body.appendChild(img);
+					/*} catch (e) {
+						reject(e);
+						extractIconBase64(chrome.runtime.getURL('img/new_page.ico'), retries-1);
+					}
+				});*/
+				/*break;
+			}*/
+		//})();
+	}
+
+	function prepareIcon(iconUrlBase64) {
 		if (iconUrlBase64) {
-			generateFaviconUri(highliteInfo);
+			generateFaviconUri();
 			injectFaviconUrl(iconUrlBase64);
 		}
 	}
@@ -393,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			links[i].href = proccesedIcon;
 	}
 
-	let lockImg;
 	function generateFaviconUri() {
 		img.crossOrigin = 'anonymous';
 		lockImg = new Image();
@@ -409,8 +617,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			if (originalCanvas == null) {
 				canvas = window.document.createElement('canvas');
-				canvas.width = 64;
-				canvas.height = 64;
+				canvas.width = ICON_DIMENSION;
+				canvas.height = ICON_DIMENSION;
 				ctx = canvas.getContext('2d');
 
 				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -424,15 +632,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			originalFaviconUrl = canvas.toDataURL();
 		};
 
-		img.src = originalIconUrlBase64 || chrome.extension.getURL('img/new_page.ico');
+		img.src = originalIconUrlBase64 || chrome.runtime.getURL('img/new_page.ico');
 	}
 
 	function highlite(highliteInfo) {
 		if (originalCanvas == null)
 			return;
 
-		let canvas = cloneCanvas(originalCanvas);
-		let ctx = canvas.getContext('2d');
+		const canvas = cloneCanvas(originalCanvas);
+		const ctx = canvas.getContext('2d');
 		_highlite(canvas, ctx, highliteInfo);
 	}
 
@@ -451,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	/*  Percent  */
 	function applyPercent(ctx, highliteInfo) {
-		let percent = highliteInfo.suspendPercent;
+		const percent = highliteInfo.suspendPercent;
 
 		ctx.globalAlpha = 1;
 
@@ -469,11 +677,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	/*************************/
 
-	window.highlite = highlite;
-
 	function cloneCanvas(oldCanvas) {
-		let newCanvas = document.createElement('canvas');
-		let ctx = newCanvas.getContext('2d');
+		const newCanvas = document.createElement('canvas');
+		const ctx = newCanvas.getContext('2d');
 
 		newCanvas.width = oldCanvas.width;
 		newCanvas.height = oldCanvas.height;
@@ -484,10 +690,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function getFaviconInfo() {
-		let domFavicons = [];
+		const domFavicons = [];
 		let faviconUrl = undefined;
 
-		let nodeList = document.getElementsByTagName('link');
+		const nodeList = document.getElementsByTagName('link');
 
 		for (let i = 0; i < nodeList.length; i++) {
 			if ((nodeList[i].getAttribute('rel') === 'shortcut icon')) {
@@ -503,9 +709,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (domFavicons.length > 0)
 				faviconUrl = domFavicons[0].getAttribute('href');
 			else {
-				let url = window.location.href;
-				let arr = url.split('/');
-				let result = arr[0] + '//' + arr[2] + '/favicon.ico';
+				const url = window.location.href;
+				const arr = url.split('/');
+				const result = arr[0] + '//' + arr[2] + '/favicon.ico';
 				faviconUrl = result;
 			}
 
@@ -529,8 +735,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		let actualInputs;
-		let inputs = {};
-		let domInputs = document.querySelectorAll('input');
+		const inputs = {};
+		const domInputs = document.querySelectorAll('input');
 
 		for (let i = 0, len = domInputs.length; i < len; i++) {
 			input = domInputs[i];
@@ -571,7 +777,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				inputs[name] = actualInputs;
 		}
 
-		let selects = {};
+		const selects = {};
 		domSelects = document.querySelectorAll('select');
 		for (let i = 0, len = domSelects.length; i < len; i++) {
 			select = domSelects[i];
@@ -601,7 +807,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				selects[name] = foundSelects;
 		}
 
-		let texts = {};
+		const texts = {};
 		domTextareas = document.querySelectorAll('textarea');
 		for (let i = 0, len = domTextareas.length; i < len; i++) {
 			textarea = domTextareas[i];
@@ -627,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				texts[name] = foundTexts;
 		}
 
-		let collectedFormData = {
+		const collectedFormData = {
 			timestamp: (new Date()).getTime(),
 			inputs: inputs,
 			texts: texts,
@@ -648,20 +854,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			return false;
 		}
 
-		let savedData = JSON.parse(collectedFormData);
+		const savedData = JSON.parse(collectedFormData);
 
-		for (let name in savedData.inputs) {
-			let inputs = document.querySelectorAll('input[name="' + name + '"]');//$('input[name="' + name + '"]');
+		for (const name in savedData.inputs) {
+			const inputs = document.querySelectorAll('input[name="' + name + '"]');//$('input[name="' + name + '"]');
 			let i = 0;
 			for (let _i = 0, _len = inputs.length; _i < _len; _i++) {
-				let input = inputs[_i];
+				const input = inputs[_i];
 				++i;
 				if (i in savedData.inputs[name]) {
-					let val = savedData.inputs[name][i];
+					const val = savedData.inputs[name][i];
 					try {
+						//@ts-ignore
 						switch (input.type) {
 							case 'checkbox':
 							case 'radio':
+								// @ts-ignore
 								input.checked = val === 'checked';
 								fireEvent(input, 'change');
 								break;
@@ -679,6 +887,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							case 'tel':
 							case 'url':
 							case 'week':
+								//@ts-ignore
 								input.value = val;
 								fireEvent(input, 'change');
 						}
@@ -689,15 +898,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
-		for (let name in savedData.texts) {
-			let savedTexts = savedData.texts[name];
-			let texts = document.querySelectorAll('textarea[name="' + name + '"]');
+		for (const name in savedData.texts) {
+			const savedTexts = savedData.texts[name];
+			const texts = document.querySelectorAll('textarea[name="' + name + '"]');
 			let i = 0;
 			for (let _j = 0, _len1 = texts.length; _j < _len1; _j++) {
-				let textarea = texts[_j];
+				const textarea = texts[_j];
 				++i;
 				if (i in savedTexts) {
 					try {
+						//@ts-ignore
 						textarea.value = savedTexts[i];
 						fireEvent(textarea, 'change');
 					} catch (e) {
@@ -707,22 +917,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 
-		let _results = [];
-		for (let name in savedData.selects) {
-			let savedSelects = savedData.selects[name];
-			let selects = document.querySelectorAll('select[name="' + name + '"]');
+		const _results = [];
+		for (const name in savedData.selects) {
+			const savedSelects = savedData.selects[name];
+			const selects = document.querySelectorAll('select[name="' + name + '"]');
 			let i = 0;
 			_results.push((function() {
 				let _k, _len2, _results1;
 
 				_results1 = [];
 				for (_k = 0, _len2 = selects.length; _k < _len2; _k++) {
-					let select = selects[_k];
+					const select = selects[_k];
 					++i;
 					if (i in savedSelects) {
 						try {
+							//@ts-ignore
 							if (select.value == savedSelects[i])
 								continue;
+							//@ts-ignore
 							select.value = savedSelects[i];
 							fireEvent(select, 'change');
 						} catch (e) {

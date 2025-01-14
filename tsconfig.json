@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "ES2022",
+    "moduleResolution": "node",
+
+    "sourceMap": true,
+    "typeRoots": ["./node_modules/@types", "./test/typing/global.d.ts"],
+  },
+  "include": [
+    "./global.d.ts",
+    "./*",
+    "./modules/*",
+    "./modules/model/*",
+    "fancy-settings/source/lib/store.ts",
+    "./test/*",
+    "./test/modules/*",
+  ],
+  "exclude":[
+    "./node_modules",
+    "./jest.config.js"
+  ]
+}
