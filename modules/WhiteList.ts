@@ -43,9 +43,9 @@ class WhiteList {
 			.catch(console.error);
 	}
 
-	removeUrlFromWhitelist(url) {
+	async removeUrlFromWhitelist(url) {
 		if (url != null) {
-			this.removePatternsAffectUrl(url);
+			await this.removePatternsAffectUrl(url);
 			SettingsPageController.reloadSettings().then(()=>{
 				setTimeout(function() {
 					new BrowserActionControl(settings, whiteList, ContextMenuController.menuIdMap, pauseTics).synchronizeActiveTabs();
@@ -96,12 +96,12 @@ class WhiteList {
 	/**
 	 *
 	 */
-	addPattern(pattern) {
+	async addPattern(pattern) {
 
 		let patternObject;
 		if (pattern != null && (patternObject = this.createPatternObject(pattern)) != null) {
 			this.patternList.push(patternObject);
-			this.persist();
+			await this.persist();
 
 			if (debug == true)
 				console.log('WhiteList: added pattern ' + pattern);
@@ -133,7 +133,7 @@ class WhiteList {
 	/**
 	 *
 	 */
-	removePatternsAffectUrl(url) : boolean {
+	async removePatternsAffectUrl(url) : Promise<boolean> {
 
 		url = this.trimUrl(url);
 		if (url == null)
@@ -153,7 +153,7 @@ class WhiteList {
 		}
 
 		if (affected) {
-			this.persist();
+			await this.persist();
 
 			chrome.notifications.create('userInfo',
 				{
@@ -169,13 +169,13 @@ class WhiteList {
 	/**
 	 *
 	 */
-	persist() {
+	async persist() {
 
 		const patterns = [];
-		for (let i in this.patternList)
+		for (const i in this.patternList)
 			patterns.push(this.patternList[i].pattern);
 
-		this.settings.set(this.persistKey, patterns.join('\n'));
+		await this.settings.set(this.persistKey, patterns.join('\n'));
 	}
 
 	/**

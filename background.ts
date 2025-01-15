@@ -5,8 +5,6 @@
  */
 'use strict';
 
-const INSTALLED = 'installed';
-
 const Copyright = 'Copyright (c) 2015 Sergey Zadorozhniy. The content presented herein may not, under any circumstances, be reproduced in whole or in any part or form without written permission from Sergey Zadorozhniy. Zadorozhniy.Sergey@gmail.com';
 const TS_SESSION_ID_KEY = 'TSSessionId';
 
@@ -27,14 +25,15 @@ let parkHistory = [];
 let closeHistory = [];
 //window.tabScreens = {}; // map of tabIDs with last 'screen'
 let settings: SettingsStore;
+
 const debugTabsInfo = false;
-let whiteList;
 let pauseTics = 0;
 let pauseTicsStartedFrom = 0;
 let isCharging = true;
 let startedAt = new Date().getTime();
 const firstTimeTabDiscardMap = {};
 
+let whiteList: WhiteList;
 const offscreenDocumentProvider = new OffscreenDocumentProvider();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let windowManger: WindowManager;
@@ -150,7 +149,7 @@ async function init(options) {
 	/* Restore parkHistory */
 	try {
 		//parkHistory = JSON.parse(localStorage.getItem('parkHistory'));
-		parkHistory = await LocalStore.get('parkHistory');
+		parkHistory = await LocalStore.get(LocalStoreKeys.PARK_HISTORY);
 		if (!Array.isArray(parkHistory))
 			parkHistory = [];
 	} catch (e) {
@@ -159,7 +158,7 @@ async function init(options) {
 
 	/* Restore closeHistory */
 	try {
-		closeHistory = await LocalStore.get('closeHistory');
+		closeHistory = await LocalStore.get(LocalStoreKeys.CLOSE_HISTORY);
 		if (!Array.isArray(closeHistory))
 			closeHistory = [];
 	} catch (e) {
@@ -277,6 +276,9 @@ function start() {
 		try {
 			settings.getOnStorageInitialized().then(async () => {
 
+				/* ????? WILL BE INITIALISED 2 TIMES: HERE AND INSIDE INIT(..) TO RELOAD SETTINGS ?????????? */
+				whiteList = new WhiteList(settings);
+
 				windowManger = new WindowManager();
 				tabManager = new TabManager();
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -292,15 +294,15 @@ function start() {
 				bgMessageListener = new BGMessageListener(tabManager);
 
 
-				const isAlreadyHasSyncSettings = ((await LocalStore.get(INSTALLED)) != null && !chrome.extension.inIncognitoContext);
+				const isAlreadyHasSyncSettings = ((await LocalStore.get(LocalStoreKeys.INSTALLED)) != null && !chrome.extension.inIncognitoContext);
 				if (firstInstallation && !isAlreadyHasSyncSettings) {
 					console.log('EX: Installed!');
 					drawSetupWizardDialog();
-					trackView(INSTALLED);
+					trackView(LocalStoreKeys.INSTALLED);
 				} else {
 					console.log('EX: Updated!');
 					if (!isAlreadyHasSyncSettings) {
-						LocalStore.set(INSTALLED, true).catch(console.error);
+						LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					}
 				}
 			})
@@ -315,9 +317,6 @@ function start() {
 		} catch (e) {
 			console.error(e);
 		}
-
-		/* WILL BE INITIALISED 2 TIMES: HERE AND INSIDE INIT(..) TO RELOAD SETTINGS */
-		whiteList = new WhiteList(settings);
 
 		const startNormalTabsDiscarted = await settings.get('startNormalTabsDiscarted');
 		/* Discard tabs */

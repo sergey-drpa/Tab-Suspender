@@ -168,11 +168,11 @@ class ContextMenuController {
 				onclick: function(info, tab) {
 					if (info == null || info.checked) {
 						if (!whiteList.isURIException(tab.url)) {
-							chrome.tabs.sendMessage(tab.id, { method: '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]' });
+							void chrome.tabs.sendMessage(tab.id, { method: '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]' }).catch(console.error);
 							new BrowserActionControl(settings, whiteList, ContextMenuController.menuIdMap, pauseTics).synchronizeActiveTabs();
 						}
 					} else
-						whiteList.removeUrlFromWhitelist(tab.url);
+						void whiteList.removeUrlFromWhitelist(tab.url);
 				},
 				parentId: this.TOP_MENU_ID,
 				//documentUrlPatterns: ['http://*/*', 'https://*/*', `${rootExtensionUri}*/*`],

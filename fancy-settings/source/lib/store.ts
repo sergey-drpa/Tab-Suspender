@@ -147,7 +147,7 @@ class SettingsStore {
         return this.onStorageInitialized;
     }
 
-    getSync(name) {
+    getSync(name: string) {
         return new Promise(resolve => {
             chrome.storage.sync.get([name], function(result) {
                 console.log(`[GET] Sync Value currently is [${name}]: ` + result[name]);
@@ -205,7 +205,8 @@ class SettingsStore {
         return value;
     }
 
-    static async get(name, namespace): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    static async get(name: string, namespace: string): Promise<any> {
 
         if (DEFAULT_SETTINGS[name] === undefined) {
             throw new Error(`SettingsStore.get(): Unknown property '${name}'`);
@@ -216,15 +217,16 @@ class SettingsStore {
         return (await chrome.storage.local.get([name]))[name];
     }
 
-    private static genName(name, namespace) {
+    private static genName(name: string, namespace: string) {
         return 'store.' + (namespace ? namespace : SETTINGS_STORAGE_NAMESPACE) + '.' + name;
     }
 
-    async get(name): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async get(name: string): Promise<any> {
         return SettingsStore.get(name, this.namespace);
     }
 
-    async set(name, value, skipSync?) {
+    async set(name: string, value: unknown, skipSync?) {
 
         if (DEFAULT_SETTINGS[name] === undefined) {
             throw new Error(`SettingsStore.get(): Unknown property '${name}'`);
@@ -259,7 +261,7 @@ class SettingsStore {
         return this;
     }
 
-    async setSync(name, value) {
+    async setSync(name: string, value: unknown) {
         return new Promise( (resolve, reject) => {
             if(debug) {
                 this.getSync(name).then(currentValue => {
@@ -275,7 +277,7 @@ class SettingsStore {
         });
     }
 
-    remove(name, skipSync?) {
+    remove(name: string, skipSync?) {
         chrome.storage.local.remove(SettingsStore.genName(name, this.namespace)).catch(console.error);
 
         if (!skipSync) {
@@ -284,7 +286,7 @@ class SettingsStore {
         return this;
     }
 
-    removeSync(name): Promise<void> {
+    removeSync(name: string): Promise<void> {
         return chrome.storage.sync.remove([name]).then(function() {
             console.log('Sync Value removed: ' + name);
         }).catch(console.error);
@@ -310,7 +312,7 @@ class SettingsStore {
     }
 
     toObject() {
-        let key, value;
+        let key: string, value: unknown;
         const values = {};
         const name = "store." + this.namespace + ".";
 

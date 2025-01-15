@@ -35,7 +35,7 @@ class SettingsPageController {
 	static async reloadSettings(options?) {
 
 		/* STORE TABS STATE */
-		await tabObserver.settingsChanged();
+		tabObserver.settingsChanged();
 
 		await preInit(<IntOptions>{ reloadSettings: true });
 

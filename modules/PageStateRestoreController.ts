@@ -32,6 +32,7 @@ class PageStateRestoreController {
 			return null;
 
 		const key = this.PREFIX + targetMapEntry.storedAsTabId;
+		// TODO-v3: Do not use LocalStore
 		const data = await LocalStore.get(key);
 		void LocalStore.remove(key);
 

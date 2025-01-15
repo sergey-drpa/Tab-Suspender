@@ -80,7 +80,7 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 				sessionId: TSSessionId
 			});
 			parkHistory.splice(HISTORY_KEEP_LAST_N_ITEMS);
-			void LocalStore.set('parkHistory', parkHistory);
+			void LocalStore.set(LocalStoreKeys.PARK_HISTORY, parkHistory);
 		}
 
 	} catch (e) {
@@ -261,7 +261,7 @@ function closeTab(tabId, tab) {
 			sessionId: parseUrlParam(tab.url, 'sessionId')
 		});
 		closeHistory.splice(HISTORY_KEEP_LAST_N_ITEMS);
-		LocalStore.set('closeHistory', closeHistory)
+		LocalStore.set(LocalStoreKeys.CLOSE_HISTORY, closeHistory)
 			.then(()=>{ tabManager.historyOpenerController.reloadHistoryPage(); })
 			.catch(console.error);
 	} catch (e) {

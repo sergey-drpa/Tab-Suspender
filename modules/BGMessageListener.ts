@@ -29,7 +29,7 @@ class BGMessageListener {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 
-		chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		chrome.runtime.onMessage.addListener(/* DO NOT ADD async HERE IT BROKE sendResponse??*/(request, sender, sendResponse) => {
 
 			/* Screen from h2c, always devicePixelRatio=1*/
 		  if (typeof request == 'string') {
@@ -274,7 +274,7 @@ class BGMessageListener {
 			} else if (request.method === '[AutomaticTabCleaner:uriExceptionCheck]') {
 				sendResponse({ isException: whiteList.isURIException(request.uri) });
 			} else if (request.method === '[AutomaticTabCleaner:TabChangedRequestFromInject]') {
-				tabCapture.captureTab(sender.tab);
+				void tabCapture.captureTab(sender.tab);
 			} else if (request.method === '[AutomaticTabCleaner:TabUnsuspended]') {
 				tabManager.setTabUnsuspended(sender.tab);
 				formRestoreController.expectRestore(sender.tab.id, request.targetTabId, request.url);
@@ -284,21 +284,22 @@ class BGMessageListener {
 				whiteList.hideWhiteListDialog(sender.tab.id);
 				sendResponse({ tabId: sender.tab.id });
 			} else if (request.method === '[AutomaticTabCleaner:installed]') {
-				LocalStore.set(INSTALLED, true).catch(console.error);
+				LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:addToWhiteList]') {
-				whiteList.addPattern(request.pattern);
-				if (request.hideDialog === true)
-					whiteList.hideWhiteListDialog(sender.tab.id, { goBack: true });
+				whiteList.addPattern(request.pattern).then(() => {
+					if (request.hideDialog === true)
+						whiteList.hideWhiteListDialog(sender.tab.id, { goBack: true });
 
-				SettingsPageController.reloadSettings().then(()=>{
-					setTimeout(function() {
-						new BrowserActionControl(settings, whiteList, ContextMenuController.menuIdMap, pauseTics).synchronizeActiveTabs();
-					}, 500);
+					SettingsPageController.reloadSettings().then(() => {
+						setTimeout(function() {
+							new BrowserActionControl(settings, whiteList, ContextMenuController.menuIdMap, pauseTics).synchronizeActiveTabs();
+						}, 500);
+					}).catch(console.error);
 				}).catch(console.error);
 
 				sendResponse({ tabId: sender.tab.id });
 			} else if (request.method === '[AutomaticTabCleaner:removeUrlFromWhitelist]') {
-				whiteList.removeUrlFromWhitelist(request.url);
+				void whiteList.removeUrlFromWhitelist(request.url);
 			} else if (request.method === '[AutomaticTabCleaner:donate]') {
 				/*google.payments.inapp.buy({
 					'parameters': { 'env': 'prod' },
@@ -331,7 +332,7 @@ class BGMessageListener {
 			} else if (request.method === '[AutomaticTabCleaner:resetAllSettings]') {
 				settings.removeAll().then(()=>{
 					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, DEFAULT_SETTINGS, offscreenDocumentProvider);
-					LocalStore.set(INSTALLED, true).catch(console.error);
+					LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:exportAllSettings]') {
@@ -339,7 +340,7 @@ class BGMessageListener {
 			} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
 				settings.removeAll().then(()=>{
 					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings }, offscreenDocumentProvider);
-					LocalStore.set(INSTALLED, true).catch(console.error);
+					LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);
 			} else if (request.method === '[TS:getSessionPageConfig]') {
