@@ -74,6 +74,9 @@ class BGMessageListener {
 						sendResponse(null);
 						return;
 					}
+					if (debug) {
+						console.log(`tab.favIconUrl: `, tab.favIconUrl);
+					}
 					// TODO-v4: Add icon cache
 					fetch(tab.favIconUrl/* ? tab.favIconUrl : request.url*/,
 						{
@@ -91,15 +94,15 @@ class BGMessageListener {
 								const contentType = response.headers.get("Content-Type");
 								const octetStream = 'data:application/octet-stream;base64,';
 								if (dataUrl.startsWith(octetStream)) {
-									if (contentType === 'image/x-icon' || contentType === 'image/vnd.microsoft.icon') {
+									if (contentType.startsWith('image/x-icon') || contentType === 'image/vnd.microsoft.icon') {
 										dataUrl = 'data:image/x-icon;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
-									} else if (contentType === 'image/png') {
+									} else if (contentType.startsWith('image/png')) {
 										dataUrl = 'data:image/png;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
-									} else if (contentType === 'image/svg+xml') {
+									} else if (contentType.startsWith('image/svg+xml')) {
 										dataUrl = 'data:image/svg+xml;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
-									} else if (contentType === 'image/jpeg') {
+									} else if (contentType.startsWith('image/jpeg')) {
 										dataUrl = 'data:image/jpeg;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
-									}else if (contentType === 'application/octet-stream') {
+									}else if (contentType.startsWith('application/octet-stream')) {
 										dataUrl = 'data:image/x-icon;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
 										console.warn(`Strange favIcon contentType[${contentType}]`, dataUrl);
 									} else {

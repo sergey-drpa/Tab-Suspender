@@ -52,8 +52,8 @@ class OffscreenDocumentProvider {
 					console.log(`CleanupFormDatas - Complete.`);
 					/*chrome.offscreen.closeDocument(() => {
 						console.log('offscreenDocument closed.');
-					});
-					chrome.runtime.onMessage.removeListener(messageListener);*/
+					});*/
+					chrome.runtime.onMessage.removeListener(messageListener);
 					resolve();
 				}
 			};

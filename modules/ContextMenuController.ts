@@ -119,7 +119,7 @@ class ContextMenuController {
 	private bindOnClick() {
 		chrome.contextMenus.onClicked.addListener(
 			(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
-				const onclick = this.menus.find(menu => menu.id == info.menuItemId)
+				const onclick = this.menus.find(menu => menu?.id == info.menuItemId)
 					?.onclick;
 				if (onclick != null) {
 					onclick(info, tab);
