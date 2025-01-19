@@ -2,7 +2,7 @@ const TWO_WEEKS_MS = 1000 * 60 * 60 * 24 * 14;
 const debugDBCleanup = true;
 
 let DELAY_BEFORE_DB_CLEANUP = 60 * 1000;
-if(debugDBCleanup) {
+if (debugDBCleanup) {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	DELAY_BEFORE_DB_CLEANUP = 5 * 1000;
 }
@@ -50,8 +50,8 @@ function cleanupDB() {
 	// schedule next cleanup in next days
 	setTimeout(cleanupDB, 1000 * 60 * 60 * 24);
 
-	const usedSessionIds: {[key: number]: boolean} = {};
-	const usedTabIds:{[key: number]: number} = {};
+	const usedSessionIds: { [key: number]: boolean } = {};
+	const usedTabIds: { [key: number]: number } = {};
 
 	chrome.tabs.query({}, function(tabs) {
 		for (const i in tabs)
@@ -80,10 +80,11 @@ function cleanupDB() {
 		database.getAll({
 			IDB:
 				{
-					table: 'screens',
+					// @ts-ignore
+					table: SCREENS_DB_NAME,
 					index: ADDED_ON_INDEX_NAME,
 					predicate: 'getAllKeys',
-					predicateResultLogic: dbCleanup_filterScreenResults(usedSessionIds, usedTabIds),
+					predicateResultLogic: dbCleanup_filterScreenResults(usedSessionIds, usedTabIds)
 				},
 			WebSQL:
 				{
@@ -107,7 +108,8 @@ function cleanupDB() {
 							database.executeDelete({
 								IDB:
 									{
-										table: 'screens',
+										// @ts-ignore
+										table: SCREENS_DB_NAME,
 										index: 'PK',
 										params: [resultsRowsArray[curI][0], resultsRowsArray[curI][1]]
 									},
@@ -144,9 +146,9 @@ function cleanupDB() {
 	}, 1740 * 1000);*/
 }
 
-if (typeof module != "undefined")
+if (typeof module != 'undefined')
 	module.exports = {
 		TWO_WEEKS_MS,
 		dbCleanup_filterScreenResults,
-		cleanupDB,
+		cleanupDB
 	};

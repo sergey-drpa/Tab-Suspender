@@ -591,6 +591,8 @@ function startEX() {
 
 function goBack(options?) {
 
+	targetUrl = parseUrlParam('url');
+
 	chrome.runtime.sendMessage({
 		'method': '[AutomaticTabCleaner:TabUnsuspended]',
 		'targetTabId': tabId,
@@ -604,11 +606,11 @@ function goBack(options?) {
 			/* TODO: Rework this logic && window.history.length > 2 && !secondTime*/) {
 			if (DEBUG)
 				console.log('Back');
-			historyFallback(parseUrlParam('url'));
+			historyFallback(targetUrl);
 		} else {
 			if (DEBUG)
 				console.log('Reload');
-			window.location.replace(parseUrlParam('url'));
+			window.location.replace(targetUrl);
 		}
 	}
 	backProcessed = true;

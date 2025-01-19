@@ -17,7 +17,6 @@
         "./manifest.json",
         "./_locales/**",
         "./*.js",
-        "./*.ts",
         "./*.html",
         "./*.css",
         "./fancy-settings/**",
@@ -71,6 +70,9 @@
       ],
       "@typescript-eslint/ban-ts-comment": [
         "off"
+      ],
+      "prefer-const": [
+        "warn"
       ]
     },
     "plugins": [
@@ -96,6 +98,7 @@
       "trackError": "readonly",
       "trackView": "readonly",
       "sql_error": "readonly",
+      "pauseTics": "readonly",
       "debug": "readonly",
       "Store": "readonly",
       "BrowserActionControl": "readonly",

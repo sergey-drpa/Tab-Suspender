@@ -15,20 +15,22 @@ let previousTSSessionId;
 // Globals
 const parkUrl = chrome.runtime.getURL('park.html');
 
-const rootExtensionUri = chrome.runtime.getURL('');
-const sessionsPageUrl = chrome.runtime.getURL('sessions.html');
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const historyPageUrl = chrome.runtime.getURL('history.html');
-const wizardPageUrl = chrome.runtime.getURL('wizard_background.html');
-const publicExtensionUrl = 'chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html';
-let database;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let database: DBProvider;
 let parkHistory = [];
 let closeHistory = [];
 //window.tabScreens = {}; // map of tabIDs with last 'screen'
 let settings: SettingsStore;
 
-const debugTabsInfo = false;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let pauseTics = 0;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let pauseTicsStartedFrom = 0;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let isCharging = true;
 let startedAt = new Date().getTime();
 const firstTimeTabDiscardMap = {};
@@ -52,14 +54,15 @@ let ignoreList: IgnoreList;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let bgMessageListener: BGMessageListener;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const tabsMarkedForUnsuspend = [];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TABS_MARKED_FOR_UNSUSPEND_TTL = 5000;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let batteryLevel = -1.0;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let getScreenCache = null;
 // eslint-disable-next-line prefer-const
-let settingsInitedResolve, settingsInitedPromise = new Promise(function(resolve) {
-	settingsInitedResolve = resolve;
-});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const openSuspendedHistory = () =>
@@ -69,35 +72,44 @@ const openSuspendedHistory = () =>
 const openClosedHistory = () =>
 	focusOrOpenTSPage(chrome.runtime.getURL('history.html') + '#closed');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRestoreEvent = async function() {
 	return (await settings.get('restoreOnMouseHover') == true ? 'hover' : 'click');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getReloadTabOnRestore = (): Promise<boolean> =>
 	settings.get('reloadTabOnRestore');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getTabIconStatusVisualize = (): Promise<boolean> =>
 	settings.get('tabIconStatusVisualize');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getTabIconOpacityChange = (): Promise<boolean> =>
 	settings.get('tabIconOpacityChange');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRestoreButtonView = (): Promise<string> =>
 	settings.get('restoreButtonView');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getScreenshotCssStyle = (): Promise<string> =>
 	settings.get('screenshotCssStyle');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getStartDiscarted = function(): Promise<boolean> {
 	return settings.get('startDiscarted');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const isFirstTimeTabDiscard = function(tabId) {
 	const isFirstTime = !(tabId in firstTimeTabDiscardMap);
 	firstTimeTabDiscardMap[tabId] = true;
 	return isFirstTime;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getParkBgColor = async function(): Promise<string> {
 	const color = await settings.get('parkBgColor');
 	if (color != null && color.search(/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/) >= 0)
@@ -106,19 +118,10 @@ const getParkBgColor = async function(): Promise<string> {
 		return DEFAULT_SETTINGS.parkBgColor;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getStartedAt = async function() {
 	return startedAt;
 };
-
-function tabExist(windows, tabId) {
-	for (const i in windows)
-		if (windows.hasOwnProperty(i))
-			for (const j in windows[i].tabs)
-				if (windows[i].tabs.hasOwnProperty(j))
-					if (windows[i].tabs[j].id == tabId)
-						return windows[i].tabs[j];
-	return null;
-}
 
 chrome.notifications.onClicked.addListener(function(id) {
 	chrome.notifications.clear(id);
@@ -196,7 +199,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 		/*if (versionCompare(details.previousVersion, '0.4.8.2') < 0)
 			restoreTabOnStartup_TemporarlyEnabel = true;*/
 
-		//settingsInitedPromise.then(async function() {
+		//settings.getOnStorageInitialized().then(async function() {
 		/* PATCH #2 */
 		/*if (versionCompare(details.previousVersion, '1.3.2.3') < 0) {
 			console.log('Disabling "animateTabIconSuspendTimeout" for versions less then 1.3.2.3...');
@@ -268,7 +271,6 @@ function start() {
 		const firstInstallation = ((await SettingsStore.get('timeout', SETTINGS_STORAGE_NAMESPACE)) == null && !chrome.extension.inIncognitoContext);
 
 		settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, DEFAULT_SETTINGS, offscreenDocumentProvider);
-		settingsInitedResolve();
 
 		/*
 		 * TODO: WIZARD: ADD IF FOR IS IT FIRST INSTALL OR UPDATE ONLY!!!

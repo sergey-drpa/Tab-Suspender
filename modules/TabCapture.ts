@@ -1,3 +1,5 @@
+const rootExtensionUri = chrome.runtime.getURL('');
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class TabCapture {
 

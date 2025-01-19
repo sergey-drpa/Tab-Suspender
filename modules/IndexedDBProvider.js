@@ -7,6 +7,7 @@
 'use strict';
 
 const SCREENS_DB_NAME = 'screens';
+const FD_DB_NAME = 'fd';
 // eslint-disable-next-line no-redeclare
 const ADDED_ON_INDEX_NAME = 'addedOnIndex';
 
@@ -82,10 +83,14 @@ IndexedDBProvider.prototype.queryIndex = function(query, callback) {
 		.then(function(transaction) {
 			let store = transaction.objectStore(query.IDB.table);
 
-			let request = store.index(query.IDB.index).get(IDBKeyRange.only(query.params));
+			let storeWithIndex = store;
+			if(query.IDB.index)
+				storeWithIndex = store.index(query.IDB.index);
+
+			const request = storeWithIndex.get(IDBKeyRange.only(query.params));
 
 			request.onsuccess = function(e) {
-				let result = e.target.result;
+				const result = e.target.result;
 
 				callback(result);
 			};
@@ -124,15 +129,25 @@ IndexedDBProvider.prototype.queryIndexCount = function(query, callback) {
 IndexedDBProvider.prototype.executeDelete = function(query/*, callback*/) {
 	this.getTransaction([query.IDB.table], 'readwrite')
 		.then(function(transaction) {
-			let store = transaction.objectStore(query.IDB.table);
+			const store = transaction.objectStore(query.IDB.table);
 
-			let request = store.index(query.IDB.index).get(IDBKeyRange.only(query.IDB.params));
+			let storeWithIndex = store;
+			if(query.IDB.index)
+				storeWithIndex = store.index(query.IDB.index);
+
+			const request = storeWithIndex.get(IDBKeyRange.only(query.IDB.params));
 
 			request.onsuccess = function(e) {
-				let result = e.target.result;
+				const result = e.target.result;
 
-				if (result != null)
-					store['delete']([result.id, result.sessionId]);
+				if (result != null) {
+						let combinedKeyValues = null;
+						if(typeof store.keyPath === 'string')
+							combinedKeyValues = result[store.keyPath];
+						else
+							combinedKeyValues = store.keyPath.map(key => result[key]);
+						store['delete'](combinedKeyValues);
+					}
 				else
 					console.error('executeDelete error(e, e.target, e.target.result): ', e, e.target, e.target.result);
 			};
@@ -187,6 +202,7 @@ IndexedDBProvider.prototype.putV2 = function(queries) {
  *
  */
 IndexedDBProvider.prototype.getTransaction = function(tables, mode) {
+	// eslint-disable-next-line @typescript-eslint/no-this-alias
 	let self = this;
 	if (this.db == null)
 		return new Promise(function(resolve, reject) {
@@ -199,7 +215,7 @@ IndexedDBProvider.prototype.getTransaction = function(tables, mode) {
 						.then(resolve)
 						.catch(reject);
 				}
-			});
+			}).catch(console.error);
 		});
 
 	return new Promise(function(resolve, reject) {
@@ -215,6 +231,7 @@ IndexedDBProvider.prototype.getTransaction = function(tables, mode) {
 };
 
 IndexedDBProvider.prototype.getTransactionWithReconnect = function(e, tables, mode) {
+	// eslint-disable-next-line @typescript-eslint/no-this-alias
 	let self = this;
 	return new Promise(function(resolve, reject) {
 		if (e.name === 'InvalidStateError') {
@@ -248,7 +265,7 @@ IndexedDBProvider.prototype.close = function() {
 	if(this.db != null) {
 		try {
 			this.db.close();
-			// eslint-disable-next-line no-empty
+			// eslint-disable-next-line no-empty,@typescript-eslint/no-unused-vars
 		} catch (e) { }
 	}
 }
@@ -257,27 +274,41 @@ IndexedDBProvider.prototype.close = function() {
  *
  */
 IndexedDBProvider.prototype.open = function(options) {
+	// eslint-disable-next-line @typescript-eslint/no-this-alias
 	let self = this;
 
 	this.close();
 
-	let openRequest = indexedDB.open('TSDB', 5);
+	let openRequest = indexedDB.open('TSDB', 6);
 
-	openRequest.onupgradeneeded = function(e) {
-		let thisDB = e.target.result;
-		const tx = e.target.transaction;
+	openRequest.onupgradeneeded = function(upgradeEvent) {
+		let thisDB = upgradeEvent.target.result;
+		const tx = upgradeEvent.target.transaction;
+
+		console.log(`IDBVersionChangeEvent: `, upgradeEvent);
+
 
 		if (options == null || options.skipSchemaCreation == false) {
-			if (!thisDB.objectStoreNames.contains(SCREENS_DB_NAME)) {
-				let objectStore = thisDB.createObjectStore(SCREENS_DB_NAME, { keyPath: ['id', 'sessionId'] });
-				objectStore.createIndex('PK', ['id', 'sessionId'], { unique: true });
+
+			/* If initial setup... */
+			if (upgradeEvent.oldVersion === 0) {
+
+				if (!thisDB.objectStoreNames.contains(SCREENS_DB_NAME)) {
+					let objectStore = thisDB.createObjectStore(SCREENS_DB_NAME, { keyPath: ['id', 'sessionId'] });
+					objectStore.createIndex('PK', ['id', 'sessionId'], { unique: true });
+				}
+
+				const screens = tx.objectStore(SCREENS_DB_NAME);
+				if (!screens.indexNames.contains(ADDED_ON_INDEX_NAME)) {
+					console.log(`Start ${ADDED_ON_INDEX_NAME} index creation`);
+					screens.createIndex(ADDED_ON_INDEX_NAME, ['id', 'sessionId', 'added_on'], { unique: true });
+					console.log(`Completed ${ADDED_ON_INDEX_NAME} index creation`);
+				}
 			}
 
-			const screens = tx.objectStore(SCREENS_DB_NAME);
-			if (!screens.indexNames.contains(ADDED_ON_INDEX_NAME)) {
-				console.log(`Start ${ADDED_ON_INDEX_NAME} index creation`);
-				screens.createIndex(ADDED_ON_INDEX_NAME, ['id', 'sessionId', 'added_on'], { unique: true });
-				console.log(`Completed ${ADDED_ON_INDEX_NAME} index creation`);
+			/* Upgrade to new version... after add next migration move old migration code to "initial setup" section */
+			if (upgradeEvent.newVersion === 6) {
+				thisDB.createObjectStore(FD_DB_NAME, { keyPath: ['tabId'] });
 			}
 
 			/*if (!thisDB.objectStoreNames.contains(SCREENS_BINARY_DB_NAME)) {
@@ -292,6 +323,10 @@ IndexedDBProvider.prototype.open = function(options) {
 			console.log('IDB Connected successfully');
 			self.db = e.target.result;
 			self.initialized = true;
+			self.db.onversionchange = () => {
+				self.db.close();
+				console.log("A new version of this page is ready. Please reload or close this tab!");
+			};
 			resolve();
 		};
 

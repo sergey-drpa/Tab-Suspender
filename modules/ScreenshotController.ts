@@ -16,7 +16,8 @@ class ScreenshotController {
 			{
 				IDB:
 					{
-						table: 'screens',
+						// @ts-ignore
+						table: SCREENS_DB_NAME,
 						index: 'PK'
 					},
 				WebSQL:
@@ -68,7 +69,8 @@ class ScreenshotController {
 			{
 				IDB:
 					{
-						table: 'screens',
+						// @ts-ignore
+						table: SCREENS_DB_NAME,
 						index: 'PK'
 					},
 				WebSQL:
@@ -113,7 +115,8 @@ class ScreenshotController {
 					{
 						IDB:
 							{
-								table: 'screens',
+								// @ts-ignore
+								table: SCREENS_DB_NAME,
 								data: metadata
 							}
 					}/*,

@@ -16,12 +16,18 @@
 //window.html2canvas = window.html2canvas || {};
 
 
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
+	debugger;
 	window.focus();
-}, true);
+}, true);*/
 
 (function() {
 	'use strict';
+
+	window.addEventListener('pageshow', function (e) {
+		console.log(`pageshow: `, e);
+		resotreForm();
+	});
 
 	/* General */
 	const ICON_DIMENSION = 16;
@@ -47,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	const changeEventCallback = function() {
-		chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:TabChangedRequestFromInject]' });
+		void chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:TabChangedRequestFromInject]' });
 	};
 
 	const onevent = function(e) {
@@ -75,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function errorLog(exception) {
-		chrome.runtime.sendMessage({
+		void chrome.runtime.sendMessage({
 			'method': '[AutomaticTabCleaner:trackError]',
 			message: 'Error in Inject: ' + (exception ? exception.message : ''),
 			stack: (exception ? exception.stack : '')
@@ -846,15 +852,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			return null;
 	}
 
-	function processRestoreForm(collectedFormData) {
-		if (!collectedFormData) {
+	function processRestoreForm(savedData) {
+		if (!savedData) {
 			return false;
 		}
-		if (Object.keys(collectedFormData).length === 0 && collectedFormData.constructor === Object) {
-			return false;
-		}
-
-		const savedData = JSON.parse(collectedFormData);
 
 		for (const name in savedData.inputs) {
 			const inputs = document.querySelectorAll('input[name="' + name + '"]');//$('input[name="' + name + '"]');

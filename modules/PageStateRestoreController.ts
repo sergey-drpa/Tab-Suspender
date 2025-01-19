@@ -15,7 +15,6 @@ interface FormRestoreInfo {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class PageStateRestoreController {
 	private TIMEOUT = 7000;
-	private PREFIX = 'f_t';
 	private tabMap = {}; /* Key - actualTabId, Value - {timestamp: expectedTime, storedAsTabId: storedTabId, url: url} */
 
 	constructor() {
@@ -27,17 +26,53 @@ class PageStateRestoreController {
 	 */
 	async getFormRestoreDataAndRemove(actualTabId) {
 
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const self = this;
+
 		const targetMapEntry = this.getTargetMapEntry(actualTabId);
 		if (targetMapEntry == null)
 			return null;
 
-		const key = this.PREFIX + targetMapEntry.storedAsTabId;
-		// TODO-v3: Do not use LocalStore
-		const data = await LocalStore.get(key);
-		void LocalStore.remove(key);
+		//void LocalStore.remove(key);
 
-		return <FormRestoreInfo>{ formData: data, url: targetMapEntry.url };
+		const storedTabIdInt = parseInt(targetMapEntry.storedAsTabId);
+
+		return new Promise<FormRestoreInfo>((resolve, reject) => {
+			database.queryIndex(
+				{
+					IDB:
+						{
+							// @ts-ignore
+							table: FD_DB_NAME,
+						},
+					params: [storedTabIdInt]
+				},
+				function(fields) {
+					if (fields == null) {
+						reject();
+					}
+
+					if (debugScreenCache)
+						console.log('getScreen result: ', Date.now());
+
+					void self.deleteDataRecord(actualTabId);
+
+					resolve({ formData: fields.data, url: targetMapEntry.url });
+				}
+			);
+		});
 	};
+
+	async deleteDataRecord(tabId: number) {
+		database.executeDelete({
+			IDB:
+				{
+					// @ts-ignore
+					table: FD_DB_NAME,
+					params: [tabId]
+				}
+		});
+	}
 
 	/**
 	 *
@@ -55,13 +90,11 @@ class PageStateRestoreController {
 	/**
 	 *
 	 */
-	async collectPageState(tabId) {
+	async collectPageState(tabId: number) {
 
 		let finished = false;
 		return new Promise(resolve => {
 
-			// eslint-disable-next-line @typescript-eslint/no-this-alias
-			const self = this;
 			chrome.tabs.sendMessage(tabId, { method: '[AutomaticTabCleaner:CollectPageState]' }, function(response/*{ formData, videoTime }*/) {
 				if (debug)
 					console.log('FData: ', response.formData);
@@ -70,7 +103,22 @@ class PageStateRestoreController {
 					/* !TODO-v3: Make auto cleanup Important!
 							Also cleanup old created keys in old localStorage - to free up user space
 					 */
-					void LocalStore.set(self.PREFIX + tabId, response.formData);
+
+					const data = {
+						tabId: tabId,
+						data: response.formData,
+					}
+
+					database.putV2([
+							{
+								IDB:
+									{
+										// @ts-ignore
+										table: FD_DB_NAME,
+										data: data
+									}
+							}
+					]);
 				}
 
 				finished = true;

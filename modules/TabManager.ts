@@ -1,3 +1,5 @@
+const sessionsPageUrl = chrome.runtime.getURL('sessions.html');
+const wizardPageUrl = chrome.runtime.getURL('wizard_background.html');
 
 interface IntOptions {
 	reloadSettings: boolean;
@@ -616,5 +618,15 @@ class TabManager {
 		if (!results) return null;
 		if (!results[2]) return '';
 		return decodeURIComponent(results[2].replace(/\+/g, ' '));
+	}
+
+	static tabExist(windows: chrome.windows.Window[], tabId: number) {
+		for (const i in windows)
+			if (windows.hasOwnProperty(i))
+				for (const j in windows[i].tabs)
+					if (windows[i].tabs.hasOwnProperty(j))
+						if (windows[i].tabs[j].id == tabId)
+							return windows[i].tabs[j];
+		return null;
 	}
 }

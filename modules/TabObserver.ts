@@ -1,14 +1,17 @@
+const publicExtensionUrl = 'chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html';
+const debugTabsInfo = false;
+
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class TabObserver {
 	public static readonly tickSize = 10;
 
-	private TabManager: TabManager;
+	private tabManager: TabManager;
 	private static ticker;
 	private tickCount = 0;
 
 	constructor(TabManager: TabManager) {
-		this.TabManager = TabManager;
+		this.tabManager = TabManager;
 
 		void this.start();
 	}
@@ -58,7 +61,7 @@ class TabObserver {
 			}
 		}
 
-// TODO-v4: Make as struct..
+		// TODO-v4: Make as struct..
 		const pinnedSettings = await settings.get('pinned');
 		const timeoutSettings = await settings.get('timeout');
 		const closeTimeout = await settings.get('closeTimeout');
@@ -95,16 +98,18 @@ class TabObserver {
 							for (const j in windows[wi].tabs)
 								if (windows[wi].tabs.hasOwnProperty(j)) {
 									tab = windows[wi].tabs[j];
-									tabFromTabs = tabManager.getTabInfoById(tab.id);
+									tabFromTabs = self.tabManager.getTabInfoById(tab.id);
 									if (tabFromTabs) {
-										if (!await tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
+										if (!await self.tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
 											tabArray.push(tabFromTabs);
 									}
 								}
 
 						let minRank = 19999999999;
-						let minRankTab;
+						let minRankTab = null;
 						if (tabArray.length > await settings.get('limitOfOpenedTabs')) {
+							const tabRanks: { rank: number, tab: TabInfo }[] = [];
+
 							for (let i = 0; i < tabArray.length; i++) {
 								tab = tabArray[i];
 								if (tab.time >= closeTimeout) {
@@ -113,15 +118,21 @@ class TabObserver {
 										minRank = currentRank;
 										minRankTab = tab;
 									}
-									if (debug)
-										console.log(currentRank, ' : ', tab);
+									if (debug) {
+										tabRanks.push({rank: currentRank, tab: tab });
+									}
 								}
+							}
+
+							if (debug) {
+								tabRanks.sort((a, b) => a.rank - b.rank)
+									.forEach((rankInfo) => { console.log(`TabId[${rankInfo.tab.id}] closeRank: ${rankInfo.rank} -> ${rankInfo.tab.lstCapUrl}`, rankInfo.tab); })
 							}
 						}
 
 						if (minRankTab != null) {
 							let tabToClose = null;
-							if ((tabToClose = tabExist(windows, minRankTab.id)) != null) {
+							if ((tabToClose = TabManager.tabExist(windows, minRankTab.id)) != null) {
 								/*TODO: check for tab is last on whole window!!!*/
 
 								if (!stateOnly)
@@ -152,7 +163,7 @@ class TabObserver {
 
 							const tab = windows[i].tabs[j];
 							const tabId = tab.id;
-							const tabInfo: TabInfo = tabManager.getTabInfoOrCreate(tab);
+							const tabInfo: TabInfo = self.tabManager.getTabInfoOrCreate(tab);
 
 							try {
 								if (debugTabsInfo)
@@ -161,7 +172,7 @@ class TabObserver {
 							} catch (e) {
 							}
 
-							tabManager.checkAndTurnOffAutoDiscardable(tab);
+							self.tabManager.checkAndTurnOffAutoDiscardable(tab);
 
 							cleanedTabsArray[tabId] = tabInfo;
 
@@ -195,7 +206,7 @@ class TabObserver {
 											tab.status === 'complete' &&
 											TabManager.isTabURLAllowedForPark(tab) &&
 											tabInfo.parkTrys <= 2) {
-											if (!await tabManager.isExceptionTab(tab)) {
+											if (!await self.tabManager.isExceptionTab(tab)) {
 												if (!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging) {
 													if (enableSuspendOnlyIfBattLvlLessValue == false || enableSuspendOnlyIfBattLvlLessValue == true && batteryLevel < battLvlLessValue / 100 && !isCharging) {
 														if (!stateOnly) {
@@ -215,7 +226,7 @@ class TabObserver {
 											if (animateTabIconSuspendTimeout &&
 												!tab.active &&
 												tabInfo.time > 0 &&
-												!await tabManager.isExceptionTab(tab) &&
+												!await self.tabManager.isExceptionTab(tab) &&
 												TabManager.isTabURLAllowedForPark(tab) &&
 												(!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging) &&
 												(enableSuspendOnlyIfBattLvlLessValue == false || enableSuspendOnlyIfBattLvlLessValue == true && batteryLevel < battLvlLessValue / 100 && !isCharging)) {
@@ -332,7 +343,7 @@ class TabObserver {
 				}
 			}
 
-			tabManager.calculateAndMarkClosedTabs(cleanedTabsArray);
+			self.tabManager.calculateAndMarkClosedTabs(cleanedTabsArray);
 		});
 	}
 }

@@ -10,7 +10,7 @@
 	<<<<<<<<<
 
 
-	SECURITY: need to move f_t930,.,., from session storage
+	[V] SECURITY: need to move f_t930,.,., from session storage
 	TODO-USER: i need option no auto close tab if automaticly suspend
 	BUG-USER: Add support for HiDPI displays!
 	TODO-USER: When open any localhost site, this extension try to get favicon even it's absent. See in console log:

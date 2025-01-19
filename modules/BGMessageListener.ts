@@ -74,9 +74,7 @@ class BGMessageListener {
 						sendResponse(null);
 						return;
 					}
-					if (debug) {
-						console.log(`tab.favIconUrl: `, tab.favIconUrl);
-					}
+
 					// TODO-v4: Add icon cache
 					fetch(tab.favIconUrl/* ? tab.favIconUrl : request.url*/,
 						{
