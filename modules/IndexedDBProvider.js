@@ -8,7 +8,6 @@
 
 const SCREENS_DB_NAME = 'screens';
 const FD_DB_NAME = 'fd';
-// eslint-disable-next-line no-redeclare
 const ADDED_ON_INDEX_NAME = 'addedOnIndex';
 
 /**
@@ -25,16 +24,17 @@ function IndexedDBProvider(options) {
 /**
  *
  */
+// TODO-v4: Add return promise
 IndexedDBProvider.prototype.getAll = function(query, callback, errorCallback) {
 	void this.getTransaction([query.IDB.table], 'readonly')
 		.then(function(transaction) {
-			let objectStore = transaction.objectStore(query.IDB.table);
+			const objectStore = transaction.objectStore(query.IDB.table);
 
-			let resultsRowsArray = [];
+			const resultsRowsArray = [];
 
 			if (query.IDB.predicate != null) {
 				if (query.IDB.predicate === 'getAllKeys') {
-					let cursor = objectStore.index(query.IDB.index).openKeyCursor();
+					const cursor = objectStore.index(query.IDB.index).openKeyCursor();
 
 					cursor.onsuccess = function(e) {
 						if (!e.target.result) {
@@ -44,31 +44,35 @@ IndexedDBProvider.prototype.getAll = function(query, callback, errorCallback) {
 								return callback(resultsRowsArray);
 						}
 
-						let res = e.target.result;
+						const res = e.target.result;
 						resultsRowsArray.push(res.key);
 						res['continue']();
 					};
 
 					cursor.onerror = function(e) {
-						console.error('Error', e.target.error);
+						console.error('IDB Error on getAll(): ', e.target.error);
 						(errorCallback != null ? errorCallback : sql_error)(e);
 					};
 				} else
-					throw new Error('UUnimplemented predicate name: ' + query.IDB.predicate);
+					throw new Error('Unimplemented predicate name: ' + query.IDB.predicate);
 			} else {
-				let cursor = objectStore.openCursor();
+				const cursor = objectStore.openCursor();
 
 				cursor.onsuccess = function(e) {
-					if (!e.target.result)
-						return callback(resultsRowsArray);
+					if (!e.target.result) {
+						if (query.IDB.predicateResultLogic != null)
+							return callback(query.IDB.predicateResultLogic(resultsRowsArray));
+						else
+							return callback(resultsRowsArray);
+					}
 
-					let res = e.target.result;
+					const res = e.target.result;
 					resultsRowsArray.push(res.value);
 					res['continue']();
 				};
 
 				cursor.onerror = function(e) {
-					console.error('Error', e.target.error);
+					console.error('IDB Error on getAll(): ', e.target.error);
 					(errorCallback != null ? errorCallback : sql_error)(e);
 				};
 			}
@@ -148,12 +152,12 @@ IndexedDBProvider.prototype.executeDelete = function(query/*, callback*/) {
 							combinedKeyValues = store.keyPath.map(key => result[key]);
 						store['delete'](combinedKeyValues);
 					}
-				else
-					console.error('executeDelete error(e, e.target, e.target.result): ', e, e.target, e.target.result);
+				else if (query.IDB.ignoreNotFound == undefined || query.IDB.ignoreNotFound === false)
+					console.error('IDB ExecuteDelete error(e, e.target, e.target.result): ', e, e.target, e.target.result);
 			};
 
 			request.onerror = function(e) {
-				console.error('Error', e.target.error);
+				console.error('IDB ExecuteDelete Error: ', e.target.error);
 			};
 		});
 };
@@ -341,5 +345,8 @@ IndexedDBProvider.prototype.open = function(options) {
 
 if (typeof module != "undefined")
 	module.exports = {
+		IndexedDBProvider,
 		ADDED_ON_INDEX_NAME,
+		SCREENS_DB_NAME,
+		FD_DB_NAME,
 	}

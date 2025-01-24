@@ -50,6 +50,7 @@ class PageStateRestoreController {
 				function(fields) {
 					if (fields == null) {
 						reject();
+						return;
 					}
 
 					if (debugScreenCache)
@@ -69,7 +70,8 @@ class PageStateRestoreController {
 				{
 					// @ts-ignore
 					table: FD_DB_NAME,
-					params: [tabId]
+					params: [tabId],
+					ignoreNotFound: true,
 				}
 		});
 	}

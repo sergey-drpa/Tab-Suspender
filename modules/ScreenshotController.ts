@@ -92,7 +92,7 @@ class ScreenshotController {
 		);
 	}
 
-	static addScreen(id, screen, devicePixelRatio) {
+	static addScreen(id: number | string, screen: string, devicePixelRatio: number, date?: Date) {
 
 		if (ScreenshotController.debug)
 			console.warn(`addScreen(${id}, ${screen.length}b, ${devicePixelRatio}pr)`);
@@ -104,9 +104,9 @@ class ScreenshotController {
 
 			const metadata =
 				{
-					'id': parseInt(id),
+					'id': typeof id === 'string' ? parseInt(id) : id,
 					'sessionId': TSSessionId,
-					'added_on': new Date(),
+					'added_on': date ? date : new Date(),
 					'screen': screen,
 					'pixRat': devicePixelRatio
 				};
@@ -133,3 +133,8 @@ class ScreenshotController {
 		}
 	}
 }
+
+if (typeof module != 'undefined')
+	module.exports = {
+		ScreenshotController,
+	}

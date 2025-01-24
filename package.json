@@ -5,10 +5,8 @@
   "type": "module",
   "scripts": {
     "watch": "copy-files-from-to && tsc-watch --build ./ --onSuccess 'copy-files-from-to --silent'",
-    "watch2": "tsc *.ts --watch",
     "build": "copy-files-from-to && tsc --build ./",
-    "watch1": "webpack ./inject.js -o ./inject.c.js --watch",
-    "copy-files": "copyfiles -u 1 ./**/*.js ./built/ && copyfiles -u 1 ./**/*.html ./built/ && copyfiles -u 1 ./**/**/**/*.css ./built/",
+    "copy-files-from-to": "copy-files-from-to",
     "test": "jest"
   },
   "copyFiles": [
@@ -20,7 +18,7 @@
         "./*.html",
         "./*.css",
         "./fancy-settings/**",
-        "./modules/**",
+        "./modules/*.js",
         "./lib/**",
         "./img/**",
         "./video/**"
@@ -33,6 +31,7 @@
   },
   "private": true,
   "dependencies": {
+    "fake-indexeddb": "^6.0.0",
     "html-minifier": "^4.0.0"
   },
   "devDependencies": {
@@ -40,6 +39,7 @@
     "@types/chrome": "0.0.271",
     "@types/jest": "^29.5.13",
     "@types/jquery": "1.10.45",
+    "@types/node": "^18.19.74",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
     "copy-files-from-to": "^3.11.0",

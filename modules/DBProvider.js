@@ -84,3 +84,9 @@ DBProvider.prototype.executeDelete = function(query) {
 DBProvider.prototype.open = function(options) {
 	return this.concreteDBProvider.open(options);
 };
+
+
+if (typeof module != 'undefined')
+	module.exports = {
+		DBProvider,
+	};

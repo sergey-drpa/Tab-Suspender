@@ -319,7 +319,7 @@ function sql_error(arg, arg2, arg3) {
 	console.error('SQL error: ' + arg + arg2 + arg3, arg2);
 }
 
-// eslint-disable-next-line no-redeclare,no-unused-vars
+// eslint-disable-next-line no-redeclare,no-unused-vars,@typescript-eslint/no-unused-vars
 function extractHostname(url) {
 	let hostname;
 	//find & remove protocol (http, ftp, etc.) and get hostname
@@ -338,6 +338,7 @@ function extractHostname(url) {
 	return hostname;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isDarkMode() {
 	const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -348,3 +349,12 @@ function isDarkMode() {
 
 	return isDarkMode;
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+
+if (typeof module != 'undefined')
+	module.exports = {
+		parseUrlParam,
+		sleep,
+	};

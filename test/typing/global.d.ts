@@ -11,6 +11,16 @@ declare global {
 	let pauseTics;
 	// @ts-ignore
 	let batteryLevel;
+
+	let parkUrl: string;
+
+	let TSSessionId: number;
+	let previousTSSessionId: number;
+	const TWO_WEEKS_MS;
+
+	let getScreenCache;
+
+	let database;
 }
 
 export {};

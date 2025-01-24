@@ -313,7 +313,8 @@ class BGMessageListener {
 				}).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:getFormRestoreDataAndRemove]') {
 				formRestoreController.getFormRestoreDataAndRemove(sender.tab.id).then(data => {
-					sendResponse(data);
+					if(data != null)
+						sendResponse(data);
 				}).catch(console.error);
 				return true; // For async sendResponse()
 			} else if (request.method === '[AutomaticTabCleaner:DiscardTab]') {
