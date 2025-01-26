@@ -46,6 +46,7 @@ class BGMessageListener {
 			} else if (request.method === '[TS:dataForParkPage]') {
 				void (async () => {
 					try {
+						// TODO-v4: make each parameter extraction in individual try to avoid unexpected errors and ship max data to tab
 						const response: ParkPageDataBGResponse = {
 							startDiscarded: await getStartDiscarted(),
 							startAt: await getStartedAt(),
@@ -63,6 +64,7 @@ class BGMessageListener {
 						};
 						sendResponse(response);
 					} catch (e) {
+						sendResponse({});
 						console.error(`[TS:dataForParkPage]: TabId: ${request.tabId}`, e);
 					}
 				})();
@@ -92,7 +94,9 @@ class BGMessageListener {
 								const contentType = response.headers.get("Content-Type");
 								const octetStream = 'data:application/octet-stream;base64,';
 								if (dataUrl.startsWith(octetStream)) {
-									if (contentType.startsWith('image/x-icon') || contentType === 'image/vnd.microsoft.icon') {
+									if (contentType == null) {
+										console.warn(`favIcon has no Header contentType[]`, dataUrl);
+									} else if (contentType.startsWith('image/x-icon') || contentType === 'image/vnd.microsoft.icon') {
 										dataUrl = 'data:image/x-icon;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
 									} else if (contentType.startsWith('image/png')) {
 										dataUrl = 'data:image/png;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);

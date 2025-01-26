@@ -19,6 +19,7 @@ const parkUrl = chrome.runtime.getURL('park.html');
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const historyPageUrl = chrome.runtime.getURL('history.html');
 
+// @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let database: DBProvider;
 let parkHistory = [];
@@ -259,6 +260,7 @@ function start() {
 
 
 	/* Connect DB */
+	// @ts-ignore
 	database = new DBProvider('IndexedDB');
 
 	setTimeout(cleanupDB, DELAY_BEFORE_DB_CLEANUP);

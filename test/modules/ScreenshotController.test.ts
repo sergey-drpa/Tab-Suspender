@@ -6,11 +6,6 @@ import Tab = chrome.tabs.Tab;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('fake-indexeddb/auto');
-// eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unused-vars
-//const ADDED_ON_INDEX_NAME = require('../../modules/IndexedDBProvider').ADDED_ON_INDEX_NAME;
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-//const ScreenshotControllerModule = require('../../modules/ScreenshotController');
 
 
 describe('ScreenshotController Tests', () => {

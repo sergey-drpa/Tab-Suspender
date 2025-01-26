@@ -206,7 +206,7 @@ class TabCapture {
 					hasLastError(TabCapture.expectedInjectExceptions, e, `Error while injecting 'lib/inject.js', ActualTab: ${JSON.stringify({favIconUrl: undefined, ...tab})}`);
 				});*/
 			}).catch(e=> {
-				hasLastError(TabCapture.expectedInjectExceptions, e, `Error while injecting 'lib/h2c.js', ActualTab: ${JSON.stringify({favIconUrl: undefined, ...tab})}`);
+				hasLastError(TabCapture.expectedInjectExceptions, e, `Error while injecting 'lib/h2c.js', ActualTab: ${JSON.stringify({...tab, favIconUrl: undefined,})}`);
 			});
 		} catch (e) {
 			console.error('injectJS exception', e);

@@ -5,7 +5,7 @@
  */
 'use strict';
 
-(()=>{
+(async ()=>{
 // eslint-disable-next-line no-redeclare
 const DEBUG = false;
 const debugPerformance = true;
@@ -74,7 +74,7 @@ try {
 
 	screenPromise = chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId, sessionId: parseUrlParam('sessionId') });
 
-	chrome.runtime.sendMessage({ method: '[TS:dataForParkPage]', tabId, sessionId: parseUrlParam('sessionId') }).then((parkData: ParkPageDataBGResponse) => {
+	const parkData: ParkPageDataBGResponse = await chrome.runtime.sendMessage({ method: '[TS:dataForParkPage]', tabId, sessionId: parseUrlParam('sessionId') }); //.then((parkData: ParkPageDataBGResponse) => {
 
 		globalParkData = parkData;
 
@@ -190,7 +190,7 @@ try {
 
 		// @ts-expect-error
 		window.domLoadedPromise = null;
-	}).catch(console.error);
+	//}).catch(console.error);
 } catch (e) {
 	console.error(e);
 
@@ -426,7 +426,7 @@ function cssScale(): string {
 
 	if (screenshotDevicePixelRatio != 1 || globalParkData.tabInfo.zoomFactor != 1) {
 		let scale = 1 / screenshotDevicePixelRatio;
-		if (globalParkData.tabInfo.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
+		if (globalParkData.tabInfo != null && globalParkData.tabInfo.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
 			scale *= globalParkData.tabInfo.zoomFactor;
 		}
 		return 'scale(' + scale + ', ' + scale + ')';

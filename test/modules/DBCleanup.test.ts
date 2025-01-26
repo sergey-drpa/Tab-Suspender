@@ -6,10 +6,6 @@ import Tab = chrome.tabs.Tab;
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require("fake-indexeddb/auto");
-// eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unused-vars
-//const IndexedDBProviderModule = require('../../modules/IndexedDBProvider');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-//const DbUtils = require('../../modules/DbUtils');
 
 
 
@@ -29,6 +25,8 @@ describe('DBCleanup Tests', () => {
 						{id: 1, url: parkUrl },
 						// @ts-ignore
 						{id: 2, url: 'http://google.com'},
+						// @ts-ignore
+						{id: 3, url: parkUrl },
 					]);
 				}
 			}
@@ -40,6 +38,8 @@ describe('DBCleanup Tests', () => {
 		ScreenshotController.addScreen(1, "data:image/jpeg;base64,dklfnkldnfdkfjdiosf", 2, new Date(new Date().getTime()-TWO_WEEKS_MS));
 		const secondScreenDate = new Date();
 		ScreenshotController.addScreen(2, "data:image/jpeg;base64,dklfnkldnfdkfjdiosf2", 2, secondScreenDate);
+		const oneWeekScreenDate = new Date(new Date().getTime()-TWO_WEEKS_MS + 1000*60*60*24*7);
+		ScreenshotController.addScreen(3, "data:image/jpeg;base64,dklfnkldnfdkfjdiosf3", 2, oneWeekScreenDate);
 		await sleep(100);
 
 		await cleanupDB();
@@ -60,7 +60,15 @@ describe('DBCleanup Tests', () => {
 				"added_on": secondScreenDate.toISOString(),
 				"screen": "data:image/jpeg;base64,dklfnkldnfdkfjdiosf2",
 				"pixRat": 2
-			}]);
+			},
+			{
+				"id": 3,
+				"sessionId": TSSessionId,
+				"added_on": oneWeekScreenDate.toISOString(),
+				"screen": "data:image/jpeg;base64,dklfnkldnfdkfjdiosf3",
+				"pixRat": 2
+			}
+			]);
 		});
 
 		await sleep(100);
