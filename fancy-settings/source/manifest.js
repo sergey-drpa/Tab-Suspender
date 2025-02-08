@@ -551,7 +551,7 @@ this.manifest = {
 						let settings = event.target.result;
 						console.log(settings);
 						if (window.confirm('Are you sure that you want to Import New Tab Suspender settings?')) {
-							debugger;
+							//debugger;
 							chrome.runtime.sendMessage({
 								method: '[AutomaticTabCleaner:importAllSettings]',
 								settings: JSON.parse(settings)

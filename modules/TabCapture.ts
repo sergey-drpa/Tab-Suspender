@@ -79,7 +79,7 @@ class TabCapture {
 								try {
 									chrome.tabs.captureVisibleTab(tab.windowId, <chrome.tabs.CaptureVisibleTabOptions>{
 										format: 'jpeg',
-										quality: await settings.get('screenshotQuality'), // TODO-v4: Cache settings.get('screenshotQuality')
+										quality: parseInt(await settings.get('screenshotQuality')), // TODO-v4: Cache settings.get('screenshotQuality')
 									}, function(screen: string) {
 
 										if (screen == null || screen == '') {

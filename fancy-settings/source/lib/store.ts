@@ -14,6 +14,10 @@ class SettingsStore {
     private readonly onStorageInitialized: Promise<void>;
 
     constructor(namespace: string, defaults: Settings, offscreenDocumentProvider?: OffscreenDocumentProvider, isNotMainSettings?: boolean) {
+
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
         this.namespace = (namespace ? namespace : SETTINGS_STORAGE_NAMESPACE);
         this.offscreenDocumentProvider = offscreenDocumentProvider;
         this.onStorageInitialized = new Promise(resolve => {
@@ -59,7 +63,7 @@ class SettingsStore {
                             for (const key in oldSettings) {
                                 if (oldSettings.hasOwnProperty(key)) {
                                     if (await this.get(key) == undefined) {
-                                        await this.set(key, oldSettings[key], true);
+                                        await this.set(key, self.checkTypeAndCast(key, oldSettings[key]), true);
                                     }
                                 }
                             }
@@ -235,7 +239,7 @@ class SettingsStore {
         }
 
         if(debug) {
-            console.log(`[SET]: Local previous value for [${name}] was: `, await this.get(name));
+            console.log(`[SET]: Local previous value for [${name}] was: ${await this.get(name)}, new: ${value}`);
         }
 
         if (value === undefined) {

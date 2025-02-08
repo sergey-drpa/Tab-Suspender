@@ -129,7 +129,7 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 							sessionId: TSSessionId,
 							width: width,
 							height: height,
-							screenshotQuality: await settings.get('screenshotQuality'),
+							screenshotQuality: parseInt(await settings.get('screenshotQuality')),
 						},
 						function(response) {
 							if (response != null) {

@@ -6,6 +6,7 @@ console.log(`Total localStorage objects: ${Object.keys(localStorage).length}`);
 */
 
 const batteryDebug = true;
+const OldSettingsKeyPrefix = "store.tabSuspenderSettings.";
 
 type BatteryStatusMessage = {
 	isCharging: boolean;
@@ -63,7 +64,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			for (const i in message.settingsKeys) {
 				// Get old settings...
 				console.log(`Key: ${message.settingsKeys[i]}`);
-				oldSettings[message.settingsKeys[i]] = localStorage.getItem(message.settingsKeys[i]);
+				//debugger;
+				oldSettings[message.settingsKeys[i]] = localStorage.getItem(OldSettingsKeyPrefix + message.settingsKeys[i]);
 			}
 			sendResponse(oldSettings);
 

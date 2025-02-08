@@ -609,7 +609,7 @@ class TabManager {
 	}
 
 	static getParameterByName(name, url) {
-		debugger;
+		//debugger;
 		if (!url) url = window.location.href;
 		// eslint-disable-next-line no-useless-escape
 		name = name.replace(/[\[\]]/g, '\\$&');
