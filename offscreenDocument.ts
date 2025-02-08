@@ -1,7 +1,9 @@
+/*
 for (let i = 0; i < 50000; i++) {
 	localStorage.setItem(`f_t${i}`, String(Math.random()));
 }
 console.log(`Total localStorage objects: ${Object.keys(localStorage).length}`);
+*/
 
 const batteryDebug = true;
 

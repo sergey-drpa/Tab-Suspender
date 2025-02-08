@@ -5,7 +5,7 @@
  */
 'use strict';
 
-(async ()=>{
+void (async ()=>{
 // eslint-disable-next-line no-redeclare
 const DEBUG = false;
 const debugPerformance = true;
@@ -15,7 +15,7 @@ if (debugPerformance) {
 	console.time('Load time...');
 }
 
-const urlParamChache = {};
+//const urlParamChache = {};
 let backProcessed = false;
 let title;
 let favicon;
@@ -35,6 +35,9 @@ let parkedUrl;
 let screenPromise;
 let faviconDrawed;
 let globalParkData: ParkPageDataBGResponse;
+
+const url: URL = new URL(window.location.href);
+const searchParams: URLSearchParams = url.searchParams;
 
 const loaded = new Promise<void>((resolve) => {
 	window.addEventListener('load', () => {
@@ -66,15 +69,18 @@ window.domLoadedPromise = new Promise<void>((resolve) => {
 	}, true);
 });
 
+
+
 if (debugPerformance)
 	console.log('getBackgroundPage: ', Date.now());
 
 try {
-	tabId = parseUrlParam('tabId');
 
-	screenPromise = chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId, sessionId: parseUrlParam('sessionId') });
+	tabId = searchParams.get('tabId');
 
-	const parkData: ParkPageDataBGResponse = await chrome.runtime.sendMessage({ method: '[TS:dataForParkPage]', tabId, sessionId: parseUrlParam('sessionId') }); //.then((parkData: ParkPageDataBGResponse) => {
+	screenPromise = chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId, sessionId: searchParams.get('sessionId') });
+
+	const parkData: ParkPageDataBGResponse = await chrome.runtime.sendMessage({ method: '[TS:dataForParkPage]', tabId, sessionId: searchParams.get('sessionId') }); //.then((parkData: ParkPageDataBGResponse) => {
 
 		globalParkData = parkData;
 
@@ -311,7 +317,7 @@ function createTitleAndIcon(force?) {
 		return;
 
 	if (title == null)
-		title = parseUrlParam('title');
+		title = searchParams.get('title');
 	if (document.title !== title)
 		document.title = title;
 
@@ -328,7 +334,7 @@ function createTitleAndIcon(force?) {
 	}
 
 	if (favicon == null || force) {
-		generateFaviconUri(parseUrlParam('icon', false), (proccesedIcon) => {
+		generateFaviconUri(searchParams.get('icon'/*, false*/), (proccesedIcon) => {
 			favicon = proccesedIcon;
 			link.href = proccesedIcon;
 			if (link.id !== 'faviconLink') {
@@ -345,7 +351,7 @@ function createTitleAndIcon(force?) {
 }
 
 // eslint-disable-next-line no-redeclare
-function parseUrlParam(name, doNotCache?) {
+/*function parseUrlParam(name, doNotCache?) {
 	let val;
 	if ((val = urlParamChache[name]) != null)
 		return val;
@@ -362,7 +368,7 @@ function parseUrlParam(name, doNotCache?) {
 				return urlParamChache[name] = decodeURIComponent(tmp[1]);
 		}
 	}
-}
+}*/
 
 function generateFaviconUri(url, callback) {
 	if(DEBUG) {
@@ -467,7 +473,7 @@ function drawContent(parkData) {
 		screenImg.style.display = 'none';
 		document.getElementById('title').innerHTML = title;
 		// @ts-expect-error
-		document.getElementById('title').href = parseUrlParam('url');
+		document.getElementById('title').href = searchParams.get('url');
 		// @ts-expect-error
 		document.getElementById('favicon').src = favicon;
 		document.getElementById('title_div').style.display = 'block';
@@ -574,8 +580,8 @@ function startEX() {
 			return false;
 		};
 
-	let url = parseUrlParam('url');
-	const title = parseUrlParam('title');
+	let url = searchParams.get('url');
+	const title = searchParams.get('title');
 
 	if (url.indexOf('http://') === 0)
 		url = url.substr(7);
@@ -591,7 +597,7 @@ function startEX() {
 
 function goBack(options?) {
 
-	targetUrl = parseUrlParam('url');
+	targetUrl = searchParams.get('url');
 
 	chrome.runtime.sendMessage({
 		'method': '[AutomaticTabCleaner:TabUnsuspended]',
@@ -911,7 +917,7 @@ window.drawAddPageToWhiteListDialog = () => {
 
 	const iframe = document.createElement('iframe');
 	iframe.id = 'ATCSDialogiFrame';
-	iframe.src = chrome.runtime.getURL('dialog.html?dialog=page&url=' + parseUrlParam('url'));
+	iframe.src = chrome.runtime.getURL('dialog.html?dialog=page&url=' + searchParams.get('url'));
 	iframe.style.position = 'fixed';
 	iframe.style.top = '0px';
 	iframe.style.left = '0px';

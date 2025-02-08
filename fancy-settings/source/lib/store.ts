@@ -50,6 +50,8 @@ class SettingsStore {
                     if (defaults !== undefined) {
 
                         if (!await this.get('localStorageMigrated')) {
+                            console.log(`Need to migrate Old Settings...`);
+
                             const oldSettings = await offscreenDocumentProvider.extractOldSettings(Object.keys(defaults));
 
                             console.log(`Old Settings: `, oldSettings);
