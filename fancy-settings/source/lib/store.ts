@@ -69,6 +69,7 @@ class SettingsStore {
                             }
 
                             await this.set('localStorageMigrated', true);
+                            await LocalStore.set(LocalStoreKeys.INSTALLED, true);
                         }
 
                         void this.cleanLocalStorageFormData();
