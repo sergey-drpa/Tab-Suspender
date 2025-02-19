@@ -53,23 +53,27 @@ class SettingsStore {
 
                     if (defaults !== undefined) {
 
+                        // Migration from old V2 Manifest settings...
                         if (!await this.get('localStorageMigrated')) {
-                            console.log(`Need to migrate Old Settings...`);
-
                             const oldSettings = await offscreenDocumentProvider.extractOldSettings(Object.keys(defaults));
 
-                            console.log(`Old Settings: `, oldSettings);
+                            if (oldSettings['active'] != undefined) {
+                                console.log(`Need to migrate Old Settings...[${oldSettings['active']}]`);
 
-                            for (const key in oldSettings) {
-                                if (oldSettings.hasOwnProperty(key)) {
-                                    if (await this.get(key) == undefined) {
-                                        await this.set(key, self.checkTypeAndCast(key, oldSettings[key]), true);
+                                console.log(`Old Settings: `, oldSettings);
+
+
+                                for (const key in oldSettings) {
+                                    if (oldSettings.hasOwnProperty(key)) {
+                                        if (await this.get(key) == undefined) {
+                                            await this.set(key, self.checkTypeAndCast(key, oldSettings[key]), true);
+                                        }
                                     }
                                 }
-                            }
 
-                            await this.set('localStorageMigrated', true);
-                            await LocalStore.set(LocalStoreKeys.INSTALLED, true);
+                                await this.set('localStorageMigrated', true);
+                                await LocalStore.set(LocalStoreKeys.INSTALLED, true);
+                            }
                         }
 
                         void this.cleanLocalStorageFormData();

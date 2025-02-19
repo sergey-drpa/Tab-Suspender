@@ -671,7 +671,7 @@ let nativeUrlTimer = null;
 let nativeUrlTimerClose = null;
 let nativeUrlTimerCloseAfterTimeout = null;
 let nativeUrlPosition;
-const nativeUrlElement = document.getElementById('nativeUrl');
+let nativeUrlElement;
 let nativeUrlElementHover = false;
 
 
