@@ -88,7 +88,7 @@ class WhiteList {
 			if (regExp != null)
 				return <WhiteListPattern>{ pattern: pattern, regExp: regExp };
 		}
-		if (debug == true)
+		if (debug)
 			console.log('WhiteList: init Wrong pattern(skipped): ' + pattern);
 		return null;
 	}
@@ -103,7 +103,7 @@ class WhiteList {
 			this.patternList.push(patternObject);
 			await this.persist();
 
-			if (debug == true)
+			if (debug)
 				console.log('WhiteList: added pattern ' + pattern);
 
 			chrome.notifications.clear('userInfo');
@@ -119,7 +119,7 @@ class WhiteList {
 					console.log('Last error:', chrome.runtime.lastError);
 				}
 			);
-		} else if (debug == true)
+		} else if (debug)
 			console.log('WhiteList: error added pattern: ' + pattern);
 	}
 
@@ -145,7 +145,7 @@ class WhiteList {
 		while ((i = this.findAffectdPatternIndexByUrl(url)) != null) {
 			affected = true;
 
-			if (debug == true)
+			if (debug)
 				console.log('WhiteList: Removed pattern ' + this.patternList[i].pattern);
 
 			removedPatterns.push(this.patternList[i].pattern);
