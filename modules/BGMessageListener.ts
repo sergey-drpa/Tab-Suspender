@@ -342,7 +342,10 @@ class BGMessageListener {
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:exportAllSettings]') {
-				sendResponse({settings: JSON.stringify(settings.toObject(), null, 2)});
+				void (async ()=> {
+					sendResponse({ settings: JSON.stringify(await settings.toObject(), null, 2) });
+				})();
+				return true;
 			} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
 				settings.removeAll().then(()=>{
 					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings }, offscreenDocumentProvider);
@@ -351,6 +354,8 @@ class BGMessageListener {
 				}).catch(console.error);
 			} else if (request.method === '[TS:getSessionPageConfig]') {
 				sendResponse({TSSessionId});
+			} else if (request.method === '[TS:offscreenDocument:cleanupComplete]') {
+				// Skip Offscreen event...
 			} else {
 				console.error(`Unimplemented message ${request.method}`);
 			}

@@ -152,7 +152,6 @@ async function init(options) {
 
 	/* Restore parkHistory */
 	try {
-		//parkHistory = JSON.parse(localStorage.getItem('parkHistory'));
 		parkHistory = await LocalStore.get(LocalStoreKeys.PARK_HISTORY);
 		if (!Array.isArray(parkHistory))
 			parkHistory = [];

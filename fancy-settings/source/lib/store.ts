@@ -306,12 +306,13 @@ class SettingsStore {
     async removeAll() {
         await this.removeAllSync();
 
-        const name = "store." + this.namespace + ".";
-        for (let i = (localStorage.length - 1); i >= 0; i--) {
-            if (localStorage.key(i).substring(0, name.length) === name) {
-                localStorage.removeItem(localStorage.key(i));
-            }
-        }
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        await Promise.all(Object.keys(DEFAULT_SETTINGS)
+          .map(async (key) => {
+              self.remove(key);
+          }));
 
         return this;
     }
@@ -322,18 +323,20 @@ class SettingsStore {
         }).catch(console.error);
     }
 
-    toObject() {
-        let key: string, value: unknown;
-        const values = {};
-        const name = "store." + this.namespace + ".";
+    async toObject() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
 
-        for (let i = (localStorage.length - 1); i >= 0; i--) {
-            if (localStorage.key(i).substring(0, name.length) === name) {
-                key = localStorage.key(i).substring(name.length);
-                value = this.get(key);
-                if (value !== undefined) { values[key] = value; }
-            }
-        }
+        let value: unknown;
+        const values = {};
+
+        await Promise.all(Object.keys(DEFAULT_SETTINGS)
+          .map(async (key) => {
+              value = await self.get(key);
+              if (value !== undefined) {
+                  values[key] = value;
+              }
+          }));
 
         return values;
     }
