@@ -8,7 +8,7 @@
 void (async ()=>{
 // eslint-disable-next-line no-redeclare
 const DEBUG = false;
-const debugPerformance = true;
+const debugPerformance = false;
 
 if (debugPerformance) {
 	console.log('Compiled inside: ', Date.now());

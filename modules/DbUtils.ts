@@ -1,5 +1,5 @@
 const TWO_WEEKS_MS = 1000 * 60 * 60 * 24 * 14; // 14 Days
-const debugDBCleanup = true;
+const debugDBCleanup = false;
 
 let DELAY_BEFORE_DB_CLEANUP = 60 * 1000;
 if (debugDBCleanup) {
