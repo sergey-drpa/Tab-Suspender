@@ -5,7 +5,7 @@ for (let i = 0; i < 50000; i++) {
 console.log(`Total localStorage objects: ${Object.keys(localStorage).length}`);
 */
 
-const batteryDebug = true;
+const batteryDebug = false;
 const OldSettingsKeyPrefix = "store.tabSuspenderSettings.";
 
 type BatteryStatusMessage = {

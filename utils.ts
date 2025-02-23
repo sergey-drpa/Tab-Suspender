@@ -1,9 +1,9 @@
 'use strict';
 
 // eslint-disable-next-line no-redeclare
-const debug = true;
+const debug = false;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const trace = true;
+const trace = false;
 
 /* Definitions for Syntax Check */
 // eslint-disable-next-line no-redeclare

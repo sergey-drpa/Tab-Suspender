@@ -1,9 +1,9 @@
-const debugScreenCache = true;
+const debugScreenCache = false;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ScreenshotController {
 
-	private static debug = true;
+	private static debug = false;
 
 	static isScreenExist(tabId: number, sessionId, callback) {
 
