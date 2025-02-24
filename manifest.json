@@ -2,7 +2,7 @@
     "manifest_version": 3,
 	"name": "__MSG_extName__",
 	"short_name": "Tab Suspender",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuNEkrBy9aFGgcUssLSWYc+jDDfgAB+/mZcDBu8dl/Fxg8/A/vMkBAg7qrouRfPcJ4uqw3QSxMDaTIL49owqgm8uvCCFYdDVUWY7aU13YrxOn/diY33ejzfyDaCHDKMlEIPsch2P5mHxF/CUZ1vWAsKguPQHyHYwVPg22558wx9cdn3JvRI9mMLq8dB0p99PQfIFL9dpwKa11OXfEWgQbYfFYbK5+tD1xZL+oo6St8J23+pPGdz2QfXIceOT6znGj+gbmid78lT/61RX4qYT+zBhnRsY99uAFW3w+wdw7YYh76uoJI43L4RL3dDxpll5ktdZrBo1ENVVr9IXK2XDgrQIDAQAB",
 
     "description": "__MSG_extDescription__",
