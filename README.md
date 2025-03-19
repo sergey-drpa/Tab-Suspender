@@ -1,7 +1,8 @@
 # Tab Suspender Chrome Extension
 
-### Released Tab Suspender 2.0.4 https://github.com/sergey-drpa/Tab-Suspender/releases/tag/2.0.4
+### 🟢 Released Tab Suspender 2.0.4 https://github.com/sergey-drpa/Tab-Suspender/releases/tag/2.0.4
 
+--
 
 ### ⚠️ Working on V3 update to support last Chrome versions in progress...
 
