@@ -1032,14 +1032,15 @@ Browser.exec = function(text){
 };
 
 String.implement('stripScripts', function(exec){
-	var scripts = '';
+	throw new Error('Unimplemented');
+	/*var scripts = '';
 	var text = this.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, function(all, code){
 		scripts += code + '\n';
 		return '';
 	});
 	if (exec === true) Browser.exec(scripts);
 	else if (typeOf(exec) == 'function') exec(scripts, text);
-	return text;
+	return text;*/
 });
 
 // Window, Document
