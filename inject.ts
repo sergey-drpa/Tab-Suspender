@@ -25,7 +25,6 @@
 	'use strict';
 
 	window.addEventListener('pageshow', function (e) {
-		console.log(`pageshow: `, e);
 		resotreForm();
 	});
 
