@@ -1,5 +1,6 @@
 
 interface MenuInfo extends  chrome.contextMenus.CreateProperties {
+	invisible?: boolean;
 	title?: string;
 	onclick?: (info, tab) => void;
 	documentUrlPatterns?: string[];
@@ -47,8 +48,7 @@ class ContextMenuController {
 		let maxMenuLen = 0;
 
 		for (const j in this.menus) {
-			// TODO-v4:
-			if (true/*this.menus[j].type == null || this.menus[j].type !== 'hidden'*/) {
+			if (!this.menus[j].invisible) {
 				// TODO-v4:
 				// this.menus[j]._width = getTextWidth(this.menus[j].title);
 				this.menus[j]._width = 5;
@@ -87,8 +87,7 @@ class ContextMenuController {
 			if (this.menus[j]._width != null)
 				delete this.menus[j]['_width'];
 
-			// TODO-v4:
-			if (true/*this.menus[j].type == null || this.menus[j].type !== 'hidden'*/) {
+			if (!this.menus[j].invisible) {
 				const id = chrome.contextMenus.create({
 					...this.menus[j] as chrome.contextMenus.CreateProperties,
 					onclick: undefined
@@ -284,21 +283,20 @@ class ContextMenuController {
 				_command: 'ignore-current-tab',
 				documentUrlPatterns: ['http://*/*', 'https://*/*']
 			},
-			/* TODO-v3:
 			{
-				type: 'hidden',
+				invisible: true,
 				contexts: ['all'],
 				title: 'Suspend or Unsuspend Current Tab (in one HotKey)',
 				parentId: this.TOP_MENU_ID,
 				onclick: function(info, tab) {
 					if (!tab.url.startsWith(extUrl)) {
-						parkTab(tab, tab.id);
+						void parkTab(tab, tab.id);
 					} else {
-						unsuspendTab(tab);
+						self.tabManager.unsuspendTab(tab);
 					}
 				},
 				_command: 'suspend-or-unsuspend-current-tab'
-			}*/,
+			},
 			{
 				id: 'separator-4',
 				type: 'separator',

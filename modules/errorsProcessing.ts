@@ -1,111 +1,68 @@
+let trackError = async (error: Error) => {};
+let trackView = async (viewName: string, info?: object) => {};
+
+
 function trackErrors(pageName /* For example 'popup' */, buttons /* true/false */) {
-	consoleLog(`trackErrors: ${pageName} - ${buttons}`)
-}
+	const tsErrorGaKey = 'ts_error';
+	const sendErrorsKey = 'sendErrors';
 
-function trackError(error) {
-	consoleError(`trackError: ${error}`)
-}
+	const eventsAccumulator = [];
 
-function trackView(viewName) {
-	consoleLog(`trackView: ${viewName}`)
-}
+	setInterval(anonymousEventsToGA, 10000);
 
-/* TODO-v3:
-'use strict';
+	trackError = async function (error: Error) {
+		eventsAccumulator.push({
+			name: tsErrorGaKey,
+			params: {
+				id: pageName,
+				info: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+			},
+		});
+	}
 
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-131779988-1']);
-_gaq.push(['_trackPageview']);
+	trackView = async function (viewName: string, info?: object) {
+		eventsAccumulator.push({
+			name: viewName,
+			params: {
+				id: pageName,
+				info: info ? JSON.stringify(info, Object.getOwnPropertyNames(info)) : null,
+			},
+		});
+	}
 
-let sendErrorsStorageKey = 'store.tabSuspenderSettings.sendErrors';
+	const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
+	const MEASUREMENT_ID = `G-Q3Q3MKPR1Q`;
+	const API_SECRET = `8FNw9rVgTC-5n0WXEH2kLQ`;
 
-let isSendErrorsEnabled = () => window.localStorage.getItem(sendErrorsStorageKey) === 'true' || window.localStorage.getItem(sendErrorsStorageKey) == null;
+	async function anonymousEventsToGA() {
+		/** INFO: Sending an anonymous errors logs for improve TS quality
+		 * It can be disabled in Wizard page on the last step:
+		 * chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/wizard_background.html
+		 * **/
 
-// eslint-disable-next-line no-redeclare,no-unused-vars
-function trackErrors(pageName /!* For example 'popup' *!/, buttons /!* true/false *!/) {
-	/!*************************
-	 *   GA							     *
-	 *************************!/
-		if(typeof window !== "undefined") {
+		let events = eventsAccumulator.splice(0);
 
-			var trackError = window.trackError = function(error) {
-				if (isSendErrorsEnabled()) {
-					_gaq.push(['_trackEvent', 'Error', pageName, JSON.stringify(error)]);
-				}
-			};
-			window.trackView = function(viewName) {
-				if (isSendErrorsEnabled()) {
-					_gaq.push(['_trackPageview', viewName]);
-				}
-			};
+		const idSendErrors = await SettingsStore.get(sendErrorsKey, SETTINGS_STORAGE_NAMESPACE);
 
-			if (isSendErrorsEnabled()) {
-				try {
-					(function() {
-						let ga = document.createElement('script');
-						ga.type = 'text/javascript';
-						ga.async = true;
-						ga.src = 'lib/ga.js';
-						let s = document.getElementsByTagName('script')[0];
-						s.parentNode.insertBefore(ga, s);
+		if (idSendErrors !== true)
+			return;
 
-						_gaq.push(['_setAccount', 'UA-131779988-1']);
-						_gaq.push(['_trackPageview']);
+		if (events.length == 0)
+			return;
 
-						window.addEventListener('error', function(a) {
-							console.log('Error catched: ', JSON.stringify(a.error));
-							trackError(a.error);
-						});
-					})();
-
-					let lastClick = { time: 0 };
-
-					let trackButtonClick = function(e) {
-						let id = null;
-						if (e.target.id != null && e.target.id !== '')
-							id = e.target.id;
-						else if (e.target.className != null && e.target.className !== '')
-							id = e.target.className;
-
-						if (id != null) {
-							if (lastClick.id !== id && Date.now() - lastClick.time > 1000) {
-								lastClick = { time: Date.now(), 'id': id };
-								_gaq.push(['_trackEvent', pageName, 'clicked', id]);
-								lastClick.id = id;
-								lastClick.time = Date.now();
-							}
-						}
-
-						console.log(e.target);
-					};
-
-					if (buttons) {
-						let buttons = document.querySelectorAll('div, a, input');
-						for (let i = 0; i < buttons.length; i++) {
-							buttons[i].addEventListener('click', trackButtonClick);
-						}
-					}
-				} catch (e) {
-					console.error(e);
-				}
+		await fetch(
+			`${GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+			{
+				method: 'POST',
+				body: JSON.stringify({
+					client_id: self.crypto.randomUUID(),
+					consent: {
+						ad_user_data: "DENIED",
+						ad_personalization: "DENIED",
+					},
+					events: events,
+				}),
 			}
-		} else {
-			console.log("Can't track error: window is not defined!")
-		}
+		);
+	}
 }
-
-if (!('toJSON' in Error.prototype))
-	Object.defineProperty(Error.prototype, 'toJSON', {
-		value: function() {
-			let alt = {};
-
-			Object.getOwnPropertyNames(this).forEach(function(key) {
-				alt[key] = this[key];
-			}, this);
-
-			return alt;
-		},
-		configurable: true,
-		writable: true
-	});
-*/

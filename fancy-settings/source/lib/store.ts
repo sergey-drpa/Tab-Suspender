@@ -284,7 +284,7 @@ class SettingsStore {
             chrome.storage.sync.set(object).then(()=>{
                 console.log(`[SET]: Sync Value for [${name}] is set to: ${value}`);
                 resolve(name);
-            }).catch((e) => { console.error(`Error when sync.set(${object})`, e); reject(e); });
+            }).catch((e) => { console.error(`Error when sync.set(...)`, e, object); reject(e); });
         });
     }
 

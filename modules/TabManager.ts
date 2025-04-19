@@ -11,7 +11,7 @@ interface CaptureTabOptions {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class TabManager {
 
-	private tabInfos: { [key: number]: TabInfo } = {};
+	private tabInfos: { [key: string]: TabInfo } = {};
 	public readonly historyOpenerController = new HistoryOpenerController();
 
 	async compress(str: string, encoding = 'gzip' as CompressionFormat): Promise<ArrayBuffer> {
@@ -94,6 +94,7 @@ class TabManager {
 
 		setInterval(()=>{
 			void self.storeTabInfos();
+			self.clearClosedTabs();
 		}, 10000);
 
 		/** Event ******************************************************************************
@@ -409,7 +410,7 @@ class TabManager {
 		}
 	}
 
-	private markTabClosed(tabId: number) {
+	private markTabClosed(tabId: string | number) {
 		const tabInfo = this.getTabInfoById(tabId);
 
 		if (tabInfo != null)
@@ -418,11 +419,11 @@ class TabManager {
 				tsSessionId: TSSessionId,
 			};
 		else {
-			console.error(`TabManager.markTabDeleted() tabInfo not found for tabId: ${tabId}`);
+			console.error(`TabManager.markTabDeleted() tabInfo not found for tabId: `, tabId);
 		}
 	}
 
-	private deleteTab(tabId: number) {
+	private deleteTab(tabId: string) {
 		const tabInfo = this.getTabInfoById(tabId);
 
 		if (tabInfo != null)
@@ -444,7 +445,7 @@ class TabManager {
 		return tabInfo;
 	};
 
-	getTabInfoById(tabId: number): TabInfo {
+	getTabInfoById(tabId: string | number): TabInfo {
 		try {
 			return this.tabInfos[tabId];
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -528,17 +529,16 @@ class TabManager {
 		}
 	}
 
-	// TODO-v3: Implement cleanup closed tabInfos
-	/*clearClosedTabs() {
+	clearClosedTabs() {
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
 				if (tabInfo.closed != null) {
-					self.deleteTab(tabId);
+					this.deleteTab(tabId);
 				}
 			}
 		}
-	}*/
+	}
 
 	private async isTabException(tab: chrome.tabs.Tab) {
 		// Audible

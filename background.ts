@@ -296,14 +296,16 @@ function start() {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				bgMessageListener = new BGMessageListener(tabManager);
 
+				void trackView('started', { version: chrome.runtime.getManifest().version });
 
 				const isAlreadyHasSyncSettings = ((await LocalStore.get(LocalStoreKeys.INSTALLED)) != null && !chrome.extension.inIncognitoContext);
 				if (firstInstallation && !isAlreadyHasSyncSettings) {
 					console.log('EX: Installed!');
 					drawSetupWizardDialog();
-					trackView(LocalStoreKeys.INSTALLED);
+					void trackView(LocalStoreKeys.INSTALLED);
 				} else {
 					console.log('EX: Updated!');
+					void trackView('updated');
 					if (!isAlreadyHasSyncSettings) {
 						LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					}

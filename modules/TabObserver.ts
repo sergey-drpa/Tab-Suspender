@@ -237,7 +237,7 @@ class TabObserver {
 													chrome.tabs.sendMessage(tabId, {
 														method: '[AutomaticTabCleaner:highliteFavicon]',
 														highliteInfo: { suspendPercent: suspendPercent }
-													}).catch(() => console.error());
+													}).catch((e) => console.error(e));
 												}
 											}
 									}

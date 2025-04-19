@@ -35,7 +35,7 @@ class BGMessageListener {
 		  if (typeof request == 'string') {
 				console.warn('Screen Requested', request.length);
 				if (request === 'data:,')
-					console.error(new Error(`Damaged screen [data:,]!!! id: ${sender.tab.id}`), {favIconUrl: undefined, ...sender.tab});
+					console.error(new Error(`Damaged screen [data:,]!!!`), {favIconUrl: undefined, ...sender.tab});
 
 				ScreenshotController.addScreen(sender.tab.id, request, 1/*TabCapture.lastWindowDevicePixelRatio[sender.tab.windowId]*/);
 			} else if (request.method === '[TS:getScreen]') {
@@ -65,7 +65,7 @@ class BGMessageListener {
 						sendResponse(response);
 					} catch (e) {
 						sendResponse({});
-						console.error(`[TS:dataForParkPage]: TabId: ${request.tabId}`, e);
+						console.error(`[TS:dataForParkPage]: TabId: `, e, request.tabId);
 					}
 				})();
 				return true; // For async sendResponse()
@@ -117,7 +117,7 @@ class BGMessageListener {
 							reader.readAsDataURL(blob);
 						})
 						.catch((e) => {
-							console.error(`Error when favicon Fetch(${request.url})`, e);
+							console.error(`Error when favicon Fetch(url), url: `, e, request.url);
 							sendResponse(null);
 						});
 				}).catch(console.error);
@@ -317,8 +317,7 @@ class BGMessageListener {
 				}).catch(console.error);
 			} else if (request.method === '[AutomaticTabCleaner:getFormRestoreDataAndRemove]') {
 				formRestoreController.getFormRestoreDataAndRemove(sender.tab.id).then(data => {
-					if(data != null)
-						sendResponse(data);
+					sendResponse(data);
 				}).catch(console.error);
 				return true; // For async sendResponse()
 			} else if (request.method === '[AutomaticTabCleaner:DiscardTab]') {
