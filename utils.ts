@@ -142,8 +142,6 @@ console.error = function(message, exception) {
 						error.message += ' | ' + arguments[j];
 					commentAdded = true;
 				}
-				//else if (arguments[j] != null && typeof arguments[j] === 'object' && !(arguments[j] instanceof Error))
-				//	error.message += ' | ' + JSON.stringify(arguments[j]);
 			}
 
 			if (error.message === '')
@@ -154,6 +152,8 @@ console.error = function(message, exception) {
 			consoleError('Error while logging Error)) ', e);
 		}
 };
+
+addEventListener("error", (errorEvent) => {console.error(errorEvent.error);});
 
 const expectedErrorsRegexpCache: {[key: string]: RegExp} = {};
 

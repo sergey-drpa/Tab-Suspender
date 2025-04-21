@@ -353,7 +353,10 @@ class BGMessageListener {
 				}).catch(console.error);
 			} else if (request.method === '[TS:getSessionPageConfig]') {
 				sendResponse({TSSessionId});
-			} else if (request.method === '[TS:offscreenDocument:cleanupComplete]') {
+			} else if (
+				request.method === '[TS:offscreenDocument:cleanupComplete]' ||
+				request.method === '[TS:offscreenDocument:sendError]'
+		) {
 				// Skip Offscreen event...
 			} else {
 				console.error(`Unimplemented message ${request.method}`);

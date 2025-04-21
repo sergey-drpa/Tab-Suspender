@@ -6,6 +6,8 @@
 
 const SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats in fancy-settings/../settings.js */
 
+trackErrors('settings_page', true);
+
 // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
 // @ts-ignore
 class SettingsStore {
