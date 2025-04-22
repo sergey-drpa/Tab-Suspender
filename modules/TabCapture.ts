@@ -96,7 +96,9 @@ class TabCapture {
 											return;
 										}
 
-										console.trace(`_captureTab()->captured... ${screen.length}`);
+										if (debug)
+											console.trace(`_captureTab()->captured... ${screen.length}`);
+
 										if (hasLastError([
 											'This request exceeds the MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND quota.',
 											'The \'activeTab\' permission is not in effect because this extension has not been in invoked.',

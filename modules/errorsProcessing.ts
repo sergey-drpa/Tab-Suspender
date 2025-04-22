@@ -31,3 +31,10 @@ function trackErrors(pageName /* For example 'popup' */, buttons /* true/false *
 		});
 	}
 }
+
+if (typeof module != 'undefined')
+	module.exports = {
+		trackErrors,
+		trackError,
+		trackView,
+	};
