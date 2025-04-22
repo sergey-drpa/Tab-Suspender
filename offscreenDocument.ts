@@ -1,22 +1,10 @@
-// @ts-ignore
-Sentry.init({
-	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
-	allowUrls: [/.*/],
-	integrations: (defaultIntegrations) => {
-		// Remove browser session
-		return defaultIntegrations.filter(
-			(integration) => { console.log(`integration: `, integration); return integration.name !== "BrowserSession"},
-		);
-	},
-});
-
-const batteryDebug = false;
-const OldSettingsKeyPrefix = "store.tabSuspenderSettings.";
-
 type BatteryStatusMessage = {
 	isCharging: boolean;
 	level: number;
 };
+
+const batteryDebug = false;
+const oldSettingsKeyPrefix = "store.tabSuspenderSettings.";
 
 setTimeout(startBatteryStatusNotifier, 3500);
 
@@ -59,6 +47,21 @@ function startBatteryStatusNotifier() {
 	}
 }
 
+// @ts-ignore
+Sentry.init({
+	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
+	allowUrls: [/.*/],
+	integrations: (defaultIntegrations) => {
+		// Remove browser session
+		return defaultIntegrations.filter(
+			(integration) => {
+				console.log(`integration: `, integration);
+				return integration.name !== "BrowserSession"
+			},
+		);
+	},
+});
+
 function sendError(errorData) {
 	const targetError = new Error(errorData.message);
 	targetError.stack = errorData.stack;
@@ -94,7 +97,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 				// Get old settings...
 				console.log(`Key: ${message.settingsKeys[i]}`);
 				//debugger;
-				oldSettings[message.settingsKeys[i]] = localStorage.getItem(OldSettingsKeyPrefix + message.settingsKeys[i]);
+				oldSettings[message.settingsKeys[i]] = localStorage.getItem(oldSettingsKeyPrefix + message.settingsKeys[i]);
 			}
 			sendResponse(oldSettings);
 
