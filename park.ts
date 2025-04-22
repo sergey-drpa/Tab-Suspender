@@ -411,7 +411,7 @@ function drawWaterMark(canvas, ctx, width, callback) {
 	}
 	const img = new Image();
 	if (width !== 64) {
-		console.error('Unexpected: Favicon image != 64x64 -> ' + width);
+		console.error('Unexpected: Favicon image != 64x64 -> ', width);
 		callback(canvas.toDataURL());
 		return;
 	}

@@ -1,17 +1,10 @@
-/*
-for (let i = 0; i < 50000; i++) {
-	localStorage.setItem(`f_t${i}`, String(Math.random()));
-}
-console.log(`Total localStorage objects: ${Object.keys(localStorage).length}`);
-*/
-
-const batteryDebug = false;
-const OldSettingsKeyPrefix = "store.tabSuspenderSettings.";
-
 type BatteryStatusMessage = {
 	isCharging: boolean;
 	level: number;
 };
+
+const batteryDebug = false;
+const oldSettingsKeyPrefix = "store.tabSuspenderSettings.";
 
 setTimeout(startBatteryStatusNotifier, 3500);
 
@@ -54,9 +47,48 @@ function startBatteryStatusNotifier() {
 	}
 }
 
+// @ts-ignore
+Sentry.init({
+	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
+	allowUrls: [/.*/],
+	integrations: (defaultIntegrations) => {
+		// Remove browser session
+		return defaultIntegrations.filter(
+			(integration) => {
+				console.log(`integration: `, integration);
+				return integration.name !== "BrowserSession"
+			},
+		);
+	},
+});
+
+function sendError(errorData) {
+	const targetError = new Error(errorData.message);
+	targetError.stack = errorData.stack;
+
+	// @ts-ignore
+	Sentry
+		.captureException(targetError);
+}
+
+function sendEvent(event) {
+	// @ts-ignore
+	Sentry
+		.captureEvent(event);
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-		if (message.method === '[TS:offscreenDocument:getLocalStorageData]') {
+		if (message.method === '[TS:offscreenDocument:sendError]') {
+
+			console.log(`[TS:offscreenDocument:sendError]: ${message.type}`);
+
+			if (message.type === 'error')
+				sendError(message.error);
+			else
+				sendEvent(message.event);
+
+		} else if (message.method === '[TS:offscreenDocument:getLocalStorageData]') {
 
 			console.log(`[TS:offscreenDocument:getLocalStorageData]: ${message.settingsKeys}`);
 
@@ -65,7 +97,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 				// Get old settings...
 				console.log(`Key: ${message.settingsKeys[i]}`);
 				//debugger;
-				oldSettings[message.settingsKeys[i]] = localStorage.getItem(OldSettingsKeyPrefix + message.settingsKeys[i]);
+				oldSettings[message.settingsKeys[i]] = localStorage.getItem(oldSettingsKeyPrefix + message.settingsKeys[i]);
 			}
 			sendResponse(oldSettings);
 
