@@ -4,11 +4,13 @@
 
 --
 
-### ⚠️ Working on complete test cases with real Chrome browser using puppeteer https://pptr.dev/ solution, it allow to test automates scenarios on real Chrome, iand to cover real Chrome behaviour cases.
+### ⚠️ Working on complete test cases with real Chrome browser using puppeteer https://pptr.dev/ solution, it allow to test automates scenarios on real Chrome, and to cover real Chrome behaviour cases.
 ### It takes match time research.
 ### And now in final stage.
 ### I think it would be done in 2-3 weeks.
 ### Thanks for patience)
+
+---
 
 ### Alfa/Beta releases available here: https://github.com/sergey-drpa/Tab-Suspender/releases.
 
