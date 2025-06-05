@@ -6,6 +6,8 @@
 
 const SETTINGS_STORAGE_NAMESPACE = 'tabSuspenderSettings'; /* Also has duplicats in fancy-settings/../settings.js */
 
+trackErrors('settings_page', true);
+
 // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
 // @ts-ignore
 class SettingsStore {
@@ -284,7 +286,7 @@ class SettingsStore {
             chrome.storage.sync.set(object).then(()=>{
                 console.log(`[SET]: Sync Value for [${name}] is set to: ${value}`);
                 resolve(name);
-            }).catch((e) => { console.error(`Error when sync.set(${object})`, e); reject(e); });
+            }).catch((e) => { console.error(`Error when sync.set(...)`, e, object); reject(e); });
         });
     }
 

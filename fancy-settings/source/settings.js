@@ -21,7 +21,7 @@ window.addEvent("domready", function () {
     document.getElementById('donateButton').onclick = function () {
         "use strict";
 
-        chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:donate]'});
+        void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:donate]'});
         //setTimeout(function(){window.close();}, 300);
 
         return false;

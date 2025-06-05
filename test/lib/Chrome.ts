@@ -39,6 +39,9 @@ const chrome_ = {
 				console.warn(`Unimplemented: chrome.storage.onChanged.addListener()`)
 			}
 		}
+	},
+	runtime: {
+		getURL: (filePath) => `chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/${filePath}`,
 	}
 };
 
@@ -66,6 +69,7 @@ function addModuleToGlobal(module) {
 }
 
 addModuleToGlobal(require('../../utils'));
+addModuleToGlobal(require('../../modules/errorsProcessing'));
 addModuleToGlobal(require('../../modules/DBProvider'));
 addModuleToGlobal(require('../../modules/IndexedDBProvider'));
 addModuleToGlobal(require('../../modules/DbUtils'));

@@ -49,7 +49,8 @@ class PageStateRestoreController {
 				},
 				function(fields) {
 					if (fields == null) {
-						reject();
+						console.warn(`FD Fields list from BD is null, storedTabIdInt: ${storedTabIdInt}`);
+						resolve(null);
 						return;
 					}
 
