@@ -7,7 +7,7 @@
 
 void (async ()=>{
 // eslint-disable-next-line no-redeclare
-const DEBUG = true;
+const DEBUG = false;
 const debugPerformance = false;
 
 if (debugPerformance) {
