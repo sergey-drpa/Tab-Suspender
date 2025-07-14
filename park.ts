@@ -7,7 +7,7 @@
 
 void (async ()=>{
 // eslint-disable-next-line no-redeclare
-const DEBUG = false;
+const DEBUG = true;
 const debugPerformance = false;
 
 if (debugPerformance) {
@@ -416,7 +416,7 @@ function drawWaterMark(canvas, ctx, width, callback) {
 		return;
 	}
 	img.onload = () => {
-		ctx.globalAlpha = 0.95;
+		ctx.globalAlpha = 0.65;
 
 		ctx.drawImage(img, 49, 49);
 		callback(canvas.toDataURL());
