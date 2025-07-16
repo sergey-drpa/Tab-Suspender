@@ -269,7 +269,7 @@ function start() {
 		/* TODO: cleanup this logic after cleanup complete! */
 
 		/* Prepare settings */
-		const firstInstallation = ((await SettingsStore.get('timeout', SETTINGS_STORAGE_NAMESPACE)) == null && !chrome.extension.inIncognitoContext);
+		const firstInstallation = ((await SettingsStoreClient.get('timeout', SETTINGS_STORAGE_NAMESPACE)) == null && !chrome.extension.inIncognitoContext);
 
 		settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, DEFAULT_SETTINGS, offscreenDocumentProvider);
 

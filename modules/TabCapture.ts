@@ -12,22 +12,19 @@ class TabCapture {
 	static lastWindowDevicePixelRatio: { [key: number]: number } = {};
 
 	async captureTab(tab: chrome.tabs.Tab, options?): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		//const self = this;
 
-		if (options == null || options.checkActiveTabNotChanged != true)
-			await this._captureTab(tab, options)
-				.catch((error) => {console.trace("_captureTab() failed: ", tab, error);});
-		else {
-			const tab_ = await chrome.tabs.get(tab.id); //, function(tab) {
-				/*if (hasLastError())
-					return;*/
+			if (options == null || options.checkActiveTabNotChanged != true)
+				try {
+					await this._captureTab(tab, options)
+				} catch {/* No need to catch */}
+			else {
+				const tab_ = await chrome.tabs.get(tab.id); //, function(tab) {
 
-			if (tab_ != null)
-				return this._captureTab(tab_, options)
-					.catch((error) => {console.trace("_captureTab() failed: ", tab_, error);});
-			//});
-		}
+				if (tab_ != null)
+					try {
+						await this._captureTab(tab_, options);
+					} catch {/* No need to catch */}
+			}
 	}
 
 	private _captureTab(tab: chrome.tabs.Tab, options?): Promise<void> {
@@ -46,31 +43,32 @@ class TabCapture {
 						const actualTab = tabsResult[0];
 
 						if (!TabManager.isTabURLAllowedForPark(actualTab)) {
-							reject('TabURLAllowedForPark');
+							// Do not need to capture this tab
+							resolve();
 							return;
 						}
 
 						if (actualTab.id !== tab.id) {
-							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, actualTab);
+							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (actualTab.url !== tab.url) {
-							console.warn(`Active tab URL to Capture already changed [${tab.url}] != [${actualTab.url}]`, actualTab);
+							console.warn(`Active tab URL to Capture already changed [${tab.url}] != [${actualTab.url}]`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (actualTab.status !== "complete" && (options == null || !options.tryEvenIncomplete)) {
-							console.warn(`Active tab is not complete[${actualTab.status}], skipping capture`, actualTab);
+							console.warn(`Active tab is not complete[${actualTab.status}], skipping capture`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (tab.url.indexOf(rootExtensionUri) == 0 || actualTab.url.indexOf(rootExtensionUri) == 0) {
 							// Do not need to capture self extension pages
-							reject();
+							resolve();
 							return;
 						}
 
@@ -164,26 +162,29 @@ class TabCapture {
 													hasLastError(TabCapture.expectedInjectExceptions, e, `'return window.devicePixelRatio;', ActualTab: ${JSON.stringify({...actualTab, favIconUrl: undefined})}`);
 												});
 										} else {
+											console.error(new Error(`Tab canTabBeScripted`), {...actualTab, favIconUrl: undefined});
 											reject();
 										}
 									});
 									// eslint-disable-next-line @typescript-eslint/no-unused-vars
 								} catch (e) {
 									// normal behavior
-									console.trace(e);
-									reject(e);
+									console.error(e);
+									reject();
+									return;
 								}
 
 							return;
 						}
 						else {
 							reject();
+							return;
 						}
 					}
 				});
 			} catch (e) {
 				console.error(e);
-				reject(e);
+				reject();
 			}
 		});
 	}

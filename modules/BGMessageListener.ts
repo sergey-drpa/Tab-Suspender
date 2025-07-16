@@ -46,13 +46,14 @@ class BGMessageListener {
 			} else if (request.method === '[TS:dataForParkPage]') {
 				void (async () => {
 					try {
+						// TODO-v4: Figure out why TabId:  | Cannot read properties of undefined (reading 'toObject') happened ???
 						// TODO-v4: make each parameter extraction in individual try to avoid unexpected errors and ship max data to tab
 						const response: ParkPageDataBGResponse = {
 							startDiscarded: await getStartDiscarted(),
 							startAt: await getStartedAt(),
 							isFirstTimeTabDiscard: isFirstTimeTabDiscard(request.tabId),
-							parkedUrl: tabManager.getTabInfoById(request.tabId)?.parkedUrl,
-							tabInfo: tabManager.getTabInfoById(request.tabId).toObject(),
+							parkedUrl: tabManager.findReplacedTabById(request.tabId)?.parkedUrl,
+							tabInfo: tabManager.findReplacedTabById(request.tabId).toObject(),
 							isTabMarkedForUnsuspend: isTabMarkedForUnsuspend(request.tabId, request.sessionId, { remove: true }),
 							reloadTabOnRestore: await getReloadTabOnRestore(),
 							tabIconStatusVisualize: await getTabIconStatusVisualize(),
@@ -65,7 +66,7 @@ class BGMessageListener {
 						sendResponse(response);
 					} catch (e) {
 						sendResponse({});
-						console.error(`[TS:dataForParkPage]: TabId: `, e, request.tabId);
+						console.error(`[TS:dataForParkPage]: TabId: ${request.tabId}`, e, sender.tab);
 					}
 				})();
 				return true; // For async sendResponse()
@@ -73,6 +74,12 @@ class BGMessageListener {
 				chrome.tabs.get(sender.tab.id).then((tab) => {
 					if (tab.favIconUrl == null) {
 						console.trace(`Error fetch() favicon, tab.favIconUrl=(${tab.favIconUrl})`);
+						sendResponse(null);
+						return;
+					}
+
+					if (!TabManager.isTabURLAllowedForPark(tab)) {
+						console.debug(`Skip [TS:fetchFavicon] because tab url not Allowed to Park [${tab.url}]`);
 						sendResponse(null);
 						return;
 					}
@@ -108,10 +115,11 @@ class BGMessageListener {
 										dataUrl = 'data:image/x-icon;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
 										console.warn(`Strange favIcon contentType[${contentType}]`, dataUrl);
 									} else {
-										console.error(`Unknown content type: ${contentType}`);
+										console.error(`Unknown content type: ${contentType}, [${sender.tab.url}]`);
+										if (debug)
+											console.log(`Blob[${sender.tab.url}]`, [dataUrl,tab.favIconUrl, tab]);
 									}
 								}
-								console.log(`Blob[${sender.tab.url}]`, [dataUrl]);
 								sendResponse(dataUrl);
 							};
 							reader.readAsDataURL(blob);
@@ -353,14 +361,22 @@ class BGMessageListener {
 				}).catch(console.error);
 			} else if (request.method === '[TS:getSessionPageConfig]') {
 				sendResponse({TSSessionId});
+			} else if (request.method === '[TS:getTabId]') {
+				sendResponse({tabId: sender.tab.id});
 			} else if (
 				request.method === '[TS:offscreenDocument:cleanupComplete]' ||
 				request.method === '[TS:offscreenDocument:sendError]'
-		) {
+			) {
 				// Skip Offscreen event...
 			} else {
 				console.error(`Unimplemented message ${request.method}`);
 			}
+		});
+
+		// For puppeteer Tests only
+		chrome.runtime.onMessageExternal.addListener( (request, sender, sendResponse) => {
+			console.log("Received message from " + sender + ": ", request);
+			sendResponse({tabId: sender.tab.id});
 		});
 	}
 }

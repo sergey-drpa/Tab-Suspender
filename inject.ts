@@ -21,6 +21,11 @@
 	window.focus();
 }, true);*/
 
+/*** Function for Automated puppeteer Tests only ***/
+async function getTabId() {
+	return await chrome.runtime.sendMessage({ method: '[TS:getTabId]' });
+}
+
 (function() {
 	'use strict';
 

@@ -1,5 +1,5 @@
 import SyncStorageArea = chrome.storage.SyncStorageArea;
-import { mock } from 'ts-jest-mocker';
+//import { mock } from 'ts-jest-mocker';
 import StorageArea = chrome.storage.StorageArea;
 
 global.structuredClone = val => {
@@ -61,12 +61,16 @@ global.getScreenCache = null;
 global.previousTSSessionId = 121232134213;
 // @ts-ignore
 global.TSSessionId = 121232134214;
+// @ts-ignore
+global.trace = true;
 
 function addModuleToGlobal(module) {
 	Object.keys(module).forEach(key => {
 		global[key] = module[key];
 	});
 }
+
+global.addModuleToGlobal = addModuleToGlobal;
 
 addModuleToGlobal(require('../../utils'));
 addModuleToGlobal(require('../../modules/errorsProcessing'));
