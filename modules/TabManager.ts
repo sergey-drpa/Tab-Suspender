@@ -11,7 +11,12 @@ interface CaptureTabOptions {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class TabManager {
 
-	private tabInfos: { [key: number]: TabInfo } = {};
+	private tabInfos: { [key: string]: TabInfo } = {};
+	private TAB_INFO_CLEANUP_TTL_MS = 60 * 60 * 24 * 1000; /* 24 Hours */
+	/* For puppeteer tests only */
+	setTabInfoCleanupTtlMs(ttlMs: number) {
+		this.TAB_INFO_CLEANUP_TTL_MS = ttlMs;
+	}
 	public readonly historyOpenerController = new HistoryOpenerController();
 
 	async compress(str: string, encoding = 'gzip' as CompressionFormat): Promise<ArrayBuffer> {
@@ -94,6 +99,7 @@ class TabManager {
 
 		setInterval(()=>{
 			void self.storeTabInfos();
+			self.clearClosedTabs();
 		}, 10000);
 
 		/** Event ******************************************************************************
@@ -102,7 +108,7 @@ class TabManager {
 			const tabInfo = tabManager.createNewTabInfo(tab);
 
 			if (trace)
-				console.trace('Event: Tab Created: ', tab);
+				console.trace(`Tab[${tab.id}] Created`, tab);
 
 			self.checkAndTurnOffAutoDiscardable(tab);
 
@@ -118,9 +124,15 @@ class TabManager {
 		 tabs.onReplaced */
 		chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
 			if (trace)
-				console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId}`);
+				console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId}`, self.tabInfos);
 
-			/*chrome.tabs.get(addedTabId, (tab) => {
+			self.tabInfos[addedTabId] = self.tabInfos[removedTabId];
+			self.tabInfos[addedTabId].id = addedTabId;
+			self.tabInfos[addedTabId].oldRefId = removedTabId;
+			self.tabInfos[removedTabId].newRefId = addedTabId;
+			this.markTabClosed(removedTabId);
+
+			chrome.tabs.get(addedTabId, (tab) => {
 				if (tab.url.indexOf(parkUrl) == 0) {
 					const url = new URL(tab.url);
 					const params = url.searchParams;
@@ -131,22 +143,22 @@ class TabManager {
 					params.set('tabId', addedTabId.toString());
 					chrome.tabs.update(addedTabId, { url: url.toString() }).catch(console.error);
 				}
-			});*/
-			self.tabInfos[addedTabId] = self.tabInfos[removedTabId];
-			self.tabInfos[addedTabId].id = addedTabId;
-			self.tabInfos[addedTabId].oldRefId = removedTabId;
-			self.tabInfos[removedTabId].newRefId = addedTabId;
+			});
+
+
+			if (trace)
+				console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId} complete`, self.tabInfos);
 		});
 
 		/** Event ******************************************************************************
 		 tabs.onUpdated */
-		chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab: chrome.tabs.Tab) => {
+		chrome.tabs.onUpdated.addListener((_tabId: number, changeInfo: TabChangeInfo, tab: chrome.tabs.Tab) => {
 			const tabInfo = self.getTabInfoOrCreate(tab);
 
 			this.historyOpenerController.onTabUpdate(_tabId, changeInfo);
 
 			if (trace)
-				console.trace(`Event Tab[${tab.id}] updated: `, changeInfo, tab);
+				console.trace(`Tab[${tab.id}] updated: `, changeInfo, tab);
 
 			if (changeInfo.discarded == false && tab.active == true && TabManager.isTabParked(tab) && getScreenCache == null)
 				try {
@@ -208,7 +220,7 @@ class TabManager {
 				if (tab.active === true) {
 					if (TabManager.isTabURLAllowedForPark(tab)) {
 						setTimeout(function() {
-							tabCapture.captureTab(tab);
+							void tabCapture.captureTab(tab);
 						}, 150);
 						captured = true;
 					}
@@ -243,7 +255,7 @@ class TabManager {
 				if (tab.active == true)
 					if (!captured && changeInfo.status != 'loading')
 						setTimeout(function() {
-							tabCapture.captureTab(tab);
+							void tabCapture.captureTab(tab);
 						}, 150);
 			}
 		});
@@ -251,9 +263,9 @@ class TabManager {
 		/** Event ******************************************************************************
 		  tabs.onRemoved - load if unloaded, remove from list
 		 ***************************************************************************************/
-		chrome.tabs.onRemoved.addListener(function(tabId) {
+		chrome.tabs.onRemoved.addListener(function(tabId, removeInfo: chrome.tabs.TabRemoveInfo) {
 			if (trace)
-				console.trace(`Event Tab[${tabId}] removed`);
+				console.trace(`Tab[${tabId}] removed`);
 
 			self.markTabClosed(tabId);
 
@@ -263,6 +275,9 @@ class TabManager {
 	  /** Event ******************************************************************************
 		 tabs.onSelectionChanged - load if unloaded, reset inactivity */
 		chrome.tabs.onActivated.addListener(function(activeInfo) {
+
+			//console.log(`Fired: OnTab Activated: ${activeInfo.tabId}`, activeInfo);
+
 			const processedPromise = new Promise((resolve, reject) => {
 
 				let retries = 0;
@@ -294,13 +309,12 @@ class TabManager {
 
 			processedPromise.then(async (tab: chrome.tabs.Tab) => {
 
-				if (debug) {
+				//if (debug) {
 					console.log(`OnTab Activated: ${activeInfo.tabId}`, tab);
-				}
+				//}
 
 				self.markTabActivated(tab);
 
-				/* TODO-v4: This is business logic -> need to be moved form TabManager */
 				try {
 					if (TabManager.isTabParked(tab)) {
 						if (await settings.get('autoRestoreTab'))
@@ -322,8 +336,6 @@ class TabManager {
 									void tabCapture.captureTab(closureTab, <CaptureTabOptions>{ checkActiveTabNotChanged: true });
 								}, 400);
 							})(tab);
-
-						self.updateSwitchTime(tab);
 					}
 				} catch (e) {
 					console.error(e);
@@ -409,7 +421,7 @@ class TabManager {
 		}
 	}
 
-	private markTabClosed(tabId: number) {
+	private markTabClosed(tabId: string | number) {
 		const tabInfo = this.getTabInfoById(tabId);
 
 		if (tabInfo != null)
@@ -418,11 +430,11 @@ class TabManager {
 				tsSessionId: TSSessionId,
 			};
 		else {
-			console.error(`TabManager.markTabDeleted() tabInfo not found for tabId: ${tabId}`);
+			console.error(`TabManager.markTabDeleted() tabInfo not found for tabId: `, tabId);
 		}
 	}
 
-	private deleteTab(tabId: number) {
+	private deleteTab(tabId: string) {
 		const tabInfo = this.getTabInfoById(tabId);
 
 		if (tabInfo != null)
@@ -430,7 +442,7 @@ class TabManager {
 	}
 
 
-	private createNewTabInfo(tab: chrome.tabs.Tab): TabInfo {
+	public createNewTabInfo(tab: chrome.tabs.Tab): TabInfo {
 		const tabInfo = new TabInfo(tab);
 		return this.tabInfos[tab.id] = tabInfo;
 	}
@@ -444,13 +456,20 @@ class TabManager {
 		return tabInfo;
 	};
 
-	getTabInfoById(tabId: number): TabInfo {
+	getTabInfoById(tabId: string | number): TabInfo {
 		try {
 			return this.tabInfos[tabId];
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (e) {}
 	}
-
+	findReplacedTabById(tabId: number): TabInfo {
+		let tab = this.getTabInfoById(tabId);
+		if (tab == null) {
+			const replacedTabId = this.findReplacedTabId(tabId);
+			tab = this.getTabInfoById(replacedTabId);
+		}
+		return tab;
+	}
 
 	findReplacedTabId(tabId: number): number {
 		const tabInfo = tabManager.getTabInfoById(tabId);
@@ -459,19 +478,19 @@ class TabManager {
 		return tabId;
 	}
 
-	private updateSwitchTime(tab: chrome.tabs.Tab) {
-		const tabInfo = this.getTabInfoById(tab.id);
-		if (tabInfo != null)
-			tabInfo.lstSwchTime = Date.now();
-	}
-
 	private markTabActivated(tab: chrome.tabs.Tab) {
-		const tabInfo = new TabInfo(tab);
-		tabInfo.swch_cnt++;
-		tabInfo.time = 0;
-		tabInfo.active_time += TabObserver.tickSize * (TabManager.isAudible(tab) ? 1.5 : 1);
-		tabInfo.suspended_time = 0;
-		tabInfo.parkTrys = 0;
+		const tabInfo = this.getTabInfoById(tab.id);
+		if (tabInfo != null) {
+			tabInfo.lstSwchTime = Date.now();
+			//const tabInfo = new TabInfo(tab);
+			tabInfo.swch_cnt++;
+			tabInfo.time = 0;
+			tabInfo.active_time += TabObserver.tickSize * (TabManager.isAudible(tab) ? 1.5 : 1);
+			tabInfo.suspended_time = 0;
+			tabInfo.parkTrys = 0;
+		} else {
+			console.warn(`markTabActivated: TabInfo was not registered!`, tab);
+		}
 	}
 
 	markTabParked(tab: chrome.tabs.Tab) {
@@ -512,11 +531,11 @@ class TabManager {
 		tabInfo.lstCapTime = Date.now();
 	}
 
-	calculateAndMarkClosedTabs(openedNowTabInfos: { [key: number]: TabInfo }) {
+	calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
-				if (openedNowTabInfos[tabId] == null) {
+				if (openedChromeTabs[tabId] == null) {
 					if (tabInfo.closed == null) {
 						tabInfo.closed = <TabInfoClosedInfo>{
 							at: Date.now(),
@@ -528,17 +547,19 @@ class TabManager {
 		}
 	}
 
-	// TODO-v3: Implement cleanup closed tabInfos
-	/*clearClosedTabs() {
+	clearClosedTabs() {
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
 				if (tabInfo.closed != null) {
-					self.deleteTab(tabId);
+					if (Date.now() > tabInfo.closed.at + this.TAB_INFO_CLEANUP_TTL_MS) {
+						console.log(`Clear closed tab[${tabId}]`);
+						this.deleteTab(tabId);
+					}
 				}
 			}
 		}
-	}*/
+	}
 
 	private async isTabException(tab: chrome.tabs.Tab) {
 		// Audible
@@ -630,3 +651,8 @@ class TabManager {
 		return null;
 	}
 }
+
+if (typeof module != 'undefined')
+	module.exports = {
+		TabManager,
+	}

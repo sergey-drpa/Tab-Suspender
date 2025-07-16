@@ -6,14 +6,14 @@
     "moduleResolution": "node",
 
     "sourceMap": true,
-    "typeRoots": ["./node_modules/@types", "./test/typing/global.d.ts"],
+    "typeRoots": ["./node_modules/@types", "./test/typing"],
   },
   "include": [
     "./global.d.ts",
     "./*",
     "./modules/*",
     "./modules/model/*",
-    "fancy-settings/source/lib/store.ts",
+    "./fancy-settings/source/lib/store.ts",
     "./test/*",
     "./test/modules/*",
   ],

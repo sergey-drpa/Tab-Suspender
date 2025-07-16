@@ -1,5 +1,6 @@
 const NUMBER_TYPE = 'number';
 const STRING_TYPE = 'string';
+const BOOLEAN_TYPE = 'boolean';
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,6 +19,15 @@ const SETTINGS_TYPES = {
 	screenshotCssStyle: STRING_TYPE,
 	restoreButtonView: STRING_TYPE,
 };
+
+function GET_SETTINGS_TYPE(key: string): string {
+	const foundType = SETTINGS_TYPES[key];
+	if (foundType != null)
+		return foundType;
+	else
+		return BOOLEAN_TYPE;
+}
+
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class Settings {
