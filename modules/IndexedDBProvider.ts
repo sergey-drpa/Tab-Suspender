@@ -286,7 +286,9 @@ IndexedDBProvider.prototype.open = function(options) {
 	let openRequest = indexedDB.open('TSDB', 6);
 
 	openRequest.onupgradeneeded = function(upgradeEvent) {
+		// @ts-ignore
 		let thisDB = upgradeEvent.target.result;
+		// @ts-ignore
 		const tx = upgradeEvent.target.transaction;
 
 		console.log(`IDBVersionChangeEvent: `, upgradeEvent);
@@ -322,9 +324,10 @@ IndexedDBProvider.prototype.open = function(options) {
 	};
 
 
-	this.initializedPromise = new Promise(function(resolve, reject) {
+	this.initializedPromise = new Promise<void>(function(resolve, reject) {
 		openRequest.onsuccess = function(e) {
 			console.log('IDB Connected successfully');
+			// @ts-ignore
 			self.db = e.target.result;
 			self.initialized = true;
 			self.db.onversionchange = () => {

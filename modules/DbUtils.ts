@@ -149,7 +149,7 @@ function removeDBItemsInBackground(
 				try {
 					database.executeDelete(executeDeleteArgumentsConstructor(resultsKeyArrays[i]));
 				} catch (e) {
-					console.error(`Error while cleanupDBItem[${i}]: `, resultsKeyArrays, e);
+					console.error(`Error while cleanupDBItem[${i}]: `, e, resultsKeyArrays);
 				}
 
 				await sleep(2000);

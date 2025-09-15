@@ -12,29 +12,28 @@ class TabCapture {
 	static lastWindowDevicePixelRatio: { [key: number]: number } = {};
 
 	async captureTab(tab: chrome.tabs.Tab, options?): Promise<void> {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		//const self = this;
 
-		if (options == null || options.checkActiveTabNotChanged != true)
-			await this._captureTab(tab, options)
-				.catch((error) => {console.trace("_captureTab() failed: ", tab, error);});
-		else {
-			const tab_ = await chrome.tabs.get(tab.id); //, function(tab) {
-				/*if (hasLastError())
-					return;*/
+			if (options == null || options.checkActiveTabNotChanged != true)
+				try {
+					await this._captureTab(tab, options)
+				} catch {/* No need to catch */}
+			else {
+				const tab_ = await chrome.tabs.get(tab.id); //, function(tab) {
 
-			if (tab_ != null)
-				return this._captureTab(tab_, options)
-					.catch((error) => {console.trace("_captureTab() failed: ", tab_, error);});
-			//});
-		}
+				if (tab_ != null)
+					try {
+						await this._captureTab(tab_, options);
+					} catch {/* No need to catch */}
+			}
 	}
 
 	private _captureTab(tab: chrome.tabs.Tab, options?): Promise<void> {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 
-		console.log("_captureTab()..")
+		if (debug)
+			console.log("_captureTab()...");
+
 		return new Promise<void>(function(resolve, reject) {
 			try {
 				chrome.tabs.query({ currentWindow: true, active: true }, async function(tabsResult) {
@@ -44,31 +43,32 @@ class TabCapture {
 						const actualTab = tabsResult[0];
 
 						if (!TabManager.isTabURLAllowedForPark(actualTab)) {
-							reject('TabURLAllowedForPark');
+							// Do not need to capture this tab
+							resolve();
 							return;
 						}
 
 						if (actualTab.id !== tab.id) {
-							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, actualTab);
+							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (actualTab.url !== tab.url) {
-							console.warn(`Active tab URL to Capture already changed [${tab.url}] != [${actualTab.url}]`, actualTab);
+							console.warn(`Active tab URL to Capture already changed [${tab.url}] != [${actualTab.url}]`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (actualTab.status !== "complete" && (options == null || !options.tryEvenIncomplete)) {
-							console.warn(`Active tab is not complete[${actualTab.status}], skipping capture`, actualTab);
+							console.warn(`Active tab is not complete[${actualTab.status}], skipping capture`, {...actualTab, favIconUrl: undefined});
 							reject();
 							return;
 						}
 
 						if (tab.url.indexOf(rootExtensionUri) == 0 || actualTab.url.indexOf(rootExtensionUri) == 0) {
 							// Do not need to capture self extension pages
-							reject();
+							resolve();
 							return;
 						}
 
@@ -83,18 +83,20 @@ class TabCapture {
 									}, function(screen: string) {
 
 										if (screen == null || screen == '') {
-											console.error(new Error(`Empty screen captures!!! id: ${tab.id}`), {...actualTab, favIconUrl: undefined});
+											console.warn(new Error(`Empty screen captures!!! id: ${tab.id}`), {...actualTab, favIconUrl: undefined});
 											reject();
 											return;
 										}
 
 										if (screen === 'data:,') {
-											console.error(new Error(`Damaged screen [data:,]!!! id: ${tab.id}`), {...actualTab, favIconUrl: undefined});
+											console.error(new Error(`Damaged screen [data:,]!!!`), {...actualTab, favIconUrl: undefined});
 											reject();
 											return;
 										}
 
-										console.trace(`_captureTab()->captured... ${screen.length}`);
+										if (debug)
+											console.trace(`_captureTab()->captured... ${screen.length}`);
+
 										if (hasLastError([
 											'This request exceeds the MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND quota.',
 											'The \'activeTab\' permission is not in effect because this extension has not been in invoked.',
@@ -119,9 +121,13 @@ class TabCapture {
 											return;
 										}
 
-										chrome.tabs.getZoom(tab.id, function(zoomFactor) {
-											tabInfo.zoomFactor = zoomFactor;
-										});
+										try {
+											chrome.tabs.getZoom(tab.id, function(zoomFactor) {
+												tabInfo.zoomFactor = zoomFactor;
+											});
+										} catch (e) {
+											console.warn("Error while fetching tab Zoom:", e);
+										}
 
 										if (TabManager.canTabBeScripted(tab)) {
 											chrome.scripting.executeScript({
@@ -130,42 +136,55 @@ class TabCapture {
 													return window.devicePixelRatio;
 												}
 											}).then((result) => {
-												const returnedDevicePixelRatio = result[0].result;
-												let devicePixelRatio;
-												if (returnedDevicePixelRatio == null)
-													devicePixelRatio = TabCapture.lastWindowDevicePixelRatio[tab.windowId];
-												else
-													TabCapture.lastWindowDevicePixelRatio[tab.windowId] = devicePixelRatio = returnedDevicePixelRatio;
-
 												try {
+													const returnedDevicePixelRatio = result[0].result;
+													let devicePixelRatio;
+													if (returnedDevicePixelRatio == null)
+														devicePixelRatio = TabCapture.lastWindowDevicePixelRatio[tab.windowId];
+													else
+														TabCapture.lastWindowDevicePixelRatio[tab.windowId] = devicePixelRatio = returnedDevicePixelRatio;
+
 													ScreenshotController.addScreen(tab.id, screen, devicePixelRatio);
 													tabManager.setLastCaptureUrl(tab);
+
+													if (debug)
+														console.log(`_captureTab() -> captured -> saved!`);
+
 													resolve();
 													// eslint-disable-next-line no-empty
 												} catch (e) {
 													// normal behavior
 													console.trace(e);
+													reject(e);
 												}
 											})
 												.catch((e) => {
 													hasLastError(TabCapture.expectedInjectExceptions, e, `'return window.devicePixelRatio;', ActualTab: ${JSON.stringify({...actualTab, favIconUrl: undefined})}`);
 												});
 										} else {
+											console.error(new Error(`Tab canTabBeScripted`), {...actualTab, favIconUrl: undefined});
 											reject();
 										}
 									});
 									// eslint-disable-next-line @typescript-eslint/no-unused-vars
 								} catch (e) {
 									// normal behavior
-									console.trace(e);
+									console.error(e);
+									reject();
+									return;
 								}
 
+							return;
+						}
+						else {
+							reject();
 							return;
 						}
 					}
 				});
 			} catch (e) {
 				console.error(e);
+				reject();
 			}
 		});
 	}

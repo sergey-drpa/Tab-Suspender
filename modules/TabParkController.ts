@@ -175,9 +175,10 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 						if (debug)
 							console.log('originalFaviconUrl: ', originalFaviconUrl);
 
-						let url = parkUrl + '?title=' + encodeURIComponent(tab.title);
+						let url = parkUrl;
+						url += '?tabId=' + encodeURIComponent(tabId);
+						url += '&title=' + encodeURIComponent(tab.title);
 						url += '&url=' + encodeURIComponent(tab.url);
-						url += '&tabId=' + encodeURIComponent(tabId);
 						url += '&sessionId=' + encodeURIComponent(TSSessionId);
 
 						if (originalFaviconUrl != null && originalFaviconUrl != '')
@@ -287,7 +288,7 @@ function isTabMarkedForUnsuspend(tabIdStr, sessionIdStr, options?) {
 			return true;
 		}
 	return false;
-};
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function discardTab(tabId) {

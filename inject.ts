@@ -21,6 +21,11 @@
 	window.focus();
 }, true);*/
 
+/*** Function for Automated puppeteer Tests only ***/
+async function getTabId() {
+	return await chrome.runtime.sendMessage({ method: '[TS:getTabId]' });
+}
+
 (function() {
 	'use strict';
 
@@ -213,10 +218,11 @@
 					document.body.appendChild(canvas);
 
 					try {
-						let url = chrome.runtime.getURL('park.html') + '?title=' + encodeURIComponent(document.title);
-						url += '&url=' + encodeURIComponent(_request.url ? _request.url : window.location.href);
-						url += '&tabId=' + encodeURIComponent(closureTabId);
+						let url = chrome.runtime.getURL('park.html');
+						url += '?tabId=' + encodeURIComponent(closureTabId);
 						url += '&sessionId=' + encodeURIComponent(_request.sessionId);
+						url += '&title=' + encodeURIComponent(document.title);
+						url += '&url=' + encodeURIComponent(_request.url ? _request.url : window.location.href);
 						url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());
 
 						await chrome.runtime.sendMessage(canvas.toDataURL("image/jpeg", _request.screenshotQuality/100));

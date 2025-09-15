@@ -133,21 +133,27 @@ console.error = function(message, exception) {
 			if (error == null)
 				error = new Error('');
 
+			let commentAdded = false;
 			for (let j = 0; j < arguments.length; j++) {
-				if (arguments[j] != null && typeof arguments[j] === 'string')
-					error.message += ' | ' + arguments[j];
-				else if (arguments[j] != null && typeof arguments[j] === 'object' && !(arguments[j] instanceof Error))
-					error.message += ' | ' + JSON.stringify(arguments[j]);
+				if (arguments[j] != null && typeof arguments[j] === 'string' && commentAdded == false) {
+					if (j == 0)
+						error.message = arguments[j] + ' | ' + error.message;
+					else
+						error.message += ' | ' + arguments[j];
+					commentAdded = true;
+				}
 			}
 
 			if (error.message === '')
 				error.message = 'Really no arguments provided!';
 
-			trackError(error);
+			void trackError(error);
 		} catch (e) {
 			consoleError('Error while logging Error)) ', e);
 		}
 };
+
+addEventListener("error", (errorEvent) => {console.error(errorEvent.error);});
 
 const expectedErrorsRegexpCache: {[key: string]: RegExp} = {};
 
@@ -298,13 +304,13 @@ function versionCompare(v1, v2, options?) {
 
 	return null;
 }*/
-function parseUrlParam(url, parameterName) {
+function parseUrlParam(url: string, parameterName: string): string {
 	try {
 		if (url == null || url === '')
 			return null;
 		return new URL(url).searchParams.get(parameterName);
 	} catch (e) {
-		console.error(`Error while parsing URL[${parameterName}] parameterName[${parameterName}]`, e);
+		console.error(`Error while parsing URL[${url}] parameterName[${parameterName}]`, e);
 		return null;
 	}
 }

@@ -1,6 +1,7 @@
 interface ITabInfo {
 	id: number;
 	oldRefId: number;
+	originRefId: number;
 	newRefId: number;
 	winId: number;
 	idx: number;
@@ -37,6 +38,7 @@ class TabInfo implements ITabInfo {
 
 	private _id: number;
 	private _oldRefId: number;
+	private _originRefId: number;
 	private _newRefId: number;
 	private _winId: number;
 	private _idx: number;
@@ -129,6 +131,14 @@ class TabInfo implements ITabInfo {
 
 	set oldRefId(value: number) {
 		this._oldRefId = value;
+	}
+
+	get originRefId(): number {
+		return this._originRefId;
+	}
+
+	set originRefId(value: number) {
+		this._originRefId = value;
 	}
 
 	get newRefId(): number {
@@ -307,3 +317,8 @@ class TabInfo implements ITabInfo {
 		this._closed = value;
 	}
 }
+
+if (typeof module != 'undefined')
+	module.exports = {
+		TabInfo,
+	}

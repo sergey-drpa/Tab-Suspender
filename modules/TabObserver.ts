@@ -84,6 +84,14 @@ class TabObserver {
 
 		chrome.windows.getAll({ 'populate': true }, async (windows) => {
 
+			const openedChromeTabs = {};
+
+			/* Collect opened tabs */
+			for (const window of windows)
+				for (const tab of window.tabs)
+						openedChromeTabs[tab.id] = tab;
+
+
 			// CLOSE TAB LOGIC
 			if (!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging)
 				if (isCloseTabsOn && self.tickCount % TabObserver.tickSize == 0) {
@@ -237,7 +245,7 @@ class TabObserver {
 													chrome.tabs.sendMessage(tabId, {
 														method: '[AutomaticTabCleaner:highliteFavicon]',
 														highliteInfo: { suspendPercent: suspendPercent }
-													}).catch(() => console.error());
+													}).catch((e) => console.error(e));
 												}
 											}
 									}
@@ -343,7 +351,7 @@ class TabObserver {
 				}
 			}
 
-			self.tabManager.calculateAndMarkClosedTabs(cleanedTabsArray);
+			self.tabManager.calculateAndMarkClosedTabs(openedChromeTabs);
 		});
 	}
 }

@@ -1,3 +1,5 @@
+// @ts-ignore
+
 declare global {
 	// @ts-ignore
 	class SettingsStore {};
@@ -21,6 +23,8 @@ declare global {
 	let getScreenCache;
 
 	let database;
+
+	let addModuleToGlobal;
 }
 
 export {};
