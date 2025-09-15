@@ -86,6 +86,7 @@ class TabObserver {
 
 			const openedChromeTabs = {};
 
+			/* Collect opened tabs */
 			for (const window of windows)
 				for (const tab of window.tabs)
 						openedChromeTabs[tab.id] = tab;

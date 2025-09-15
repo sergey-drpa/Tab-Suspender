@@ -13,11 +13,23 @@ class TabManager {
 
 	private tabInfos: { [key: string]: TabInfo } = {};
 	private TAB_INFO_CLEANUP_TTL_MS = 60 * 60 * 24 * 1000; /* 24 Hours */
+	private COMMON_LOOP_PERIOD_MS = 10000; /* 10 Sec */
+	public readonly historyOpenerController = new HistoryOpenerController();
+	private commonInterval: number;
+
 	/* For puppeteer tests only */
-	setTabInfoCleanupTtlMs(ttlMs: number) {
+	public setTabInfoCleanupTtlMs(ttlMs: number) {
 		this.TAB_INFO_CLEANUP_TTL_MS = ttlMs;
 	}
-	public readonly historyOpenerController = new HistoryOpenerController();
+	/* For puppeteer tests only */
+	public setCommonLoopPeriodMs(commonLoopPeriodMs: number) {
+		this.COMMON_LOOP_PERIOD_MS = commonLoopPeriodMs;
+		this.startCommonLoop(); // Restart Common Loop
+	}
+	/* For puppeteer tests only */
+	public getTabInfosCopy(): TabInfo[] {
+		return JSON.parse(JSON.stringify(this.tabInfos));
+	}
 
 	async compress(str: string, encoding = 'gzip' as CompressionFormat): Promise<ArrayBuffer> {
 		const byteArray = new TextEncoder().encode(str);
@@ -97,15 +109,12 @@ class TabManager {
 
 		this.loadTabInfos();
 
-		setInterval(()=>{
-			void self.storeTabInfos();
-			self.clearClosedTabs();
-		}, 10000);
+		this.startCommonLoop();
 
 		/** Event ******************************************************************************
 		 tabs.onCreated - add to list */
 		chrome.tabs.onCreated.addListener(async function(tab: chrome.tabs.Tab) {
-			const tabInfo = tabManager.createNewTabInfo(tab);
+			const tabInfo = self.createNewTabInfo(tab);
 
 			if (trace)
 				console.trace(`Tab[${tab.id}] Created`, tab);
@@ -122,32 +131,8 @@ class TabManager {
 
 		/** Event ******************************************************************************
 		 tabs.onReplaced */
-		chrome.tabs.onReplaced.addListener((addedTabId, removedTabId) => {
-			if (trace)
-				console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId}`, self.tabInfos);
-
-			self.tabInfos[addedTabId] = self.tabInfos[removedTabId];
-			self.tabInfos[addedTabId].id = addedTabId;
-			self.tabInfos[addedTabId].oldRefId = removedTabId;
-			self.tabInfos[removedTabId].newRefId = addedTabId;
-			this.markTabClosed(removedTabId);
-
-			chrome.tabs.get(addedTabId, (tab) => {
-				if (tab.url.indexOf(parkUrl) == 0) {
-					const url = new URL(tab.url);
-					const params = url.searchParams;
-					const oldTabId = params.get('tabId');
-					if (oldTabId != removedTabId.toString())	{
-						console.warn(`Tab Replaced: ${removedTabId} -> ${addedTabId} - TabId mismatch in url: ${oldTabId} != ${removedTabId}`);
-					}
-					params.set('tabId', addedTabId.toString());
-					chrome.tabs.update(addedTabId, { url: url.toString() }).catch(console.error);
-				}
-			});
-
-
-			if (trace)
-				console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId} complete`, self.tabInfos);
+		chrome.tabs.onReplaced.addListener((addedTabId: number, removedTabId: number) => {
+			self.onTabReplaceDetected(addedTabId, removedTabId);
 		});
 
 		/** Event ******************************************************************************
@@ -263,6 +248,7 @@ class TabManager {
 		/** Event ******************************************************************************
 		  tabs.onRemoved - load if unloaded, remove from list
 		 ***************************************************************************************/
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		chrome.tabs.onRemoved.addListener(function(tabId, removeInfo: chrome.tabs.TabRemoveInfo) {
 			if (trace)
 				console.trace(`Tab[${tabId}] removed`);
@@ -356,6 +342,56 @@ class TabManager {
 		});
 	}
 
+	private onTabReplaceDetected(addedTabId: number, removedTabId: number): TabInfo {
+		if (trace)
+			console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId}`, this.tabInfos);
+
+		this.tabInfos[addedTabId] = this.tabInfos[removedTabId];
+		this.tabInfos[addedTabId].id = addedTabId;
+		this.tabInfos[addedTabId].oldRefId = removedTabId;
+		this.tabInfos[removedTabId].newRefId = addedTabId;
+
+		chrome.tabs.get(addedTabId, (tab) => {
+			if (tab.url.indexOf(parkUrl) == 0) {
+				const originTabId = parseUrlParam(tab.url, 'tabId');
+
+				if (originTabId == removedTabId.toString()) {
+					this.tabInfos[addedTabId].originRefId = removedTabId;
+				} else {
+					this.tabInfos[removedTabId] = structuredClone(this.tabInfos[removedTabId]);
+					this.markTabClosed(removedTabId);
+					console.warn(`Tab Replaced: ${removedTabId} -> ${addedTabId} - Intermediate replace -> mark tab info can be removed for ${removedTabId}`);
+				}
+				//params.set('tabId', addedTabId.toString());
+				///// ******** Looks like it does not working!!!!!!!
+				//chrome.tabs.update(addedTabId, { url: url.toString() }).catch(console.error);
+				//^^^^ Where to store tab-key in case of chrome.tabs.update() not working??????
+			}
+		});
+
+
+		if (trace)
+			console.trace(`Tab Replaced: ${removedTabId} -> ${addedTabId} complete`, this.tabInfos);
+
+		return this.tabInfos[addedTabId];
+	}
+
+	private startCommonLoop() {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const self = this;
+
+		if (this.commonInterval != null) {
+			clearInterval(this.commonInterval);
+			this.commonInterval = null;
+		}
+
+		// @ts-ignore
+		this.commonInterval = setInterval(() => {
+			void self.storeTabInfos();
+			self.clearClosedTabs();
+		}, this.COMMON_LOOP_PERIOD_MS);
+	}
+
 	/***************************************************************************************
 	 * Methods
 	 **************************************************************************************/
@@ -441,7 +477,6 @@ class TabManager {
 			delete this.tabInfos[tabId];
 	}
 
-
 	public createNewTabInfo(tab: chrome.tabs.Tab): TabInfo {
 		const tabInfo = new TabInfo(tab);
 		return this.tabInfos[tab.id] = tabInfo;
@@ -449,6 +484,12 @@ class TabManager {
 
 	getTabInfoOrCreate(tab: chrome.tabs.Tab): TabInfo {
 		let tabInfo = this.getTabInfoById(tab.id);
+
+		/* If Parked Tab (Usually after browser restart) */
+		if(tab.url.startsWith(parkUrl)) {
+			const removedTabId = parseInt(parseUrlParam(tab.url, 'tabId'));
+			tabInfo = this.onTabReplaceDetected(tab.id, removedTabId);
+		}
 
 		if (tabInfo == null)
 			tabInfo = tabManager.createNewTabInfo(tab);
@@ -532,10 +573,20 @@ class TabManager {
 	}
 
 	calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
+
+		const suspendedChromeTabs = {};
+		Object.values(openedChromeTabs).forEach((tab) => {
+			if (tab.url.indexOf(parkUrl) == 0) {
+				const originTabId = parseUrlParam(tab.url, 'tabId');
+				suspendedChromeTabs[originTabId] = tab;
+			}
+		});
+
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
-				if (openedChromeTabs[tabId] == null) {
+				if (openedChromeTabs[tabId] == null && suspendedChromeTabs[tabId] == null) {
+					console.log(`Tab ${tabId} was marked as closed cause it's not in opened and suspended tabs`);
 					if (tabInfo.closed == null) {
 						tabInfo.closed = <TabInfoClosedInfo>{
 							at: Date.now(),
@@ -553,7 +604,7 @@ class TabManager {
 				const tabInfo = this.tabInfos[tabId];
 				if (tabInfo.closed != null) {
 					if (Date.now() > tabInfo.closed.at + this.TAB_INFO_CLEANUP_TTL_MS) {
-						console.log(`Clear closed tab[${tabId}]`);
+						console.log(`Clear closed tab[${tabId}]`, tabInfo);
 						this.deleteTab(tabId);
 					}
 				}

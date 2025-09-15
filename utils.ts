@@ -304,7 +304,7 @@ function versionCompare(v1, v2, options?) {
 
 	return null;
 }*/
-function parseUrlParam(url, parameterName) {
+function parseUrlParam(url: string, parameterName: string): string {
 	try {
 		if (url == null || url === '')
 			return null;
