@@ -1,7 +1,7 @@
 # Tab Suspender Chrome Extension
 
 ### 🟢 Released [2.0.7](https://github.com/sergey-drpa/Tab-Suspender/releases/tag/2.0.7) for testing with huge fixes + added some unit tests, and finally, tests have been implemented on a real Chrome browser using puppeteer 🎉🎉🎉.
-Release 2.0.7 on Chrome Store will be available after sone weeks.
+Release 2.0.7 on Chrome Store will be available after some weeks.
 
 --
 
