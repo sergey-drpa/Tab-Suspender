@@ -224,10 +224,12 @@ class TabManager {
 
 			if (changeInfo.url != null) {
 				if (tabInfo.parkedUrl != null &&
-					tabInfo.parkedUrl != changeInfo.url)
-					if (!(changeInfo.url.indexOf(parkUrl) == 0 && tabInfo.parkedUrl.indexOf(parkUrl) < 0)) {
+					tabInfo.parkedUrl != changeInfo.url) {
+					// Clear parkedUrl only when navigating to a new regular URL (not parkUrl)
+					if (changeInfo.url.indexOf(parkUrl) !== 0) {
 						tabInfo.parkedUrl = null;
 					}
+				}
 			}
 
 			if (TabManager.isTabParked(tab)) {
@@ -352,6 +354,8 @@ class TabManager {
 		this.tabInfos[removedTabId].newRefId = addedTabId;
 
 		chrome.tabs.get(addedTabId, (tab) => {
+			if (tab == null)
+				return;
 			if (tab.url.indexOf(parkUrl) == 0) {
 				const originTabId = parseUrlParam(tab.url, 'tabId');
 
@@ -471,9 +475,7 @@ class TabManager {
 	}
 
 	private deleteTab(tabId: string) {
-		const tabInfo = this.getTabInfoById(tabId);
-
-		if (tabInfo != null)
+		if (this.tabInfos.hasOwnProperty(tabId))
 			delete this.tabInfos[tabId];
 	}
 
@@ -486,13 +488,22 @@ class TabManager {
 		let tabInfo = this.getTabInfoById(tab.id);
 
 		/* If Parked Tab (Usually after browser restart) */
-		if(tab.url.startsWith(parkUrl)) {
+		if(tabInfo == null && tab.url.startsWith(parkUrl)) {
 			const removedTabId = parseInt(parseUrlParam(tab.url, 'tabId'));
+			const originalUrl = parseUrlParam(tab.url, 'url');
+			console.log(`Found parked[${removedTabId}] Tab[${tab.id}] without TabInfo, starting id replace..`);
+			if (this.tabInfos[removedTabId] == null) {
+				// Create TabInfo with proper original data
+				const restoredTabInfo = new TabInfo({ id: removedTabId, url: originalUrl } as chrome.tabs.Tab);
+				restoredTabInfo.parkedUrl = originalUrl;
+				restoredTabInfo.parked = true;
+				this.tabInfos[removedTabId] = restoredTabInfo;
+			}
 			tabInfo = this.onTabReplaceDetected(tab.id, removedTabId);
 		}
 
 		if (tabInfo == null)
-			tabInfo = tabManager.createNewTabInfo(tab);
+			tabInfo = this.createNewTabInfo(tab);
 
 		return tabInfo;
 	};
@@ -513,7 +524,7 @@ class TabManager {
 	}
 
 	findReplacedTabId(tabId: number): number {
-		const tabInfo = tabManager.getTabInfoById(tabId);
+		const tabInfo = this.getTabInfoById(tabId);
 		if (tabInfo && tabInfo.newRefId != null)
 			tabId = tabInfo.newRefId;
 		return tabId;
@@ -572,7 +583,7 @@ class TabManager {
 		tabInfo.lstCapTime = Date.now();
 	}
 
-	calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
+	public calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
 
 		const suspendedChromeTabs = {};
 		Object.values(openedChromeTabs).forEach((tab) => {
@@ -582,16 +593,31 @@ class TabManager {
 			}
 		});
 
+		// Grace period before marking tabs as closed to handle API timing issues
+		const GRACE_PERIOD_MS = 30000; // 30 seconds
+
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
 				if (openedChromeTabs[tabId] == null && suspendedChromeTabs[tabId] == null) {
-					console.log(`Tab ${tabId} was marked as closed cause it's not in opened and suspended tabs`);
 					if (tabInfo.closed == null) {
-						tabInfo.closed = <TabInfoClosedInfo>{
-							at: Date.now(),
-							tsSessionId: TSSessionId,
-						};
+						// Mark as potentially closed, but give grace period
+						if (!tabInfo.missingCheckTime) {
+							tabInfo.missingCheckTime = Date.now();
+						} else if (Date.now() - tabInfo.missingCheckTime > GRACE_PERIOD_MS) {
+							// Only mark as closed after grace period
+							console.log(`Tab ${tabId} marked as closed after grace period`);
+							tabInfo.closed = <TabInfoClosedInfo>{
+								at: Date.now(),
+								tsSessionId: TSSessionId,
+							};
+							tabInfo.missingCheckTime = null;
+						}
+					}
+				} else {
+					// Tab found again, clear missing check
+					if (tabInfo.missingCheckTime != null) {
+						tabInfo.missingCheckTime = null;
 					}
 				}
 			}
@@ -602,7 +628,11 @@ class TabManager {
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
-				if (tabInfo.closed != null) {
+				if (tabInfo == null) {
+					console.warn(`TabInfo[${tabId}] exist, but undefined!`);
+					this.deleteTab(tabId);
+				}
+				else if (tabInfo.closed != null) {
 					if (Date.now() > tabInfo.closed.at + this.TAB_INFO_CLEANUP_TTL_MS) {
 						console.log(`Clear closed tab[${tabId}]`, tabInfo);
 						this.deleteTab(tabId);

@@ -354,8 +354,7 @@ class BGMessageListener {
 				})();
 				return true;
 			} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
-				settings.removeAll().then(()=>{
-					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings }, offscreenDocumentProvider);
+				settings.importWithClear(request.settings).then(()=>{
 					LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);

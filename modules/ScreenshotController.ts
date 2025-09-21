@@ -24,13 +24,15 @@ class ScreenshotController {
 					{
 						//query: 'select count(*) from screens where id = ? and sessionId = ?'
 					},
-				params: [tabId, parseInt(sessionId)]
+				params: [typeof tabId === 'string' ? parseInt(tabId) : tabId, parseInt(sessionId)]
 			},
 			callback
 		);
 	}
 
-	static getScreen(id, sessionId, callback) {
+	static getScreen(id, sessionId, callback, retryCount = 0) {
+		const MAX_RETRIES = 3;
+		const RETRY_TIMEOUT = 5000; // 5 seconds
 
 		//id = tabManager.findReplacedTabId(id);
 
@@ -38,10 +40,26 @@ class ScreenshotController {
 			console.log('getScreen called for tabId: ' + id, Date.now());
 
 		if (database.isInitialized() != true) {
-			console.log('getScreen DB is not initialized yet waiting...: ' + id, Date.now());
+			if (retryCount >= MAX_RETRIES) {
+				console.error('getScreen DB initialization failed after max retries for tabId:', id);
+				callback(null);
+				return;
+			}
+
+			console.log('getScreen DB is not initialized yet waiting...: ' + id, Date.now(), 'retry:', retryCount);
+
+			const timeoutId = setTimeout(() => {
+				console.warn('getScreen DB initialization timeout for tabId:', id, 'retry:', retryCount);
+				ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
+			}, RETRY_TIMEOUT);
+
 			database.getInitializedPromise().then(function() {
-				// eslint-disable-next-line no-undef
-				ScreenshotController.getScreen(id, sessionId, callback);
+				clearTimeout(timeoutId);
+				ScreenshotController.getScreen(id, sessionId, callback, retryCount);
+			}).catch(function(error) {
+				clearTimeout(timeoutId);
+				console.error('getScreen DB initialization error for tabId:', id, 'error:', error, 'retry:', retryCount);
+				ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
 			});
 			return;
 		}
@@ -59,6 +77,13 @@ class ScreenshotController {
 					getScreenCache = null;
 					if (debugScreenCache)
 						console.log('Screen got from cache!!');
+				}).catch(function(error) {
+					// Always clear cache on error to prevent memory leaks
+					getScreenCache = null;
+					if (debugScreenCache)
+						console.error('getScreen cache promise failed:', error);
+					// Call callback with null to indicate failure
+					callback(null);
 				});
 				return;
 			} else

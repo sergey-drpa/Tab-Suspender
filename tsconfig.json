@@ -19,6 +19,7 @@
   ],
   "exclude":[
     "./node_modules",
-    "./jest.config.js"
+    "./jest.config.js",
+    "./test"
   ]
 }

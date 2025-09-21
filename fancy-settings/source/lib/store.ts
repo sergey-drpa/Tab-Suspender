@@ -225,7 +225,7 @@ class SettingsStore extends SettingsStoreClient {
                     if (oldSettings.hasOwnProperty(key)) {
                         const currentValue = await this.get(key);
                         if (currentValue == undefined) {
-                            let value = self.checkTypeAndCast(key, oldSettings[key]);
+                            const value = self.checkTypeAndCast(key, oldSettings[key]);
                             if (value == null ||
                               typeof value != GET_SETTINGS_TYPE(key)
                             )
@@ -244,7 +244,7 @@ class SettingsStore extends SettingsStoreClient {
         // Store DEFAULT_SETTINGS
         for (const key in default_settings) {
             if (default_settings.hasOwnProperty(key)) {
-                let storedValue = await this.get(key);
+                const storedValue = await this.get(key);
                 if (storedValue == undefined ||
                   typeof storedValue != GET_SETTINGS_TYPE(key)
                 ) {
@@ -376,24 +376,114 @@ class SettingsStore extends SettingsStoreClient {
         await Promise.all(Object.keys(DEFAULT_SETTINGS)
           .map(async (key) => {
               value = await self.get(key);
+              // Include all settings, using default value if undefined
               if (value !== undefined) {
                   values[key] = value;
+              } else {
+                  // If setting was never set, export the default value
+                  values[key] = DEFAULT_SETTINGS[key];
               }
           }));
 
         return values;
     }
 
-    /*fromObject(values, merge) {
-        if (merge !== true) { this.removeAll(); }
-        for (var key in values) {
+    async fromObject(values: object, merge: boolean = false): Promise<SettingsStore> {
+        // If not merging, clear all existing settings first
+        if (!merge) {
+            await this.removeAll();
+        }
+
+        // Validate and import settings
+        const validatedSettings = {};
+
+        for (const key in values) {
             if (values.hasOwnProperty(key)) {
-                this.set(key, values[key]);
+                // Only import settings that exist in DEFAULT_SETTINGS
+                if (key in DEFAULT_SETTINGS) {
+                    // Type check and cast the value
+                    const validatedValue = this.checkTypeAndCast(key, values[key]);
+                    validatedSettings[key] = validatedValue;
+
+                    // Set the validated value
+                    await this.set(key, validatedValue, true); // Skip sync to avoid flooding
+                } else {
+                    console.warn(`Ignoring unknown setting during import: ${key}`);
+                }
+            }
+        }
+
+        // Ensure all DEFAULT_SETTINGS keys have values
+        for (const key in DEFAULT_SETTINGS) {
+            if (!(key in validatedSettings)) {
+                // When merging, only set default if the setting doesn't exist in storage
+                // When not merging, always set defaults (since we cleared storage)
+                if (!merge) {
+                    await this.set(key, DEFAULT_SETTINGS[key], true);
+                } else {
+                    // For merge=true, only set default if no value exists in storage
+                    const existingValue = await this.get(key);
+                    if (existingValue === undefined) {
+                        await this.set(key, DEFAULT_SETTINGS[key], true);
+                    }
+                }
             }
         }
 
         return this;
-    }*/
+    }
+
+    /**
+     * Import settings from an object, clearing all existing LOCAL settings first.
+     * Updates both local and sync storage with imported values.
+     * This is the method that should be used for the import functionality in the UI.
+     *
+     * @param values - Object containing settings to import
+     * @returns Promise that resolves to this SettingsStore instance
+     */
+    async importWithClear(values: object): Promise<SettingsStore> {
+        // Clear only LOCAL storage, preserve sync storage until we set new values
+        await Promise.all(Object.keys(DEFAULT_SETTINGS)
+          .map(async (key) => {
+              // Remove from local storage only (skipSync = true)
+              this.remove(key, true);
+          }));
+
+        // Validate and import settings to BOTH local and sync storage
+        const validatedSettings = {};
+
+        for (const key in values) {
+            if (values.hasOwnProperty(key)) {
+                // Only import settings that exist in DEFAULT_SETTINGS
+                if (key in DEFAULT_SETTINGS) {
+                    // Type check and cast the value (skip if SETTINGS_TYPES not available)
+                    let validatedValue;
+                    try {
+                        validatedValue = this.checkTypeAndCast(key, values[key]);
+                    } catch (error) {
+                        // If type checking fails (e.g., SETTINGS_TYPES not defined), use raw value
+                        console.warn(`Type checking failed for ${key}, using raw value:`, error.message);
+                        validatedValue = values[key];
+                    }
+                    validatedSettings[key] = validatedValue;
+
+                    // Set the validated value to BOTH local and sync (skipSync = false)
+                    await this.set(key, validatedValue, false);
+                } else {
+                    console.warn(`Ignoring unknown setting during import: ${key}`);
+                }
+            }
+        }
+
+        // Ensure all DEFAULT_SETTINGS keys have values in both storages
+        for (const key in DEFAULT_SETTINGS) {
+            if (!(key in validatedSettings)) {
+                await this.set(key, DEFAULT_SETTINGS[key], false);
+            }
+        }
+
+        return this;
+    }
 }
 
 if (typeof global !== "undefined") {
