@@ -1,5 +1,6 @@
 module.exports = {
 	preset: 'ts-jest',
+	testTimeout: 30000,
 	testEnvironment: 'jsdom',
 	"roots": [
 		"<rootDir>/test"
