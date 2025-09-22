@@ -26,9 +26,4 @@ jobs:
         run: jest --cache --runInBand --silent
 
       - name: Run tests with verbose output
-        run: npm test -- --verbose || {
-          echo "::error title=Tests failed::See above for details"
-          exit 1
-        }
-        env:
-          CI: true
+        run: npm test -- --verbose
