@@ -24,6 +24,7 @@ jobs:
 
       - name: Prepare Jest cache
         run: jest --cache --runInBand --silent
+        continue-on-error: true
 
       - name: Run tests with verbose output
         run: npm test -- --verbose
