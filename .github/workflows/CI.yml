@@ -24,3 +24,5 @@ jobs:
           cat jest.config.cjs
       - name: Run tests with verbose output
         run: npm test -- --verbose
+        env:
+          CI: true
