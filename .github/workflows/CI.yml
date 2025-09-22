@@ -23,6 +23,9 @@ jobs:
           echo "Jest config:"
           cat jest.config.cjs
       - name: Run tests with verbose output
-        run: npm test -- --verbose
+        run: npm test -- --verbose || {
+          echo "::error title=Tests failed::See above for details"
+          exit 1
+        }
         env:
           CI: true
