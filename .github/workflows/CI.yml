@@ -13,6 +13,7 @@ jobs:
           cache: 'npm'
       - name: Install modules
         run: npm ci
+
       - name: Debug test environment
         run: |
           echo "Node version: $(node --version)"
