@@ -7,7 +7,8 @@
     "watch": "rm -rf ./build_dir/* && copy-files-from-to && tsc-watch --build ./ --onSuccess 'copy-files-from-to --silent'",
     "build": "rm -rf ./build_dir/* && copy-files-from-to && tsc --build ./",
     "copy-files-from-to": "copy-files-from-to",
-    "test": "jest --runInBand --forceExit --verbose"
+    "test": "jest --runInBand --forceExit --verbose",
+    "testCacheCreate": "jest --cache --runInBand --silent"
   },
   "copyFiles": [
     {

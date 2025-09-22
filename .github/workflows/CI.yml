@@ -23,7 +23,7 @@ jobs:
           cat jest.config.cjs
 
       - name: Prepare Jest cache
-        run: jest --cache --runInBand --silent
+        run: npm testCacheCreate
         continue-on-error: true
 
       - name: Run tests with verbose output
