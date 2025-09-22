@@ -22,6 +22,10 @@ jobs:
           find test -name "*.test.*" | sort
           echo "Jest config:"
           cat jest.config.cjs
+
+      - name: Prepare Jest cache
+        run: jest --cache --runInBand --silent
+
       - name: Run tests with verbose output
         run: npm test -- --verbose || {
           echo "::error title=Tests failed::See above for details"
