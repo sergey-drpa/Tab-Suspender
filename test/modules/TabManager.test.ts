@@ -147,6 +147,110 @@ describe('TabManager', () => {
       expect(convertedBack).toBeInstanceOf(ArrayBuffer);
       expect(convertedBack.byteLength).toBe(buffer.byteLength); // Should match original
     });
+
+    it('should perform arrayBufferToBase64 conversion within reasonable time', () => {
+      // Test with different buffer sizes to measure performance characteristics
+      const testSizes = [1024, 10240, 102400, 1048576]; // 1KB, 10KB, 100KB, 1MB
+
+      testSizes.forEach(size => {
+        // Create test buffer with random data
+        const buffer = new ArrayBuffer(size);
+        const view = new Uint8Array(buffer);
+        for (let i = 0; i < size; i++) {
+          view[i] = Math.floor(Math.random() * 256);
+        }
+
+        const iterations = size > 100000 ? 10 : 100; // Fewer iterations for larger buffers
+        const times: number[] = [];
+
+        // Warm up
+        for (let i = 0; i < 3; i++) {
+          tabManager.arrayBufferToBase64(buffer);
+        }
+
+        // Measure performance
+        for (let i = 0; i < iterations; i++) {
+          const start = performance.now();
+          const result = tabManager.arrayBufferToBase64(buffer);
+          const end = performance.now();
+          times.push(end - start);
+
+          // Verify result is valid
+          expect(result).toBeDefined();
+          expect(typeof result).toBe('string');
+        }
+
+        const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+        const minTime = Math.min(...times);
+        const maxTime = Math.max(...times);
+
+        console.log(`ArrayBuffer ${size} bytes: avg=${avgTime.toFixed(2)}ms, min=${minTime.toFixed(2)}ms, max=${maxTime.toFixed(2)}ms`);
+
+        // Performance thresholds (these may need adjustment based on hardware)
+        if (size <= 1024) {
+          expect(avgTime).toBeLessThan(1); // 1KB should be very fast
+        } else if (size <= 10240) {
+          expect(avgTime).toBeLessThan(10); // 10KB should be fast
+        } else if (size <= 102400) {
+          expect(avgTime).toBeLessThan(50); // 100KB should be reasonable
+        } else {
+          expect(avgTime).toBeLessThan(500); // 1MB might be slower but should be under 500ms
+        }
+      });
+    });
+
+    it('should perform base64ToArrayBuffer conversion within reasonable time', () => {
+      // Test with different base64 string sizes
+      const testSizes = [1024, 10240, 102400, 1048576]; // 1KB, 10KB, 100KB, 1MB
+
+      testSizes.forEach(size => {
+        // Create test buffer and convert to base64 for testing
+        const originalBuffer = new ArrayBuffer(size);
+        const view = new Uint8Array(originalBuffer);
+        for (let i = 0; i < size; i++) {
+          view[i] = Math.floor(Math.random() * 256);
+        }
+        const base64String = tabManager.arrayBufferToBase64(originalBuffer);
+
+        const iterations = size > 100000 ? 10 : 100; // Fewer iterations for larger buffers
+        const times: number[] = [];
+
+        // Warm up
+        for (let i = 0; i < 3; i++) {
+          tabManager.base64ToArrayBuffer(base64String);
+        }
+
+        // Measure performance
+        for (let i = 0; i < iterations; i++) {
+          const start = performance.now();
+          const result = tabManager.base64ToArrayBuffer(base64String);
+          const end = performance.now();
+          times.push(end - start);
+
+          // Verify result is valid
+          expect(result).toBeDefined();
+          expect(result).toBeInstanceOf(ArrayBuffer);
+          expect(result.byteLength).toBe(size);
+        }
+
+        const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+        const minTime = Math.min(...times);
+        const maxTime = Math.max(...times);
+
+        console.log(`Base64 ${size} bytes: avg=${avgTime.toFixed(2)}ms, min=${minTime.toFixed(2)}ms, max=${maxTime.toFixed(2)}ms`);
+
+        // Performance thresholds (these may need adjustment based on hardware)
+        if (size <= 1024) {
+          expect(avgTime).toBeLessThan(1); // 1KB should be very fast
+        } else if (size <= 10240) {
+          expect(avgTime).toBeLessThan(10); // 10KB should be fast
+        } else if (size <= 102400) {
+          expect(avgTime).toBeLessThan(50); // 100KB should be reasonable
+        } else {
+          expect(avgTime).toBeLessThan(500); // 1MB might be slower but should be under 500ms
+        }
+      });
+    });
   });
 
   describe('Tab Info Management', () => {

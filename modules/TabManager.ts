@@ -50,21 +50,47 @@ class TabManager {
 	}
 
 	arrayBufferToBase64( buffer: ArrayBuffer ): string {
-		let binary = '';
 		const bytes = new Uint8Array( buffer );
 		const len = bytes.byteLength;
-		for (let i = 0; i < len; i++) {
-			binary += String.fromCharCode( bytes[ i ] );
+
+		// For small buffers, use the simple approach
+		if (len <= 8192) {
+			return btoa(String.fromCharCode.apply(null, Array.from(bytes)));
 		}
-		return btoa( binary );
+
+		// For larger buffers, use chunked processing to avoid call stack limits
+		const chunkSize = 8192;
+		let binary = '';
+
+		for (let i = 0; i < len; i += chunkSize) {
+			const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+			binary += String.fromCharCode.apply(null, Array.from(chunk));
+		}
+
+		return btoa(binary);
 	}
 
 	base64ToArrayBuffer(base64: string): ArrayBuffer {
 		const binaryString = atob(base64);
-		const bytes = new Uint8Array(binaryString.length);
-		for (let i = 0; i < binaryString.length; i++) {
-			bytes[i] = binaryString.charCodeAt(i);
+		const len = binaryString.length;
+		const bytes = new Uint8Array(len);
+
+		// For small strings, use the simple approach
+		if (len <= 8192) {
+			for (let i = 0; i < len; i++) {
+				bytes[i] = binaryString.charCodeAt(i);
+			}
+		} else {
+			// For larger strings, use chunked processing for better performance
+			const chunkSize = 8192;
+			for (let i = 0; i < len; i += chunkSize) {
+				const end = Math.min(i + chunkSize, len);
+				for (let j = i; j < end; j++) {
+					bytes[j] = binaryString.charCodeAt(j);
+				}
+			}
 		}
+
 		return bytes.buffer;
 	}
 
