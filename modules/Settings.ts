@@ -62,6 +62,7 @@ class Settings {
 	restoreButtonView: string;
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
+	ignoreSuspendGroupedTabs: boolean;
 	popup_showWindowSessionByDefault: boolean;
 	// v2.0.0
 	localStorageMigrated: boolean;
@@ -107,6 +108,7 @@ const DEFAULT_SETTINGS: Settings = {
 	restoreButtonView: 'roundIcon', /* Available: roundIcon, noIcon, topBar */
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
+	ignoreSuspendGroupedTabs: false,
 	popup_showWindowSessionByDefault: false,
 	// v2.0.0
 	localStorageMigrated: null,

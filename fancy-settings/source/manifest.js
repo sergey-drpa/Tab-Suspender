@@ -145,6 +145,20 @@ this.manifest = {
 		},
 		{
 			'tab': 'Suspend Settings',
+			'group': 'Ignore options',
+			'name': 'ignoreSuspendGroupedTabs',
+			'type': 'checkbox',
+			'label': 'Ignore Tabs in Group <font color="#0099FF">(New)</font>'
+		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Ignore options',
+			'name': 'grouped-description',
+			'type': 'description',
+			'text': 'Ignore tabs that are grouped together from being suspended'
+		},
+		{
+			'tab': 'Suspend Settings',
 			'group': 'Advanced',
 			'name': 'discardTabAfterSuspendWithTimeout',
 			'type': 'checkbox',

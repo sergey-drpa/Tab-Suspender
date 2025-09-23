@@ -677,6 +677,10 @@ class TabManager {
 		if (tab.pinned == true && await settings.get('pinned'))
 			return true;
 
+		// Grouped Tab
+		if (tab.groupId !== -1 && await settings.get('ignoreSuspendGroupedTabs'))
+			return true;
+
 		//Tab Ignore List
 		// eslint-disable-next-line no-undef
 		if (ignoreList.isTabInIgnoreTabList(tab.id))

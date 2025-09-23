@@ -657,6 +657,45 @@ describe('TabManager', () => {
       expect(isException).toBe(true);
     });
 
+    it('should detect grouped tab exception', async () => {
+      const groupedTab = { ...mockTab, groupId: 1 };
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'ignoreSuspendGroupedTabs') return Promise.resolve(true);
+        return Promise.resolve(false);
+      });
+      (global as any).ignoreList.isTabInIgnoreTabList.mockReturnValue(false);
+      (global as any).whiteList.isURIException.mockReturnValue(false);
+
+      const isException = await tabManager.isExceptionTab(groupedTab);
+      expect(isException).toBe(true);
+    });
+
+    it('should not detect grouped tab exception when setting is disabled', async () => {
+      const groupedTab = { ...mockTab, groupId: 1 };
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'ignoreSuspendGroupedTabs') return Promise.resolve(false);
+        return Promise.resolve(false);
+      });
+      (global as any).ignoreList.isTabInIgnoreTabList.mockReturnValue(false);
+      (global as any).whiteList.isURIException.mockReturnValue(false);
+
+      const isException = await tabManager.isExceptionTab(groupedTab);
+      expect(isException).toBe(false);
+    });
+
+    it('should not detect grouped tab exception for ungrouped tabs', async () => {
+      const ungroupedTab = { ...mockTab, groupId: -1 };
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'ignoreSuspendGroupedTabs') return Promise.resolve(true);
+        return Promise.resolve(false);
+      });
+      (global as any).ignoreList.isTabInIgnoreTabList.mockReturnValue(false);
+      (global as any).whiteList.isURIException.mockReturnValue(false);
+
+      const isException = await tabManager.isExceptionTab(ungroupedTab);
+      expect(isException).toBe(false);
+    });
+
     it('should not detect exception for normal tab', async () => {
       (global as any).settings.get.mockResolvedValue(false);
       (global as any).ignoreList.isTabInIgnoreTabList.mockReturnValue(false);
