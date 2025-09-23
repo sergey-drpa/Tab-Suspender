@@ -323,9 +323,14 @@ function start() {
 			console.error(e);
 		}
 
+		// Wait for session restore, then process tabs
+		await SessionRestoreDetector.waitForGroupRestore({ parkUrl });
+
 		const startNormalTabsDiscarted = await settings.get('startNormalTabsDiscarted');
 		/* Discard tabs */
 		chrome.tabs.query({ active: false/*, discarded: false*/ }, async function(tabs) {
+			console.log('Processing tabs after session restore - total tabs:', tabs.length);
+
 			for (const i in tabs) {
 				if (tabs.hasOwnProperty(i)) {
 					if (tabs[i].url.indexOf(parkUrl) == 0) {
@@ -340,6 +345,7 @@ function start() {
 							if (tabs[i].discarded == false)
 								if (!await tabManager.isExceptionTab(tabs[i]))
 									try {
+										console.log('Discarding tab:', tabs[i].id, 'groupId:', tabs[i].groupId, 'url:', tabs[i].url);
 										discardTab(tabs[i].id);
 									} catch (e) {
 										console.error('Discard error', e);
