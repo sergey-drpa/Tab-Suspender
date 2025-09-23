@@ -75,6 +75,12 @@ class TabCapture {
 						if (tab.active === true) {
 							tabManager.getTabInfoOrCreate(tab);
 
+							// Check if screenshots are disabled
+							if (!(await settings.get('screenshotsEnabled'))) {
+								resolve(); // Skip capture when screenshots are disabled
+								return;
+							}
+
 							if (tab.status != null && tab.status !== 'loading')
 								try {
 									chrome.tabs.captureVisibleTab(tab.windowId, <chrome.tabs.CaptureVisibleTabOptions>{

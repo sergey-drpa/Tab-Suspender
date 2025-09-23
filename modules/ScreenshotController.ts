@@ -1,4 +1,4 @@
-const debugScreenCache = false;
+// debugScreenCache is declared globally
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ScreenshotController {
@@ -30,7 +30,7 @@ class ScreenshotController {
 		);
 	}
 
-	static getScreen(id, sessionId, callback, retryCount = 0) {
+	static async getScreen(id, sessionId, callback, retryCount = 0) {
 		const MAX_RETRIES = 3;
 		const RETRY_TIMEOUT = 5000; // 5 seconds
 
@@ -38,6 +38,12 @@ class ScreenshotController {
 
 		if (debugScreenCache)
 			console.log('getScreen called for tabId: ' + id, Date.now());
+
+		// Check if screenshots are disabled
+		if (!(await settings.get('screenshotsEnabled'))) {
+			callback(null); // Return null when screenshots are disabled
+			return;
+		}
 
 		if (database.isInitialized() != true) {
 			if (retryCount >= MAX_RETRIES) {
@@ -50,16 +56,16 @@ class ScreenshotController {
 
 			const timeoutId = setTimeout(() => {
 				console.warn('getScreen DB initialization timeout for tabId:', id, 'retry:', retryCount);
-				ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
+				void ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
 			}, RETRY_TIMEOUT);
 
 			database.getInitializedPromise().then(function() {
 				clearTimeout(timeoutId);
-				ScreenshotController.getScreen(id, sessionId, callback, retryCount);
+				void ScreenshotController.getScreen(id, sessionId, callback, retryCount);
 			}).catch(function(error) {
 				clearTimeout(timeoutId);
 				console.error('getScreen DB initialization error for tabId:', id, 'error:', error, 'retry:', retryCount);
-				ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
+				void ScreenshotController.getScreen(id, sessionId, callback, retryCount + 1);
 			});
 			return;
 		}

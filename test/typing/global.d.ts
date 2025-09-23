@@ -25,7 +25,7 @@ declare global {
   const tabManager: any;
   const ContextMenuController: any;
   const pauseTics: any;
-  const ScreenshotController: any;
+  const debugScreenCache: boolean;
 
   // Global cache objects
   let getScreenCache: any;

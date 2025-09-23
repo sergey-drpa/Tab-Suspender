@@ -979,4 +979,44 @@ describe('TabManager', () => {
       expect(originalTabInfo.missingCheckTime).toBeNull();
     });
   });
+
+  describe('Disable Screenshots Functionality', () => {
+    let TabCapture: any;
+    let ScreenshotController: any;
+
+    beforeEach(() => {
+      // Re-import modules
+      const TabCaptureModule = require('../../modules/TabCapture');
+      TabCapture = TabCaptureModule.TabCapture;
+
+      const ScreenshotControllerModule = require('../../modules/ScreenshotController');
+      ScreenshotController = ScreenshotControllerModule.ScreenshotController;
+    });
+
+    it('should have screenshotsEnabled setting defaulted to true', () => {
+      expect(DEFAULT_SETTINGS.screenshotsEnabled).toBe(true);
+    });
+
+
+    it('should return null from ScreenshotController when screenshots are disabled', async () => {
+      // Mock settings.get to return false for screenshotsEnabled
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(false);
+        return Promise.resolve(true);
+      });
+
+      const mockCallback = jest.fn();
+
+      // Call getScreen
+      await ScreenshotController.getScreen(1, 123456, mockCallback);
+
+      // Verify callback was called with null (no screenshot)
+      expect(mockCallback).toHaveBeenCalledWith(null);
+    });
+
+    afterEach(() => {
+      // Reset settings mock to default behavior
+      (global as any).settings.get.mockResolvedValue(true);
+    });
+  });
 });

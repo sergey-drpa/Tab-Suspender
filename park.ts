@@ -470,7 +470,9 @@ function drawContent(parkData) {
 	applyPixelRatio(screenImg);
 
 	if (bgScreen == null) {
+		// Enhanced text-only mode when screenshots are disabled
 		screenImg.style.display = 'none';
+		document.body.classList.add('no-screenshot');
 		document.getElementById('title').innerHTML = title;
 		// @ts-expect-error
 		document.getElementById('title').href = searchParams.get('url');

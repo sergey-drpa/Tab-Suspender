@@ -63,6 +63,7 @@ class Settings {
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
 	ignoreSuspendGroupedTabs: boolean;
+	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
 	// v2.0.0
 	localStorageMigrated: boolean;
@@ -109,6 +110,7 @@ const DEFAULT_SETTINGS: Settings = {
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
 	ignoreSuspendGroupedTabs: false,
+	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,
 	// v2.0.0
 	localStorageMigrated: null,

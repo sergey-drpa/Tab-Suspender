@@ -4,6 +4,8 @@
 const debug = false;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const trace = false;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const debugScreenCache = false;
 
 /* Definitions for Syntax Check */
 // eslint-disable-next-line no-redeclare

@@ -159,6 +159,13 @@ this.manifest = {
 		},
 		{
 			'tab': 'Suspend Settings',
+			'group': 'Screenshot',
+			'name': 'screenshotsEnabled',
+			'type': 'checkbox',
+			'label': 'Screenshots Enabled <font color="#0099FF">(New)</font>'
+		},
+		{
+			'tab': 'Suspend Settings',
 			'group': 'Advanced',
 			'name': 'discardTabAfterSuspendWithTimeout',
 			'type': 'checkbox',

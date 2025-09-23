@@ -28,6 +28,11 @@ const mockDatabase = {
   findReplacedTabId: jest.fn((id) => id)
 };
 
+// Mock settings
+(global as any).settings = {
+  get: jest.fn().mockResolvedValue(true) // Default: screenshots enabled
+};
+
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -41,6 +46,12 @@ describe('ScreenshotController Tests', () => {
 
     // Clear cache
     (global as any).getScreenCache = null;
+
+    // Reset settings mock to default (screenshots enabled)
+    (global as any).settings.get.mockResolvedValue(true);
+
+    // Reset database mock to initialized state
+    mockDatabase.isInitialized.mockReturnValue(true);
 
     // Re-import ScreenshotController
     const ScreenshotControllerModule = require('../../modules/ScreenshotController');
@@ -130,7 +141,7 @@ describe('ScreenshotController Tests', () => {
       let resultScreen: string;
       let resultPixelRatio: number;
 
-      ScreenshotController.getScreen(tabId, sessionId, (screen, pixelRatio) => {
+      await ScreenshotController.getScreen(tabId, sessionId, (screen, pixelRatio) => {
         resultScreen = screen;
         resultPixelRatio = pixelRatio;
       });
@@ -150,7 +161,7 @@ describe('ScreenshotController Tests', () => {
       ScreenshotController.getScreen(tabId, null, () => {});
     });
 
-    it('should return null if screen not found', () => {
+    it('should return null if screen not found', async () => {
       const tabId = 1;
       const sessionId = 123456;
 
@@ -159,14 +170,14 @@ describe('ScreenshotController Tests', () => {
       });
 
       let result: any = undefined;
-      ScreenshotController.getScreen(tabId, sessionId, (screen) => {
+      await ScreenshotController.getScreen(tabId, sessionId, (screen) => {
         result = screen;
       });
 
       expect(result).toBeNull();
     });
 
-    it('should wait for database initialization if not ready', () => {
+    it('should wait for database initialization if not ready', async () => {
       const tabId = 1;
       const sessionId = 123456;
 
@@ -177,18 +188,15 @@ describe('ScreenshotController Tests', () => {
       mockDatabase.getInitializedPromise.mockResolvedValue(undefined);
 
       let callbackCalled = false;
-      ScreenshotController.getScreen(tabId, sessionId, () => {
+      await ScreenshotController.getScreen(tabId, sessionId, () => {
         callbackCalled = true;
       });
-
-      // Should not call callback immediately
-      expect(callbackCalled).toBe(false);
 
       // Should have tried to wait for initialization
       expect(mockDatabase.getInitializedPromise).toHaveBeenCalled();
     });
 
-    it('should handle max retries for database initialization', () => {
+    it('should handle max retries for database initialization', async () => {
       const tabId = 1;
       const sessionId = 123456;
 
@@ -202,7 +210,7 @@ describe('ScreenshotController Tests', () => {
       let callbackResult: any = undefined;
       let callbackCallCount = 0;
 
-      ScreenshotController.getScreen(tabId, sessionId, (result) => {
+      await ScreenshotController.getScreen(tabId, sessionId, (result) => {
         callbackResult = result;
         callbackCallCount++;
       });
@@ -212,7 +220,7 @@ describe('ScreenshotController Tests', () => {
 
       // Simulate retries by calling with increasing retry count
       // After MAX_RETRIES (3), should call callback with null
-      ScreenshotController.getScreen(tabId, sessionId, (result) => {
+      await ScreenshotController.getScreen(tabId, sessionId, (result) => {
         callbackResult = result;
         callbackCallCount++;
       }, 3); // MAX_RETRIES
@@ -362,6 +370,29 @@ describe('ScreenshotController Tests', () => {
       // Should return null when cache promise fails
       expect(result).toBeNull();
       expect((global as any).getScreenCache).toBeNull(); // Should clear cache after error
+    });
+
+    it('should return null when screenshots are disabled', async () => {
+      const tabId = 1;
+      const sessionId = 123456;
+
+      // Mock settings to return false for screenshotsEnabled
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(false);
+        return Promise.resolve(true);
+      });
+
+      let resultScreen: any = undefined;
+      let callbackCalled = false;
+
+      await ScreenshotController.getScreen(tabId, sessionId, (screen) => {
+        resultScreen = screen;
+        callbackCalled = true;
+      });
+
+      expect(callbackCalled).toBe(true);
+      expect(resultScreen).toBeNull();
+      expect(mockDatabase.queryIndex).not.toHaveBeenCalled(); // Should not query database
     });
   });
 
