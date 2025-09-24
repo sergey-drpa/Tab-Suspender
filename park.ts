@@ -308,6 +308,33 @@ function applysSreenshotCssStyle(cssText) {
 	applyPixelRatio(screenImgElement);
 }
 
+function applyScreenshotsVisibility(screenshotsEnabled) {
+	const screenImg = document.getElementById('screen');
+	if (screenshotsEnabled) {
+		// Show screenshots - remove no-screenshot class and show screen element
+		document.body.classList.remove('no-screenshot');
+		screenImg.style.display = '';
+		document.getElementById('title_div').style.display = 'none';
+		document.getElementById('nativeUrl').classList.remove('visible');
+	} else {
+		// Hide screenshots - add no-screenshot class and hide screen element
+		document.body.classList.add('no-screenshot');
+		screenImg.style.display = 'none';
+		document.getElementById('title_div').style.display = 'block';
+		document.getElementById('nativeUrl').classList.add('visible');
+		// Update title and favicon if available
+		if (title) {
+			document.getElementById('title').innerHTML = title;
+			// @ts-expect-error
+			document.getElementById('title').href = new URLSearchParams(window.location.search).get('url');
+		}
+		if (favicon) {
+			// @ts-expect-error
+			document.getElementById('favicon').src = favicon;
+		}
+	}
+}
+
 function createTitleAndIcon(force?) {
 	if(DEBUG) {
 		console.log('createTitleAndIcon...');
@@ -551,6 +578,10 @@ chrome.runtime.onMessage.addListener((message) => {
 			if (message.tabIconStatusVisualize != null) {
 				tabIconStatusVisualize = message.tabIconStatusVisualize;
 				createTitleAndIcon(true);
+			}
+
+			if (message.screenshotsEnabled != null) {
+				applyScreenshotsVisibility(message.screenshotsEnabled);
 			}
 		}).catch(console.error);
 	} else if (message.method === '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]') {

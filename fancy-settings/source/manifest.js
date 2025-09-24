@@ -166,6 +166,35 @@ this.manifest = {
 		},
 		{
 			'tab': 'Suspend Settings',
+			'group': 'Screenshot',
+			'name': 'screenshotsEnabled-description',
+			'type': 'description',
+			'text': 'Enable tab screenshots for suspended tabs - when disabled, suspended tabs will show title and icon only to save memory'
+		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Screenshot',
+			'name': 'screenshotQuality',
+			'type': 'slider',
+			'label': 'Quality of the page preview:',
+			'max': 100,
+			'min': 10,
+			'step': 1,
+			'display': true,
+			'displayModifier': function(value) {
+				'use strict';
+				return Math.floor(value) + ' %';
+			}
+		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Screenshot',
+			'name': 'screen-quality-description',
+			'type': 'description',
+			'text': '10% - Minimum Quality, 100% - Best Quality, Lower quality - lower memory consumption'
+		},
+		{
+			'tab': 'Suspend Settings',
 			'group': 'Advanced',
 			'name': 'discardTabAfterSuspendWithTimeout',
 			'type': 'checkbox',
@@ -298,28 +327,6 @@ this.manifest = {
 			'label': 'Design of Restore button on suspended page: <font color="#0099FF">(New)</font>'
 		},
 
-		{
-			'tab': 'Suspended Page Style',
-			'group': 'Screenshot quality',
-			'name': 'screenshotQuality',
-			'type': 'slider',
-			'label': 'Quality of the page preview:',
-			'max': 100,
-			'min': 10,
-			'step': 1,
-			'display': true,
-			'displayModifier': function(value) {
-				'use strict';
-				return Math.floor(value) + ' %';
-			}
-		},
-		{
-			'tab': 'Suspended Page Style',
-			'group': 'Screenshot quality',
-			'name': 'screen-quality-description',
-			'type': 'description',
-			'text': '10% - Minimum Quality, 100% - Best Quality'
-		},
 		{
 			'tab': 'Suspended Page Style',
 			'group': 'Advanced',
