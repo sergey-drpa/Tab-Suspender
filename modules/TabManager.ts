@@ -185,13 +185,13 @@ class TabManager {
 									if (getScreenCache != null) {
 										getScreenCache.screen = screen;
 										getScreenCache.pixRat = pixRat;
-										resolve();
 										if (debugScreenCache)
 											console.log('Screen cached.');
 									} else {
 										if (debugScreenCache)
 											console.log('Screen cache outdated!');
 									}
+									resolve(); // Always resolve, even if cache was cleared
 								});
 							})
 						};
