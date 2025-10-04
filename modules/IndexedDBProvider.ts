@@ -103,6 +103,10 @@ IndexedDBProvider.prototype.queryIndex = function(query, callback) {
 				console.error('Error', e.target.error);
 				callback(null);
 			};
+		})
+		.catch((e) => {
+			console.error('queryIndex: getTransaction failed:', e);
+			callback(null);
 		});
 };
 
@@ -124,6 +128,10 @@ IndexedDBProvider.prototype.queryIndexCount = function(query, callback) {
 				console.error('Error', e.target.error);
 				callback(0);
 			};
+		})
+		.catch((e) => {
+			console.error('queryIndexCount: getTransaction failed:', e);
+			callback(0);
 		});
 };
 
@@ -185,19 +193,31 @@ IndexedDBProvider.prototype.put = function(query) {
  *
  */
 IndexedDBProvider.prototype.putV2 = function(queries) {
-	this.getTransaction(queries.map(query=>query.IDB.table), 'readwrite')
+	return this.getTransaction(queries.map(query=>query.IDB.table), 'readwrite')
 		.then(function(transaction) {
-			queries.forEach(query => {
-				let store = transaction.objectStore(query.IDB.table);
+			return new Promise<void>((resolve, reject) => {
+				let pendingOperations = queries.length;
+				let hasError = false;
 
-				let request = store.put(query.IDB.data, query.IDB.key);
+				queries.forEach(query => {
+					let store = transaction.objectStore(query.IDB.table);
 
-				request.onerror = function(e) {
-					console.error('Error', e.target.error);
-				};
+					let request = store.put(query.IDB.data, query.IDB.key);
 
-				request.onsuccess = function() {
-				};
+					request.onerror = function(e) {
+						console.error('Error', e.target.error);
+						hasError = true;
+						if (--pendingOperations === 0) {
+							reject(e.target.error);
+						}
+					};
+
+					request.onsuccess = function() {
+						if (--pendingOperations === 0 && !hasError) {
+							resolve();
+						}
+					};
+				});
 			});
 		});
 };
@@ -219,7 +239,10 @@ IndexedDBProvider.prototype.getTransaction = function(tables, mode) {
 						.then(resolve)
 						.catch(reject);
 				}
-			}).catch(console.error);
+			}).catch((e) => {
+				console.error('getTransaction: initializedPromise failed:', e);
+				reject(e);
+			});
 		});
 
 	return new Promise(function(resolve, reject) {

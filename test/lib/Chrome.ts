@@ -73,11 +73,16 @@ const mockRuntime = {
   sendMessage: jest.fn().mockResolvedValue(undefined)
 };
 
+const mockScripting = {
+  executeScript: jest.fn().mockResolvedValue([{ result: 1 }])
+};
+
 (global as any).chrome = {
   storage: mockStorage,
   tabs: mockTabs,
   windows: mockWindows,
-  runtime: mockRuntime
+  runtime: mockRuntime,
+  scripting: mockScripting
 };
 
 // Mock DOM APIs - use Node.js built-in TextEncoder/TextDecoder
@@ -157,9 +162,9 @@ const NodeTextDecoder = require('util').TextDecoder;
 // Mock global functions and variables
 global.btoa = jest.fn((str: string) => Buffer.from(str).toString('base64'));
 global.atob = jest.fn((str: string) => Buffer.from(str, 'base64').toString());
-(global as any).setInterval = jest.fn((fn: Function, ms: number) => 123);
-(global as any).clearInterval = jest.fn();
-(global as any).setTimeout = jest.fn((fn: Function, ms: number) => 456);
+// Spy on setInterval/clearInterval to track calls while keeping real functionality
+jest.spyOn(global, 'setInterval');
+jest.spyOn(global, 'clearInterval');
 (global as any).Date.now = jest.fn(() => 1640995200000); // Fixed timestamp for testing
 
 // Mock additional global functions required by the modules

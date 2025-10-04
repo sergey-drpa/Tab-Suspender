@@ -14,16 +14,14 @@ class TabCapture {
 	async captureTab(tab: chrome.tabs.Tab, options?): Promise<void> {
 
 			if (options == null || options.checkActiveTabNotChanged != true)
-				try {
-					await this._captureTab(tab, options)
-				} catch {/* No need to catch */}
+				return this._captureTab(tab, options);
 			else {
 				const tab_ = await chrome.tabs.get(tab.id); //, function(tab) {
 
 				if (tab_ != null)
-					try {
-						await this._captureTab(tab_, options);
-					} catch {/* No need to catch */}
+					return this._captureTab(tab_, options);
+				else
+					throw new Error('Tab not found');
 			}
 	}
 
@@ -50,19 +48,19 @@ class TabCapture {
 
 						if (actualTab.id !== tab.id) {
 							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, {...actualTab, favIconUrl: undefined});
-							reject();
+							reject(new Error(`Active tab changed [${tab.id}] != [${actualTab.id}]`));
 							return;
 						}
 
 						if (actualTab.url !== tab.url) {
 							console.warn(`Active tab URL to Capture already changed [${tab.url}] != [${actualTab.url}]`, {...actualTab, favIconUrl: undefined});
-							reject();
+							reject(new Error(`Active tab URL changed [${tab.url}] != [${actualTab.url}]`));
 							return;
 						}
 
 						if (actualTab.status !== "complete" && (options == null || !options.tryEvenIncomplete)) {
 							console.warn(`Active tab is not complete[${actualTab.status}], skipping capture`, {...actualTab, favIconUrl: undefined});
-							reject();
+							reject(new Error(`Active tab is not complete[${actualTab.status}]`));
 							return;
 						}
 
@@ -81,7 +79,7 @@ class TabCapture {
 								return;
 							}
 
-							if (tab.status != null && tab.status !== 'loading')
+							if (tab.status != null && (tab.status !== 'loading' || (options != null && options.tryEvenIncomplete)))
 								try {
 									chrome.tabs.captureVisibleTab(tab.windowId, <chrome.tabs.CaptureVisibleTabOptions>{
 										format: 'jpeg',
@@ -90,13 +88,13 @@ class TabCapture {
 
 										if (screen == null || screen == '') {
 											console.warn(new Error(`Empty screen captures!!! id: ${tab.id}`), {...actualTab, favIconUrl: undefined});
-											reject();
+											reject(new Error(`Empty screen captures!!! id: ${tab.id}`));
 											return;
 										}
 
 										if (screen === 'data:,') {
 											console.error(new Error(`Damaged screen [data:,]!!!`), {...actualTab, favIconUrl: undefined});
-											reject();
+											reject(new Error(`Damaged screen [data:,]!!!`));
 											return;
 										}
 
@@ -117,7 +115,7 @@ class TabCapture {
 											'No active web contents to capture',
 											'Cannot access a chrome:// URL'])) {
 											try {
-												reject();
+												reject(new Error('Capture failed due to Chrome API error'));
 												return;
 												// eslint-disable-next-line no-empty,@typescript-eslint/no-unused-vars
 											} catch (e) {
@@ -141,7 +139,7 @@ class TabCapture {
 												func: () => {
 													return window.devicePixelRatio;
 												}
-											}).then((result) => {
+											}).then(async (result) => {
 												try {
 													const returnedDevicePixelRatio = result[0].result;
 													let devicePixelRatio;
@@ -150,7 +148,7 @@ class TabCapture {
 													else
 														TabCapture.lastWindowDevicePixelRatio[tab.windowId] = devicePixelRatio = returnedDevicePixelRatio;
 
-													ScreenshotController.addScreen(tab.id, screen, devicePixelRatio);
+													await ScreenshotController.addScreen(tab.id, screen, devicePixelRatio);
 													tabManager.setLastCaptureUrl(tab);
 
 													if (debug)
@@ -166,31 +164,32 @@ class TabCapture {
 											})
 												.catch((e) => {
 													hasLastError(TabCapture.expectedInjectExceptions, e, `'return window.devicePixelRatio;', ActualTab: ${JSON.stringify({...actualTab, favIconUrl: undefined})}`);
+													reject(e);
 												});
 										} else {
 											console.error(new Error(`Tab canTabBeScripted`), {...actualTab, favIconUrl: undefined});
-											reject();
+											reject(new Error(`Tab cannot be scripted`));
 										}
 									});
 									// eslint-disable-next-line @typescript-eslint/no-unused-vars
 								} catch (e) {
 									// normal behavior
 									console.error(e);
-									reject();
+									reject(e);
 									return;
 								}
 
 							return;
 						}
 						else {
-							reject();
+							reject(new Error('Tab is not active'));
 							return;
 						}
 					}
 				});
 			} catch (e) {
 				console.error(e);
-				reject();
+				reject(e);
 			}
 		});
 	}
@@ -238,3 +237,6 @@ class TabCapture {
 		}
 	}
 }
+
+if (typeof module != "undefined")
+	module.exports = TabCapture;

@@ -76,22 +76,27 @@ class ScreenshotController {
 
 		if (getScreenCache != null) {
 			if (getScreenCache.sessionId == sessionId && getScreenCache.tabId == id) {
-				getScreenCache.getScreenPromise.then(function() {
+				// Check if cache is still being initialized (screen is null) to avoid deadlock
+				if (getScreenCache.screen == null) {
 					if (debugScreenCache)
-						console.log('getScreen then handler added');
-					callback(getScreenCache.screen, getScreenCache.pixRat);
-					getScreenCache = null;
-					if (debugScreenCache)
-						console.log('Screen got from cache!!');
-				}).catch(function(error) {
-					// Always clear cache on error to prevent memory leaks
-					getScreenCache = null;
-					if (debugScreenCache)
-						console.error('getScreen cache promise failed:', error);
-					// Call callback with null to indicate failure
-					callback(null);
-				});
-				return;
+						console.log('Cache is still initializing, skipping to avoid deadlock');
+				} else {
+					try {
+						await getScreenCache.getScreenPromise;
+
+						if (debugScreenCache)
+							console.log('getScreen then handler added');
+						callback(getScreenCache.screen, getScreenCache.pixRat);
+						getScreenCache = null;
+						if (debugScreenCache)
+							console.log('Screen got from cache!!');
+						return;
+					} catch (e) {
+						getScreenCache = null;
+						if (debugScreenCache)
+							console.error('getScreen cache promise failed:', e);
+					}
+				}
 			} else
 				getScreenCache = null;
 		}
@@ -123,7 +128,7 @@ class ScreenshotController {
 		);
 	}
 
-	static addScreen(id: number | string, screen: string, devicePixelRatio: number, date?: Date) {
+	static async addScreen(id: number | string, screen: string, devicePixelRatio: number, date?: Date): Promise<void> {
 
 		if (ScreenshotController.debug)
 			console.warn(`addScreen(${id}, ${screen.length}b, ${devicePixelRatio}pr)`);
@@ -142,7 +147,7 @@ class ScreenshotController {
 					'pixRat': devicePixelRatio
 				};
 
-			database.putV2([
+			await database.putV2([
 					{
 						IDB:
 							{

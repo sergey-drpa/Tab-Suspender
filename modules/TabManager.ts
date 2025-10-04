@@ -292,12 +292,12 @@ class TabManager {
 
 			//console.log(`Fired: OnTab Activated: ${activeInfo.tabId}`, activeInfo);
 
-			const processedPromise = new Promise((resolve, reject) => {
+			const processedPromise = new Promise<chrome.tabs.Tab>((resolve, reject) => {
 
 				let retries = 0;
-				const timeout = setInterval(() => {
+
+				const attemptGetTab = async () => {
 					if (retries > 5) {
-						clearInterval(timeout);
 						console.error('Can\'t request Tab object on TabActivated (5 retries left)', activeInfo);
 						reject();
 						return;
@@ -306,18 +306,24 @@ class TabManager {
 						console.warn(`Trying to request Tab object on TabActivated (${retries})`, activeInfo);
 					}
 					retries++;
+
 					try {
-						chrome.tabs.get(activeInfo.tabId, function(tab) {
-							if (tab != null) {
-								clearInterval(timeout);
-								resolve(tab);
-							}
-						});
+						const tab = await chrome.tabs.get(activeInfo.tabId);
+						if (tab != null) {
+							resolve(tab);
+						} else {
+							// Tab is null, retry after delay
+							setTimeout(attemptGetTab, 150);
+						}
 					} catch (e) {
 						console.log(e);
+						// Continue retrying after delay
+						setTimeout(attemptGetTab, 150);
 					}
+				};
 
-				}, 150);
+				// Start first attempt
+				void attemptGetTab();
 
 			});
 

@@ -59,13 +59,15 @@ describe('ScreenshotController Tests', () => {
   });
 
   describe('addScreen', () => {
-    it('should add screenshot to database', () => {
+    it('should add screenshot to database and await completion', async () => {
       const tabId = 1;
       const screenData = 'data:image/jpeg;base64,dGVzdA==';
       const pixelRatio = 2;
       const testDate = new Date('2024-01-01');
 
-      ScreenshotController.addScreen(tabId, screenData, pixelRatio, testDate);
+      mockDatabase.putV2.mockResolvedValue(undefined);
+
+      await ScreenshotController.addScreen(tabId, screenData, pixelRatio, testDate);
 
       expect(mockDatabase.putV2).toHaveBeenCalledWith([
         {
@@ -83,12 +85,14 @@ describe('ScreenshotController Tests', () => {
       ]);
     });
 
-    it('should handle string tabId', () => {
+    it('should handle string tabId', async () => {
       const tabId = '123';
       const screenData = 'data:image/png;base64,aGVsbG8=';
       const pixelRatio = 1;
 
-      ScreenshotController.addScreen(tabId, screenData, pixelRatio);
+      mockDatabase.putV2.mockResolvedValue(undefined);
+
+      await ScreenshotController.addScreen(tabId, screenData, pixelRatio);
 
       expect(mockDatabase.putV2).toHaveBeenCalledWith([
         {
@@ -106,19 +110,51 @@ describe('ScreenshotController Tests', () => {
       ]);
     });
 
-    it('should not add if screen is null', () => {
-      ScreenshotController.addScreen(1, null, 2);
+    it('should not add if screen is null', async () => {
+      await ScreenshotController.addScreen(1, null, 2);
       expect(mockDatabase.putV2).not.toHaveBeenCalled();
     });
 
-    it('should warn if devicePixelRatio is null', () => {
+    it('should warn if devicePixelRatio is null', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       const screenData = 'data:image/jpeg;base64,dGVzdA==';
 
-      ScreenshotController.addScreen(1, screenData, null);
+      mockDatabase.putV2.mockResolvedValue(undefined);
+
+      await ScreenshotController.addScreen(1, screenData, null);
 
       expect(consoleSpy).toHaveBeenCalledWith('addScreen(): devicePixelRatio is null!!!');
       consoleSpy.mockRestore();
+    });
+
+    it('should propagate database errors', async () => {
+      const tabId = 1;
+      const screenData = 'data:image/jpeg;base64,dGVzdA==';
+      const pixelRatio = 2;
+      const dbError = new Error('Database write failed');
+
+      mockDatabase.putV2.mockRejectedValue(dbError);
+
+      await expect(
+        ScreenshotController.addScreen(tabId, screenData, pixelRatio)
+      ).rejects.toThrow('Database write failed');
+    });
+
+    it('should wait for putV2 to complete before resolving', async () => {
+      const tabId = 1;
+      const screenData = 'data:image/jpeg;base64,dGVzdA==';
+      const pixelRatio = 2;
+      let putCompleted = false;
+
+      mockDatabase.putV2.mockImplementation(async () => {
+        // Simulate async operation
+        await Promise.resolve();
+        putCompleted = true;
+      });
+
+      expect(putCompleted).toBe(false);
+      await ScreenshotController.addScreen(tabId, screenData, pixelRatio);
+      expect(putCompleted).toBe(true);
     });
   });
 
@@ -340,11 +376,13 @@ describe('ScreenshotController Tests', () => {
       expect(result.screen).toBe('db-screen'); // Should get data from DB
     });
 
-    it('should handle cache promise errors without memory leaks', async () => {
+    it('should handle cache promise errors and fall back to database', async () => {
       const tabId = 1;
       const sessionId = 123456;
       const cachedScreen = 'cached-screen-data';
       const cachedPixelRatio = 1.5;
+      const dbScreen = 'db-screen';
+      const dbPixelRatio = 2;
 
       // Ensure database is initialized for this test
       mockDatabase.isInitialized.mockReturnValue(true);
@@ -360,16 +398,135 @@ describe('ScreenshotController Tests', () => {
         pixRat: cachedPixelRatio
       };
 
-      // Use Promise to handle the callback and properly catch the rejection
-      const result = await new Promise<string | null>((resolve) => {
-        ScreenshotController.getScreen(tabId, sessionId, (screen) => {
-          resolve(screen);
+      // Mock database to return fallback data
+      mockDatabase.queryIndex.mockImplementation((config, callback) => {
+        callback({
+          screen: dbScreen,
+          pixRat: dbPixelRatio
         });
       });
 
-      // Should return null when cache promise fails
-      expect(result).toBeNull();
+      // Use Promise to handle the callback and properly catch the rejection
+      const result = await new Promise<{screen: string, pixelRatio: number}>((resolve) => {
+        ScreenshotController.getScreen(tabId, sessionId, (screen, pixelRatio) => {
+          resolve({ screen, pixelRatio });
+        });
+      });
+
+      // Should fall back to database when cache promise fails
+      expect(result.screen).toBe(dbScreen);
+      expect(result.pixelRatio).toBe(dbPixelRatio);
       expect((global as any).getScreenCache).toBeNull(); // Should clear cache after error
+      expect(mockDatabase.queryIndex).toHaveBeenCalled(); // Should query database as fallback
+    });
+
+    it('should skip cache and query database when cache is still initializing (deadlock prevention)', async () => {
+      const tabId = 1;
+      const sessionId = 123456;
+      const dbScreen = 'db-screen-data';
+      const dbPixelRatio = 2;
+
+      // Ensure database is initialized for this test
+      mockDatabase.isInitialized.mockReturnValue(true);
+
+      // Set up cache that's still initializing (screen is null)
+      // This simulates the scenario where TabManager creates the cache and calls getScreen
+      // from within the promise callback, which would cause a deadlock without the fix
+      let promiseResolve: () => void;
+      const cachePromise = new Promise<void>((resolve) => {
+        promiseResolve = resolve;
+      });
+
+      (global as any).getScreenCache = {
+        sessionId: sessionId,
+        tabId: tabId,
+        getScreenPromise: cachePromise,
+        screen: null, // Still initializing - this is the key to triggering deadlock prevention
+        pixRat: null
+      };
+
+      // Mock database to return data
+      mockDatabase.queryIndex.mockImplementation((config, callback) => {
+        expect(config.params).toEqual([tabId, sessionId]);
+        callback({
+          screen: dbScreen,
+          pixRat: dbPixelRatio
+        });
+      });
+
+      // Call getScreen - should skip cache and query database
+      const result = await new Promise<{screen: string, pixelRatio: number}>((resolve) => {
+        ScreenshotController.getScreen(tabId, sessionId, (screen, pixelRatio) => {
+          resolve({ screen, pixelRatio });
+        });
+      });
+
+      // Verify it queried the database instead of waiting for cache
+      expect(mockDatabase.queryIndex).toHaveBeenCalled();
+      expect(result.screen).toBe(dbScreen);
+      expect(result.pixelRatio).toBe(dbPixelRatio);
+
+      // Cache should still exist (not cleared) since we only skipped it
+      expect((global as any).getScreenCache).not.toBeNull();
+    });
+
+    it('should avoid deadlock when cache is being initialized by the same call', async () => {
+      const tabId = 1;
+      const sessionId = 123456;
+      const dbScreen = 'data:image/jpeg;base64,dGVzdA==';
+      const dbPixelRatio = 1.5;
+
+      // Ensure database is initialized
+      mockDatabase.isInitialized.mockReturnValue(true);
+
+      // This test simulates the exact deadlock scenario:
+      // 1. TabManager creates cache with null screen
+      // 2. TabManager's promise callback calls ScreenshotController.getScreen
+      // 3. That call sees the cache it's initializing and would try to await it (deadlock!)
+      // 4. With the fix, it should skip the cache since screen is null
+
+      // Simulate TabManager's behavior
+      let getScreenCallbackExecuted = false;
+
+      // Create cache like TabManager does
+      (global as any).getScreenCache = {
+        sessionId: sessionId,
+        tabId: tabId,
+        getScreenPromise: new Promise<void>((resolve) => {
+          // Inside the promise, TabManager would call getScreen
+          // Mock database to return data when queried
+          mockDatabase.queryIndex.mockImplementation((config, callback) => {
+            callback({
+              screen: dbScreen,
+              pixRat: dbPixelRatio
+            });
+          });
+
+          // This is the call that would deadlock without the fix
+          ScreenshotController.getScreen(tabId, sessionId, (screen, pixRat) => {
+            // Update cache with results (like TabManager does)
+            if ((global as any).getScreenCache != null) {
+              (global as any).getScreenCache.screen = screen;
+              (global as any).getScreenCache.pixRat = pixRat;
+            }
+            getScreenCallbackExecuted = true;
+            resolve();
+          });
+        }),
+        screen: null, // Still initializing
+        pixRat: null
+      };
+
+      // Wait for the promise to resolve
+      await (global as any).getScreenCache.getScreenPromise;
+
+      // Verify the callback was executed (no deadlock)
+      expect(getScreenCallbackExecuted).toBe(true);
+      expect(mockDatabase.queryIndex).toHaveBeenCalled();
+
+      // Cache should now have the data
+      expect((global as any).getScreenCache.screen).toBe(dbScreen);
+      expect((global as any).getScreenCache.pixRat).toBe(dbPixelRatio);
     });
 
     it('should return null when screenshots are disabled', async () => {

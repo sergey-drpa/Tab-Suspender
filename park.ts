@@ -7,8 +7,8 @@
 
 void (async ()=>{
 // eslint-disable-next-line no-redeclare
-const DEBUG = false;
-const debugPerformance = false;
+const DEBUG = true;
+const debugPerformance = true;
 
 if (debugPerformance) {
 	console.log('Compiled inside: ', Date.now());
@@ -179,6 +179,11 @@ try {
 							//drawContent(bgpage);
 							setTimeout(continueStart, 0);
 						}
+					}).catch((e) => {
+						console.error('screenPromise failed or timeout:', e);
+						// Continue rendering page without screenshot
+						setTimeout(() => { drawContent(parkData);}, 0);
+						setTimeout(continueStart, 0);
 					});
 
 					if (debugPerformance)
@@ -457,9 +462,12 @@ function cssScale(): string {
 		console.log('screenshotDevicePixelRatio: ', screenshotDevicePixelRatio);
 	}
 
-	if (screenshotDevicePixelRatio != 1 || globalParkData.tabInfo.zoomFactor != 1) {
-		let scale = 1 / screenshotDevicePixelRatio;
-		if (globalParkData.tabInfo != null && globalParkData.tabInfo.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
+	// Guard: if screenshotDevicePixelRatio is not set yet, use window.devicePixelRatio as fallback
+	const pixelRatio = screenshotDevicePixelRatio ?? window.devicePixelRatio ?? 1;
+
+	if (pixelRatio != 1 || globalParkData?.tabInfo?.zoomFactor != 1) {
+		let scale = 1 / pixelRatio;
+		if (globalParkData?.tabInfo?.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
 			scale *= globalParkData.tabInfo.zoomFactor;
 		}
 		return 'scale(' + scale + ', ' + scale + ')';

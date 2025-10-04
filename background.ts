@@ -296,7 +296,7 @@ function start() {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				bgMessageListener = new BGMessageListener(tabManager);
 
-				setTimeout(() => void trackView('started', { version: chrome.runtime.getManifest().version }), 5000);
+				setTimeout(() => void trackView('TS started', { version: chrome.runtime.getManifest().version }), 5000);
 
 				const isAlreadyHasSyncSettings = ((await LocalStore.get(LocalStoreKeys.INSTALLED)) != null && !chrome.extension.inIncognitoContext);
 				if (firstInstallation && !isAlreadyHasSyncSettings) {
@@ -305,7 +305,7 @@ function start() {
 					setTimeout(() => void trackView(LocalStoreKeys.INSTALLED), 5000);
 				} else {
 					console.log('EX: Updated!');
-					setTimeout(() => void trackView('updated'), 5000);
+					//setTimeout(() => void trackView('updated'), 5000);
 					if (!isAlreadyHasSyncSettings) {
 						LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					}
