@@ -329,7 +329,7 @@ function applyScreenshotsVisibility(screenshotsEnabled) {
 		document.getElementById('nativeUrl').classList.add('visible');
 		// Update title and favicon if available
 		if (title) {
-			document.getElementById('title').innerHTML = title;
+			document.getElementById('title').textContent = title;
 			// @ts-expect-error
 			document.getElementById('title').href = new URLSearchParams(window.location.search).get('url');
 		}
@@ -508,7 +508,7 @@ function drawContent(parkData) {
 		// Enhanced text-only mode when screenshots are disabled
 		screenImg.style.display = 'none';
 		document.body.classList.add('no-screenshot');
-		document.getElementById('title').innerHTML = title;
+		document.getElementById('title').textContent = title;
 		// @ts-expect-error
 		document.getElementById('title').href = searchParams.get('url');
 		// @ts-expect-error
