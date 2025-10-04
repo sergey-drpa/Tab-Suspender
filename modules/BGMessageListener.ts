@@ -111,7 +111,11 @@ class BGMessageListener {
 										dataUrl = 'data:image/svg+xml;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
 									} else if (contentType.startsWith('image/jpeg')) {
 										dataUrl = 'data:image/jpeg;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
-									}else if (contentType.startsWith('application/octet-stream')) {
+									} else if (contentType.startsWith('image/webp')) {
+										dataUrl = 'data:image/webp;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
+									} else if (contentType.startsWith('image/ico')) {
+										dataUrl = 'data:image/ico;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
+									} else if (contentType.startsWith('application/octet-stream')) {
 										dataUrl = 'data:image/x-icon;base64,' + dataUrl.substring(dataUrl.indexOf(this.BASE64_SEPARATOR) + this.BASE64_SEPARATOR_LENGTH);
 										console.warn(`Strange favIcon contentType[${contentType}]`, dataUrl);
 									} else {
@@ -354,8 +358,7 @@ class BGMessageListener {
 				})();
 				return true;
 			} else if (request.method === '[AutomaticTabCleaner:importAllSettings]') {
-				settings.removeAll().then(()=>{
-					settings = new SettingsStore(SETTINGS_STORAGE_NAMESPACE, { ...DEFAULT_SETTINGS, ...request.settings }, offscreenDocumentProvider);
+				settings.importWithClear(request.settings).then(()=>{
 					LocalStore.set(LocalStoreKeys.INSTALLED, true).catch(console.error);
 					SettingsPageController.reloadSettings(/*{fromSettingsPage: true}*/).catch(console.error);
 				}).catch(console.error);

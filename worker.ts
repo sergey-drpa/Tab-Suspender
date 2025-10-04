@@ -32,6 +32,7 @@ try {
 		'modules/pageOpener.js',
 		'modules/DbUtils.js',
 		'modules/OffscreenDocumentProvider.js',
+		'modules/SessionRestoreDetector.js',
 		'background.js'
 	);
 } catch (e) {

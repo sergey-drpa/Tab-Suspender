@@ -81,6 +81,40 @@
 			z-index: 0
 	}
 
+  .no-screenshot #title_div {
+      top: 19%;
+			transform: translateY(-50%);
+			font-size: 24px;
+			padding: 20px;
+			background: rgba(255, 255, 255, 0.9);
+			border-radius: 10px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			margin: 0 40px;
+      width: calc(100% - 120px);
+	}
+
+	.no-screenshot #title_div .title {
+			font-size: 18px;
+			line-height: 22px;
+			color: #333;
+			display: block;
+			margin: 10px 0;
+	}
+
+	/* Ensure .label styling is not affected by .no-screenshot */
+	.no-screenshot .label {
+			position: absolute;
+			bottom: 0;
+			right: 0;
+			z-index: 1000;
+			background-color: #fff;
+			border-radius: 5px 0 0 0;
+			padding-left: 3px;
+			border-left: 1px #999 solid;
+			border-top: 1px #999 solid;
+			padding-top: 3px;
+	}
+
 	.title {
 			font-family: Trebuchet MS;
 			font-size: 14px;
@@ -242,7 +276,7 @@
 	</style>
 </head>
 <body id="body" style="margin:0;padding:0;overflow:hidden">
-<div id="title_div" style="display:none"><a id="titleImg" href="#"><img id="favicon" style="width:16px;height:16px"></a><a
+<div id="title_div" style="display:none"><a id="titleImg" href="#"><img id="favicon" style="width: 32px;height: 32px;vertical-align: middle;padding-right: 7px;"></a><a
 	id="title" href="" style="color:#428bca"></a></div>
 <div id="topRestore" class="topRestore" style="display:none" title="Click to restore..."></div>
 <div class="label"><a id="link" target="_blank" rel="noopener" href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh" class="title">Tab Suspender<span style="font-size:12px">&copy;</span></a></div>

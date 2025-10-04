@@ -26,6 +26,7 @@ interface ITabInfo {
 	parkedUrl: string;
 	lstCapTime: number;
 	lstSwchTime: number;
+	missingCheckTime: number;
 }
 
 interface TabInfoClosedInfo {
@@ -63,6 +64,7 @@ class TabInfo implements ITabInfo {
 	private _parkedUrl: string;
 	private _lstCapTime: number;
 	private _lstSwchTime: number;
+	private _missingCheckTime: number;
 
 	constructor(tab: chrome.tabs.Tab) {
 		this._id = tab.id;
@@ -86,6 +88,7 @@ class TabInfo implements ITabInfo {
 		this._parkedUrl = null;
 		this._lstCapTime = null;
 		this._lstSwchTime = null;
+		this._missingCheckTime = null;
 	}
 
 	toObject(): ITabInfo {
@@ -315,6 +318,14 @@ class TabInfo implements ITabInfo {
 
 	set closed(value: TabInfoClosedInfo) {
 		this._closed = value;
+	}
+
+	get missingCheckTime(): number {
+		return this._missingCheckTime;
+	}
+
+	set missingCheckTime(value: number) {
+		this._missingCheckTime = value;
 	}
 }
 

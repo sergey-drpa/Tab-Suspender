@@ -34,7 +34,7 @@ async function getTabId() {
 	});
 
 	/* General */
-	const ICON_DIMENSION = 16;
+	const ICON_DIMENSION = 32;
 	const WIZARD_FRAME_ID = 'ATCSDialogWizadriFrame';
 	const ADD_TO_WHITELIST_FRAME_ID = 'ATCSDialogiFrame';
 	const waitWindow = 1000;

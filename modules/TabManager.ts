@@ -50,21 +50,47 @@ class TabManager {
 	}
 
 	arrayBufferToBase64( buffer: ArrayBuffer ): string {
-		let binary = '';
 		const bytes = new Uint8Array( buffer );
 		const len = bytes.byteLength;
-		for (let i = 0; i < len; i++) {
-			binary += String.fromCharCode( bytes[ i ] );
+
+		// For small buffers, use the simple approach
+		if (len <= 8192) {
+			return btoa(String.fromCharCode.apply(null, Array.from(bytes)));
 		}
-		return btoa( binary );
+
+		// For larger buffers, use chunked processing to avoid call stack limits
+		const chunkSize = 8192;
+		let binary = '';
+
+		for (let i = 0; i < len; i += chunkSize) {
+			const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+			binary += String.fromCharCode.apply(null, Array.from(chunk));
+		}
+
+		return btoa(binary);
 	}
 
 	base64ToArrayBuffer(base64: string): ArrayBuffer {
 		const binaryString = atob(base64);
-		const bytes = new Uint8Array(binaryString.length);
-		for (let i = 0; i < binaryString.length; i++) {
-			bytes[i] = binaryString.charCodeAt(i);
+		const len = binaryString.length;
+		const bytes = new Uint8Array(len);
+
+		// For small strings, use the simple approach
+		if (len <= 8192) {
+			for (let i = 0; i < len; i++) {
+				bytes[i] = binaryString.charCodeAt(i);
+			}
+		} else {
+			// For larger strings, use chunked processing for better performance
+			const chunkSize = 8192;
+			for (let i = 0; i < len; i += chunkSize) {
+				const end = Math.min(i + chunkSize, len);
+				for (let j = i; j < end; j++) {
+					bytes[j] = binaryString.charCodeAt(j);
+				}
+			}
 		}
+
 		return bytes.buffer;
 	}
 
@@ -159,13 +185,13 @@ class TabManager {
 									if (getScreenCache != null) {
 										getScreenCache.screen = screen;
 										getScreenCache.pixRat = pixRat;
-										resolve();
 										if (debugScreenCache)
 											console.log('Screen cached.');
 									} else {
 										if (debugScreenCache)
 											console.log('Screen cache outdated!');
 									}
+									resolve(); // Always resolve, even if cache was cleared
 								});
 							})
 						};
@@ -224,10 +250,12 @@ class TabManager {
 
 			if (changeInfo.url != null) {
 				if (tabInfo.parkedUrl != null &&
-					tabInfo.parkedUrl != changeInfo.url)
-					if (!(changeInfo.url.indexOf(parkUrl) == 0 && tabInfo.parkedUrl.indexOf(parkUrl) < 0)) {
+					tabInfo.parkedUrl != changeInfo.url) {
+					// Clear parkedUrl only when navigating to a new regular URL (not parkUrl)
+					if (changeInfo.url.indexOf(parkUrl) !== 0) {
 						tabInfo.parkedUrl = null;
 					}
+				}
 			}
 
 			if (TabManager.isTabParked(tab)) {
@@ -264,12 +292,12 @@ class TabManager {
 
 			//console.log(`Fired: OnTab Activated: ${activeInfo.tabId}`, activeInfo);
 
-			const processedPromise = new Promise((resolve, reject) => {
+			const processedPromise = new Promise<chrome.tabs.Tab>((resolve, reject) => {
 
 				let retries = 0;
-				const timeout = setInterval(() => {
+
+				const attemptGetTab = async () => {
 					if (retries > 5) {
-						clearInterval(timeout);
 						console.error('Can\'t request Tab object on TabActivated (5 retries left)', activeInfo);
 						reject();
 						return;
@@ -278,18 +306,24 @@ class TabManager {
 						console.warn(`Trying to request Tab object on TabActivated (${retries})`, activeInfo);
 					}
 					retries++;
+
 					try {
-						chrome.tabs.get(activeInfo.tabId, function(tab) {
-							if (tab != null) {
-								clearInterval(timeout);
-								resolve(tab);
-							}
-						});
+						const tab = await chrome.tabs.get(activeInfo.tabId);
+						if (tab != null) {
+							resolve(tab);
+						} else {
+							// Tab is null, retry after delay
+							setTimeout(attemptGetTab, 150);
+						}
 					} catch (e) {
 						console.log(e);
+						// Continue retrying after delay
+						setTimeout(attemptGetTab, 150);
 					}
+				};
 
-				}, 150);
+				// Start first attempt
+				void attemptGetTab();
 
 			});
 
@@ -352,6 +386,8 @@ class TabManager {
 		this.tabInfos[removedTabId].newRefId = addedTabId;
 
 		chrome.tabs.get(addedTabId, (tab) => {
+			if (tab == null)
+				return;
 			if (tab.url.indexOf(parkUrl) == 0) {
 				const originTabId = parseUrlParam(tab.url, 'tabId');
 
@@ -471,9 +507,7 @@ class TabManager {
 	}
 
 	private deleteTab(tabId: string) {
-		const tabInfo = this.getTabInfoById(tabId);
-
-		if (tabInfo != null)
+		if (this.tabInfos.hasOwnProperty(tabId))
 			delete this.tabInfos[tabId];
 	}
 
@@ -486,13 +520,22 @@ class TabManager {
 		let tabInfo = this.getTabInfoById(tab.id);
 
 		/* If Parked Tab (Usually after browser restart) */
-		if(tab.url.startsWith(parkUrl)) {
+		if(tabInfo == null && tab.url.startsWith(parkUrl)) {
 			const removedTabId = parseInt(parseUrlParam(tab.url, 'tabId'));
+			const originalUrl = parseUrlParam(tab.url, 'url');
+			console.log(`Found parked[${removedTabId}] Tab[${tab.id}] without TabInfo, starting id replace..`);
+			if (this.tabInfos[removedTabId] == null) {
+				// Create TabInfo with proper original data
+				const restoredTabInfo = new TabInfo({ id: removedTabId, url: originalUrl } as chrome.tabs.Tab);
+				restoredTabInfo.parkedUrl = originalUrl;
+				restoredTabInfo.parked = true;
+				this.tabInfos[removedTabId] = restoredTabInfo;
+			}
 			tabInfo = this.onTabReplaceDetected(tab.id, removedTabId);
 		}
 
 		if (tabInfo == null)
-			tabInfo = tabManager.createNewTabInfo(tab);
+			tabInfo = this.createNewTabInfo(tab);
 
 		return tabInfo;
 	};
@@ -513,7 +556,7 @@ class TabManager {
 	}
 
 	findReplacedTabId(tabId: number): number {
-		const tabInfo = tabManager.getTabInfoById(tabId);
+		const tabInfo = this.getTabInfoById(tabId);
 		if (tabInfo && tabInfo.newRefId != null)
 			tabId = tabInfo.newRefId;
 		return tabId;
@@ -572,7 +615,7 @@ class TabManager {
 		tabInfo.lstCapTime = Date.now();
 	}
 
-	calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
+	public calculateAndMarkClosedTabs(openedChromeTabs: { [key: number]: chrome.tabs.Tab }) {
 
 		const suspendedChromeTabs = {};
 		Object.values(openedChromeTabs).forEach((tab) => {
@@ -582,16 +625,31 @@ class TabManager {
 			}
 		});
 
+		// Grace period before marking tabs as closed to handle API timing issues
+		const GRACE_PERIOD_MS = 30000; // 30 seconds
+
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
 				if (openedChromeTabs[tabId] == null && suspendedChromeTabs[tabId] == null) {
-					console.log(`Tab ${tabId} was marked as closed cause it's not in opened and suspended tabs`);
 					if (tabInfo.closed == null) {
-						tabInfo.closed = <TabInfoClosedInfo>{
-							at: Date.now(),
-							tsSessionId: TSSessionId,
-						};
+						// Mark as potentially closed, but give grace period
+						if (!tabInfo.missingCheckTime) {
+							tabInfo.missingCheckTime = Date.now();
+						} else if (Date.now() - tabInfo.missingCheckTime > GRACE_PERIOD_MS) {
+							// Only mark as closed after grace period
+							console.log(`Tab ${tabId} marked as closed after grace period`);
+							tabInfo.closed = <TabInfoClosedInfo>{
+								at: Date.now(),
+								tsSessionId: TSSessionId,
+							};
+							tabInfo.missingCheckTime = null;
+						}
+					}
+				} else {
+					// Tab found again, clear missing check
+					if (tabInfo.missingCheckTime != null) {
+						tabInfo.missingCheckTime = null;
 					}
 				}
 			}
@@ -602,7 +660,11 @@ class TabManager {
 		for (const tabId in this.tabInfos) {
 			if (this.tabInfos.hasOwnProperty(tabId)) {
 				const tabInfo = this.tabInfos[tabId];
-				if (tabInfo.closed != null) {
+				if (tabInfo == null) {
+					console.warn(`TabInfo[${tabId}] exist, but undefined!`);
+					this.deleteTab(tabId);
+				}
+				else if (tabInfo.closed != null) {
 					if (Date.now() > tabInfo.closed.at + this.TAB_INFO_CLEANUP_TTL_MS) {
 						console.log(`Clear closed tab[${tabId}]`, tabInfo);
 						this.deleteTab(tabId);
@@ -619,6 +681,10 @@ class TabManager {
 
 		// Pinned Tab
 		if (tab.pinned == true && await settings.get('pinned'))
+			return true;
+
+		// Grouped Tab
+		if (tab.groupId !== -1 && await settings.get('ignoreSuspendGroupedTabs'))
 			return true;
 
 		//Tab Ignore List

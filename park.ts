@@ -7,8 +7,8 @@
 
 void (async ()=>{
 // eslint-disable-next-line no-redeclare
-const DEBUG = false;
-const debugPerformance = false;
+const DEBUG = true;
+const debugPerformance = true;
 
 if (debugPerformance) {
 	console.log('Compiled inside: ', Date.now());
@@ -179,6 +179,11 @@ try {
 							//drawContent(bgpage);
 							setTimeout(continueStart, 0);
 						}
+					}).catch((e) => {
+						console.error('screenPromise failed or timeout:', e);
+						// Continue rendering page without screenshot
+						setTimeout(() => { drawContent(parkData);}, 0);
+						setTimeout(continueStart, 0);
 					});
 
 					if (debugPerformance)
@@ -308,6 +313,33 @@ function applysSreenshotCssStyle(cssText) {
 	applyPixelRatio(screenImgElement);
 }
 
+function applyScreenshotsVisibility(screenshotsEnabled) {
+	const screenImg = document.getElementById('screen');
+	if (screenshotsEnabled) {
+		// Show screenshots - remove no-screenshot class and show screen element
+		document.body.classList.remove('no-screenshot');
+		screenImg.style.display = '';
+		document.getElementById('title_div').style.display = 'none';
+		document.getElementById('nativeUrl').classList.remove('visible');
+	} else {
+		// Hide screenshots - add no-screenshot class and hide screen element
+		document.body.classList.add('no-screenshot');
+		screenImg.style.display = 'none';
+		document.getElementById('title_div').style.display = 'block';
+		document.getElementById('nativeUrl').classList.add('visible');
+		// Update title and favicon if available
+		if (title) {
+			document.getElementById('title').textContent = title;
+			// @ts-expect-error
+			document.getElementById('title').href = new URLSearchParams(window.location.search).get('url');
+		}
+		if (favicon) {
+			// @ts-expect-error
+			document.getElementById('favicon').src = favicon;
+		}
+	}
+}
+
 function createTitleAndIcon(force?) {
 	if(DEBUG) {
 		console.log('createTitleAndIcon...');
@@ -430,9 +462,12 @@ function cssScale(): string {
 		console.log('screenshotDevicePixelRatio: ', screenshotDevicePixelRatio);
 	}
 
-	if (screenshotDevicePixelRatio != 1 || globalParkData.tabInfo.zoomFactor != 1) {
-		let scale = 1 / screenshotDevicePixelRatio;
-		if (globalParkData.tabInfo != null && globalParkData.tabInfo.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
+	// Guard: if screenshotDevicePixelRatio is not set yet, use window.devicePixelRatio as fallback
+	const pixelRatio = screenshotDevicePixelRatio ?? window.devicePixelRatio ?? 1;
+
+	if (pixelRatio != 1 || globalParkData?.tabInfo?.zoomFactor != 1) {
+		let scale = 1 / pixelRatio;
+		if (globalParkData?.tabInfo?.zoomFactor != null && globalParkData.tabInfo.zoomFactor != 1) {
 			scale *= globalParkData.tabInfo.zoomFactor;
 		}
 		return 'scale(' + scale + ', ' + scale + ')';
@@ -470,8 +505,10 @@ function drawContent(parkData) {
 	applyPixelRatio(screenImg);
 
 	if (bgScreen == null) {
+		// Enhanced text-only mode when screenshots are disabled
 		screenImg.style.display = 'none';
-		document.getElementById('title').innerHTML = title;
+		document.body.classList.add('no-screenshot');
+		document.getElementById('title').textContent = title;
 		// @ts-expect-error
 		document.getElementById('title').href = searchParams.get('url');
 		// @ts-expect-error
@@ -549,6 +586,10 @@ chrome.runtime.onMessage.addListener((message) => {
 			if (message.tabIconStatusVisualize != null) {
 				tabIconStatusVisualize = message.tabIconStatusVisualize;
 				createTitleAndIcon(true);
+			}
+
+			if (message.screenshotsEnabled != null) {
+				applyScreenshotsVisibility(message.screenshotsEnabled);
 			}
 		}).catch(console.error);
 	} else if (message.method === '[AutomaticTabCleaner:DrawAddPageToWhiteListDialog]') {

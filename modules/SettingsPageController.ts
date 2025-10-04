@@ -7,6 +7,7 @@ interface UpdateTabSettingsBGMessage {
 	restoreButtonView: string;
 	tabIconOpacityChange: boolean;
 	tabIconStatusVisualize: boolean;
+	screenshotsEnabled: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,7 +51,8 @@ class SettingsPageController {
 			screenshotCssStyle: await getScreenshotCssStyle(),
 			restoreButtonView: await getRestoreButtonView(),
 			tabIconOpacityChange: await getTabIconOpacityChange(),
-			tabIconStatusVisualize: await getTabIconStatusVisualize()
+			tabIconStatusVisualize: await getTabIconStatusVisualize(),
+			screenshotsEnabled: await settings.get('screenshotsEnabled')
 		}).catch(console.error);
 	}
 }

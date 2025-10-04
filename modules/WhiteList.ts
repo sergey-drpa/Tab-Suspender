@@ -17,7 +17,7 @@ class WhiteList {
 
 	private readonly persistKey: string;
 	private settings: SettingsStore;
-	private patternList: WhiteListPattern[];
+	private patternList: WhiteListPattern[] = [];
 
 	constructor(settings: SettingsStore) {
 		this.persistKey = 'exceptionPatternsV2';
@@ -80,7 +80,7 @@ class WhiteList {
 	/**
 	 *
 	 */
-	createPatternObject(pattern: string) : WhiteListPattern | null {
+	private createPatternObject(pattern: string) : WhiteListPattern | null {
 		'use strict';
 
 		if (!this.isWrongPattern(pattern)) {
@@ -94,9 +94,9 @@ class WhiteList {
 	}
 
 	/**
-	 *
+	 * Receive url string pattern without protocol section!
 	 */
-	async addPattern(pattern) {
+	async addPattern(pattern: string) {
 
 		let patternObject;
 		if (pattern != null && (patternObject = this.createPatternObject(pattern)) != null) {
@@ -181,7 +181,9 @@ class WhiteList {
 	/**
 	 *
 	 */
-	trimUrl(url) : string | null {
+	private trimUrl(url) : string | null {
+		if (url == null)
+			return null;
 
 		/* Acceptable protocols: */
 		if (url.substring(0, 7) == 'http://')
@@ -235,3 +237,8 @@ class WhiteList {
 		chrome.tabs.sendMessage(tabId, { method: '[AutomaticTabCleaner:hideDialogRequetToTab]', options: options }).catch(console.error);
 	}
 }
+
+if (typeof module != 'undefined')
+	module.exports = {
+		WhiteList,
+	}
