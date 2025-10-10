@@ -709,9 +709,17 @@ class TabManager {
 		}
 	}
 
-	checkAndTurnOffAutoDiscardable(tab) {
+	checkAndTurnOffAutoDiscardable(tab: chrome.tabs.Tab) {
 		if (tab.autoDiscardable === true)
-			chrome.tabs.update(tab.id, { autoDiscardable: false }).catch(console.error);
+			try {
+				chrome.tabs.update(tab.id, { autoDiscardable: false }).catch(console.error);
+			} catch (error) {
+				if (error.message.includes('split mode')) {
+					console.log('Tab is in split mode, skipping autoDiscardable setting');
+				} else {
+					throw error;
+				}
+			}
 	};
 
 	private static readonly CHROME_STORE_URL_1 = 'https://chrome.google.com/webstore';
