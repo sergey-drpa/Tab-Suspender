@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
 	"name": "__MSG_extName__",
-	"short_name": "TabSuspender",
+	"short_name": "Tab Suspender",
     "version": "2.0.7.2",
     "minimum_chrome_version": "116",
 
