@@ -187,6 +187,24 @@ async function getTabId() {
 	document.addEventListener('keypress', onevent, true);
 	window.addEventListener('load', onevent, true);
 
+	// Track Ctrl+Click (Cmd+Click on Mac) on links to open tabs in suspended mode
+	document.addEventListener('click', function(e) {
+		// @ts-ignore
+		const target = e.target as HTMLElement;
+		const link = target.closest('a');
+
+		// Check for Ctrl+Click (Windows/Linux) or Cmd+Click (Mac)
+		const isModifierClick = e.ctrlKey || e.metaKey;
+
+		if (link && isModifierClick && link.href && link.target !== '_self') {
+			// Notify background that next tab should be suspended
+			chrome.runtime.sendMessage({
+				'method': '[AutomaticTabCleaner:CtrlClickDetected]',
+				'url': link.href
+			}).catch(console.error);
+		}
+	}, true);
+
 	let suspendedPagesUrls = [];
 
 	chrome.runtime.onMessage.addListener(function(request: any, sender, sendResponse) {

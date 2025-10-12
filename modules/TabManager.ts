@@ -149,6 +149,33 @@ class TabManager {
 
 			self.historyOpenerController.onNewTab(tab);
 
+			// Check if tab should be suspended (Ctrl+Click or Cmd+Click)
+			if (nextTabShouldBeSuspended && tab.active === false && await settings.get('suspendOnCtrlClick')) {
+				nextTabShouldBeSuspended = false; // Reset flag
+
+				// Get URL for suspension
+				const urlForSuspend = tab.pendingUrl || tab.url;
+
+				// Verify URL is valid before marking for suspension
+				if (urlForSuspend &&
+					urlForSuspend !== 'null' &&
+					urlForSuspend !== 'undefined' &&
+					!urlForSuspend.startsWith('chrome-extension://') &&
+					!urlForSuspend.startsWith('chrome://')) {
+					console.log(`Tab[${tab.id}] marked for suspension (Ctrl/Cmd+Click detected), URL: ${urlForSuspend}`);
+
+					// Mark tab to suspend when favicon loads
+					tabInfo.markedForLoadSuspended = true;
+					tabInfo.originalUrlBeforeSuspend = urlForSuspend;
+				} else {
+					console.warn(`Tab[${tab.id}] skipping suspension - invalid URL: "${urlForSuspend}"`);
+				}
+			}
+			if (nextTabShouldBeSuspended && !await settings.get('suspendOnCtrlClick')) {
+				// Reset flag if setting is disabled
+				nextTabShouldBeSuspended = false;
+			}
+
 			if (tab.active === false)
 				if (await settings.get('openUnfocusedTabDiscarded') == true) {
 					tabInfo.markedForDiscard = true;
@@ -212,6 +239,71 @@ class TabManager {
 				}
 			} catch (e) {
 				console.error(e);
+			}
+
+			// Check if tab should be suspended without screenshot (Ctrl/Cmd+Click)
+			if (tabInfo.markedForLoadSuspended === true && tab.active === false) {
+				// Wait for status=complete to ensure we have all metadata
+				if (tab.status === 'complete') {
+					console.log(`Tab[${tab.id}] complete, waiting for favicon to load`);
+
+					// Poll for favicon with retries
+					const MAX_ATTEMPTS = 10;
+					const POLL_INTERVAL_MS = 200;
+					let attempts = 0;
+
+					const pollForFavicon = () => {
+						attempts++;
+						chrome.tabs.get(tab.id).then((updatedTab) => {
+							// Check if we have favicon or reached max attempts
+							if (updatedTab.favIconUrl || attempts >= MAX_ATTEMPTS) {
+								// Use saved URL or fall back to current tab URL
+								const originalUrl = tabInfo.originalUrlBeforeSuspend || updatedTab.url;
+
+								// Verify URL is valid - if not, do NOT park the tab
+								if (!originalUrl ||
+									originalUrl === 'null' ||
+									originalUrl === 'undefined' ||
+									originalUrl.startsWith('chrome-extension://') ||
+									originalUrl.startsWith('chrome://')) {
+									console.error(`Tab[${tab.id}] cannot suspend - invalid URL: "${originalUrl}". Skipping suspension.`);
+
+									// Clear flags and do NOT park
+									tabInfo.markedForLoadSuspended = false;
+									tabInfo.originalUrlBeforeSuspend = null;
+									return;
+								}
+
+								let url = parkUrl;
+								url += '?tabId=' + encodeURIComponent(updatedTab.id);
+								url += '&title=' + encodeURIComponent(updatedTab.title || 'New Tab');
+								url += '&url=' + encodeURIComponent(originalUrl);
+								url += '&sessionId=' + encodeURIComponent(TSSessionId);
+								if (updatedTab.favIconUrl)
+									url += '&icon=' + encodeURIComponent(updatedTab.favIconUrl);
+
+								console.log(`Tab[${tab.id}] suspending after ${attempts} attempts, title:"${updatedTab.title}" favicon:${updatedTab.favIconUrl != null}, url:"${originalUrl}"`);
+
+								// Clear flags
+								tabInfo.markedForLoadSuspended = false;
+								tabInfo.originalUrlBeforeSuspend = null;
+
+								chrome.tabs.update(updatedTab.id, { url: url }).then(() => {
+									self.markTabParked(updatedTab);
+								}).catch(console.error);
+							} else {
+								// Favicon not ready yet, try again
+								console.log(`Tab[${tab.id}] attempt ${attempts}/${MAX_ATTEMPTS}, no favicon yet, retrying...`);
+								setTimeout(pollForFavicon, POLL_INTERVAL_MS);
+							}
+						}).catch(console.error);
+					};
+
+					// Start polling after initial delay
+					setTimeout(pollForFavicon, POLL_INTERVAL_MS);
+
+					return; // Skip further processing
+				}
 			}
 
 			if (debug && Object.keys(changeInfo).length == 1 && Object.keys(changeInfo)[0] == 'title')

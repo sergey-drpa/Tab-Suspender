@@ -333,7 +333,7 @@ function applyScreenshotsVisibility(screenshotsEnabled) {
 			// @ts-expect-error
 			document.getElementById('title').href = new URLSearchParams(window.location.search).get('url');
 		}
-		if (favicon) {
+		if (favicon && favicon !== 'undefined' && favicon !== 'null') {
 			// @ts-expect-error
 			document.getElementById('favicon').src = favicon;
 		}
@@ -433,7 +433,7 @@ function generateFaviconUri(url, callback) {
 		console.log('Loading Favicon Error', e);
 		img.src = chrome.runtime.getURL('img/new_page.png');
 	};
-	img.src = url && url != 'undefined' ? url : chrome.runtime.getURL('img/new_page.png');
+	img.src = (url && url !== 'undefined' && url !== 'null') ? url : chrome.runtime.getURL('img/new_page.png');
 
 }
 
@@ -511,8 +511,10 @@ function drawContent(parkData) {
 		document.getElementById('title').textContent = title;
 		// @ts-expect-error
 		document.getElementById('title').href = searchParams.get('url');
-		// @ts-expect-error
-		document.getElementById('favicon').src = favicon;
+		if (favicon && favicon !== 'undefined' && favicon !== 'null') {
+			// @ts-expect-error
+			document.getElementById('favicon').src = favicon;
+		}
 		document.getElementById('title_div').style.display = 'block';
 		document.getElementById('nativeUrl').classList.add('visible');
 

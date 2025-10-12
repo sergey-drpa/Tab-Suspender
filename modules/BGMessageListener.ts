@@ -366,6 +366,15 @@ class BGMessageListener {
 				sendResponse({TSSessionId});
 			} else if (request.method === '[TS:getTabId]') {
 				sendResponse({tabId: sender.tab.id});
+			} else if (request.method === '[AutomaticTabCleaner:CtrlClickDetected]') {
+				if (debug)
+					console.log('CtrlClickDetected (Ctrl or Cmd): ', request.url);
+				// Mark that next tab should be suspended
+				nextTabShouldBeSuspended = true;
+				// Reset flag after TTL
+				setTimeout(() => {
+					nextTabShouldBeSuspended = false;
+				}, NEXT_TAB_SUSPEND_TTL);
 			} else if (
 				request.method === '[TS:offscreenDocument:cleanupComplete]' ||
 				request.method === '[TS:offscreenDocument:sendError]'
