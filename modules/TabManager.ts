@@ -164,19 +164,14 @@ class TabManager {
 					urlForSuspend !== 'about:blank' &&
 					!urlForSuspend.startsWith('chrome-extension://') &&
 					!urlForSuspend.startsWith('chrome://')) {
-					console.log(`Tab[${tab.id}] marked for suspension (Ctrl/Cmd+Click detected), URL: ${urlForSuspend}`);
-
 					// Mark tab to suspend when favicon loads
 					tabInfo.markedForLoadSuspended = true;
 					tabInfo.originalUrlBeforeSuspend = urlForSuspend;
 				} else if (urlForSuspend === 'about:blank' || !urlForSuspend) {
 					// URL is not ready yet (about:blank or empty), mark for suspension but don't save URL
 					// We'll get the real URL in onUpdated
-					console.log(`Tab[${tab.id}] marked for suspension (Ctrl/Cmd+Click), but URL not ready yet (${urlForSuspend}), will wait for real URL`);
 					tabInfo.markedForLoadSuspended = true;
 					// Don't set originalUrlBeforeSuspend - we'll get it from updatedTab.url in onUpdated
-				} else {
-					console.warn(`Tab[${tab.id}] skipping suspension - invalid URL: "${urlForSuspend}"`);
 				}
 			}
 			if (nextTabShouldBeSuspended && !await settings.get('suspendOnCtrlClick')) {
@@ -253,8 +248,6 @@ class TabManager {
 			if (tabInfo.markedForLoadSuspended === true && tab.active === false) {
 				// Wait for status=complete to ensure we have all metadata
 				if (tab.status === 'complete') {
-					console.log(`Tab[${tab.id}] complete, waiting for favicon to load`);
-
 					// Poll for favicon with retries
 					const MAX_ATTEMPTS = 10;
 					const POLL_INTERVAL_MS = 200;
@@ -279,12 +272,9 @@ class TabManager {
 
 								// If we haven't reached max attempts and URL is still about:blank, keep trying
 								if (originalUrl === 'about:blank' && attempts < MAX_ATTEMPTS) {
-									console.log(`Tab[${tab.id}] attempt ${attempts}/${MAX_ATTEMPTS}, URL still about:blank, retrying...`);
 									setTimeout(pollForFavicon, POLL_INTERVAL_MS);
 									return;
 								}
-
-								console.error(`Tab[${tab.id}] cannot suspend - invalid URL: "${originalUrl}" after ${attempts} attempts. Skipping suspension.`);
 
 								// Clear flags and do NOT park
 								tabInfo.markedForLoadSuspended = false;
@@ -302,8 +292,6 @@ class TabManager {
 								if (updatedTab.favIconUrl)
 									url += '&icon=' + encodeURIComponent(updatedTab.favIconUrl);
 
-								console.log(`Tab[${tab.id}] suspending after ${attempts} attempts, title:"${updatedTab.title}" favicon:${updatedTab.favIconUrl != null}, url:"${originalUrl}"`);
-
 								// Clear flags
 								tabInfo.markedForLoadSuspended = false;
 								tabInfo.originalUrlBeforeSuspend = null;
@@ -313,7 +301,6 @@ class TabManager {
 								}).catch(console.error);
 							} else {
 								// Favicon not ready yet, try again
-								console.log(`Tab[${tab.id}] attempt ${attempts}/${MAX_ATTEMPTS}, no favicon yet, retrying...`);
 								setTimeout(pollForFavicon, POLL_INTERVAL_MS);
 							}
 						}).catch(console.error);

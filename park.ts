@@ -384,9 +384,6 @@ function createTitleAndIcon(force?) {
 			if (faviconElement && proccesedIcon && proccesedIcon !== 'undefined' && proccesedIcon !== 'null') {
 				// @ts-expect-error
 				faviconElement.src = proccesedIcon;
-				if (DEBUG) {
-					console.log('Updated page favicon element with loaded icon');
-				}
 			}
 		});
 		faviconDrawed = true;
