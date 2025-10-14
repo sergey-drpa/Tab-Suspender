@@ -157,9 +157,11 @@ class TabManager {
 				const urlForSuspend = tab.pendingUrl || tab.url;
 
 				// Verify URL is valid before marking for suspension
+				// NOTE: Don't save URL here if it's about:blank - we'll get the real URL in onUpdated
 				if (urlForSuspend &&
 					urlForSuspend !== 'null' &&
 					urlForSuspend !== 'undefined' &&
+					urlForSuspend !== 'about:blank' &&
 					!urlForSuspend.startsWith('chrome-extension://') &&
 					!urlForSuspend.startsWith('chrome://')) {
 					console.log(`Tab[${tab.id}] marked for suspension (Ctrl/Cmd+Click detected), URL: ${urlForSuspend}`);
@@ -167,6 +169,12 @@ class TabManager {
 					// Mark tab to suspend when favicon loads
 					tabInfo.markedForLoadSuspended = true;
 					tabInfo.originalUrlBeforeSuspend = urlForSuspend;
+				} else if (urlForSuspend === 'about:blank' || !urlForSuspend) {
+					// URL is not ready yet (about:blank or empty), mark for suspension but don't save URL
+					// We'll get the real URL in onUpdated
+					console.log(`Tab[${tab.id}] marked for suspension (Ctrl/Cmd+Click), but URL not ready yet (${urlForSuspend}), will wait for real URL`);
+					tabInfo.markedForLoadSuspended = true;
+					// Don't set originalUrlBeforeSuspend - we'll get it from updatedTab.url in onUpdated
 				} else {
 					console.warn(`Tab[${tab.id}] skipping suspension - invalid URL: "${urlForSuspend}"`);
 				}
@@ -255,25 +263,37 @@ class TabManager {
 					const pollForFavicon = () => {
 						attempts++;
 						chrome.tabs.get(tab.id).then((updatedTab) => {
-							// Check if we have favicon or reached max attempts
-							if (updatedTab.favIconUrl || attempts >= MAX_ATTEMPTS) {
-								// Use saved URL or fall back to current tab URL
-								const originalUrl = tabInfo.originalUrlBeforeSuspend || updatedTab.url;
+							// Get the URL - prefer saved URL, but use current tab URL if not saved or if saved was about:blank
+							let originalUrl = tabInfo.originalUrlBeforeSuspend;
+							if (!originalUrl || originalUrl === 'about:blank') {
+								originalUrl = updatedTab.url;
+							}
 
-								// Verify URL is valid - if not, do NOT park the tab
-								if (!originalUrl ||
-									originalUrl === 'null' ||
-									originalUrl === 'undefined' ||
-									originalUrl.startsWith('chrome-extension://') ||
-									originalUrl.startsWith('chrome://')) {
-									console.error(`Tab[${tab.id}] cannot suspend - invalid URL: "${originalUrl}". Skipping suspension.`);
+							// Verify URL is valid and not still about:blank
+							if (!originalUrl ||
+								originalUrl === 'null' ||
+								originalUrl === 'undefined' ||
+								originalUrl === 'about:blank' ||
+								originalUrl.startsWith('chrome-extension://') ||
+								originalUrl.startsWith('chrome://')) {
 
-									// Clear flags and do NOT park
-									tabInfo.markedForLoadSuspended = false;
-									tabInfo.originalUrlBeforeSuspend = null;
+								// If we haven't reached max attempts and URL is still about:blank, keep trying
+								if (originalUrl === 'about:blank' && attempts < MAX_ATTEMPTS) {
+									console.log(`Tab[${tab.id}] attempt ${attempts}/${MAX_ATTEMPTS}, URL still about:blank, retrying...`);
+									setTimeout(pollForFavicon, POLL_INTERVAL_MS);
 									return;
 								}
 
+								console.error(`Tab[${tab.id}] cannot suspend - invalid URL: "${originalUrl}" after ${attempts} attempts. Skipping suspension.`);
+
+								// Clear flags and do NOT park
+								tabInfo.markedForLoadSuspended = false;
+								tabInfo.originalUrlBeforeSuspend = null;
+								return;
+							}
+
+							// Check if we have favicon or reached max attempts
+							if (updatedTab.favIconUrl || attempts >= MAX_ATTEMPTS) {
 								let url = parkUrl;
 								url += '?tabId=' + encodeURIComponent(updatedTab.id);
 								url += '&title=' + encodeURIComponent(updatedTab.title || 'New Tab');

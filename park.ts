@@ -345,7 +345,12 @@ function createTitleAndIcon(force?) {
 		console.log('createTitleAndIcon...');
 	}
 
-	if(faviconDrawed)
+	// If force is true, reset faviconDrawed to allow regeneration
+	if (force) {
+		faviconDrawed = false;
+	}
+
+	if(faviconDrawed && !force)
 		return;
 
 	if (title == null)
@@ -372,6 +377,16 @@ function createTitleAndIcon(force?) {
 			if (link.id !== 'faviconLink') {
 				link.id = 'faviconLink';
 				document.getElementsByTagName('head')[0].appendChild(link);
+			}
+
+			// Update page favicon element if in no-screenshot mode
+			const faviconElement = document.getElementById('favicon');
+			if (faviconElement && proccesedIcon && proccesedIcon !== 'undefined' && proccesedIcon !== 'null') {
+				// @ts-expect-error
+				faviconElement.src = proccesedIcon;
+				if (DEBUG) {
+					console.log('Updated page favicon element with loaded icon');
+				}
 			}
 		});
 		faviconDrawed = true;
@@ -526,7 +541,8 @@ function drawContent(parkData) {
 	/* TODO: add dynamic restoreImg resize */
 
 	bgScreen = null;
-	favicon = null;
+	// Don't null out favicon here - it's still being used by generateFaviconUri callback
+	// favicon = null;
 
 	if (debugPerformance) {
 		console.log('Complete!!!: ', Date.now());

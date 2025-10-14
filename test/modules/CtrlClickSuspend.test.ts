@@ -381,7 +381,7 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 		jest.useRealTimers();
 	});
 
-	test('should NOT suspend tab if URL is invalid at creation', async () => {
+	test('should mark tab for suspension even if URL is temporarily undefined, but wait for valid URL', async () => {
 		jest.useFakeTimers();
 
 		// First, set flag for suspension
@@ -396,7 +396,7 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 			id: 1,
 			windowId: 1,
 			index: 0,
-			url: undefined, // URL is undefined at creation
+			url: undefined, // URL is undefined at creation - temporary state
 			pendingUrl: undefined,
 			active: false,
 			discarded: false,
@@ -408,10 +408,12 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 		const onCreatedListener = (chrome.tabs.onCreated as any).addListener.mock.calls[0][0];
 		await onCreatedListener(tab);
 
-		// Verify tab is NOT marked for suspension (because URL is invalid)
+		// NEW BEHAVIOR: Tab IS marked for suspension even with undefined URL
+		// We wait for the URL to become valid in onUpdated
 		let tabInfo = tabManager.getTabInfoById(tab.id);
-		expect(tabInfo.markedForLoadSuspended).toBe(false);
-		// originalUrlBeforeSuspend is initialized as null in TabInfo constructor
+		expect(tabInfo.markedForLoadSuspended).toBe(true);
+		// originalUrlBeforeSuspend is null because URL was undefined
+		// We'll use updatedTab.url in pollForFavicon
 		expect(tabInfo.originalUrlBeforeSuspend).toBeNull();
 
 		jest.useRealTimers();
