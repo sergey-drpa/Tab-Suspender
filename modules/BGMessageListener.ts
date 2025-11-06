@@ -37,9 +37,9 @@ class BGMessageListener {
 				if (request === 'data:,')
 					console.error(new Error(`Damaged screen [data:,]!!!`), {favIconUrl: undefined, ...sender.tab});
 
-				ScreenshotController.addScreen(sender.tab.id, request, 1/*TabCapture.lastWindowDevicePixelRatio[sender.tab.windowId]*/);
+				void ScreenshotController.addScreen(sender.tab.id, request, 1/*TabCapture.lastWindowDevicePixelRatio[sender.tab.windowId]*/);
 			} else if (request.method === '[TS:getScreen]') {
-				ScreenshotController.getScreen(request.tabId, request.sessionId, (scr, pixRat) => {
+				void ScreenshotController.getScreen(request.tabId, request.sessionId, (scr, pixRat) => {
 					sendResponse({ scr, pixRat });
 				});
 				return true; // For async sendResponse()
@@ -72,8 +72,8 @@ class BGMessageListener {
 				return true; // For async sendResponse()
 			} else if (request.method === '[TS:fetchFavicon]') {
 				chrome.tabs.get(sender.tab.id).then((tab) => {
-					if (tab.favIconUrl == null) {
-						console.trace(`Error fetch() favicon, tab.favIconUrl=(${tab.favIconUrl})`);
+					if (tab.favIconUrl == null || tab.favIconUrl.trim() === '') {
+						console.warn(`Error fetch() favicon, empty: tab.favIconUrl=(${tab.favIconUrl})`);
 						sendResponse(null);
 						return;
 					}
@@ -129,7 +129,7 @@ class BGMessageListener {
 							reader.readAsDataURL(blob);
 						})
 						.catch((e) => {
-							console.error(`Error when favicon Fetch(url), url: `, e, request.url);
+							console.error(`Error when favicon Fetch(url), url=[${tab.favIconUrl}]`, e, request.url);
 							sendResponse(null);
 						});
 				}).catch(console.error);
@@ -151,6 +151,11 @@ class BGMessageListener {
 				if ((request.battery as BatteryStatusMessage).level != null)
 					batteryLevel = (request.battery as BatteryStatusMessage).level
 				console.log(`BGListener - Charging status: ${isCharging}, Level: ${batteryLevel}`);
+			} else if (request.method === '[TS:offscreenDocument:heartbeat]') {
+				// Heartbeat from offscreen document to keep service worker alive
+				// Send acknowledgment back to maintain bidirectional communication
+				sendResponse({ method: '[TS:offscreenDocument:heartbeatAck]', timestamp: Date.now() });
+				return true; // For async sendResponse()
 			} else if (request.method === '[AutomaticTabCleaner:addExceptionPatterns]') {/* DEPREACTED! */
 				if (debug)
 					console.log('AddExceptionPatterns info Requested.');
