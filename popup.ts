@@ -78,6 +78,10 @@
 					$('#suspend').addClass('disabled');
 				}
 
+				if (!res.isTabInGroup) {
+					$('#suspendGroup').addClass('disabled');
+				}
+
 				recalculatePauseStatus();
 
 				if (res.active != null) {
@@ -504,6 +508,18 @@
 		};
 
 		// @ts-ignore
+		document.querySelector('#suspendGroup').onclick = function() {
+			if (document.querySelector('#suspendGroup').className.indexOf('disabled') == -1)
+				chrome.tabs.query({ currentWindow: true, active: true }, function(tabs) {
+					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:suspendTabGroup]', tab: tabs[0] }, function() {
+						setTimeout(function() {
+							window.close();
+						}, 300);
+					});
+				});
+		};
+
+		// @ts-ignore
 		document.querySelector('#suspendWindow').onclick = function() {
 
 			if (document.querySelector('#suspendWindow').className.indexOf('disabled') == -1)
@@ -552,6 +568,18 @@
 			if (document.querySelector('#unsuspendAll').className.indexOf('disabled') == -1)
 				chrome.tabs.query({ currentWindow: true, active: true }, function(tabs) {
 					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:unsuspendAllTabs]', tab: tabs[0] }, function() {
+						setTimeout(function() {
+							window.close();
+						}, 300);
+					});
+				});
+		};
+
+		// @ts-ignore
+		document.querySelector('#unsuspendGroup').onclick = function() {
+			if (document.querySelector('#unsuspendGroup').className.indexOf('disabled') == -1)
+				chrome.tabs.query({ currentWindow: true, active: true }, function(tabs) {
+					chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:unsuspendTabGroup]', tab: tabs[0] }, function() {
 						setTimeout(function() {
 							window.close();
 						}, 300);

@@ -180,6 +180,11 @@ class BGMessageListener {
 						console.log('Park disalowed: ', request.tab);
 					sendResponse({ successful: true });
 				}
+			} else if (request.method === '[AutomaticTabCleaner:suspendTabGroup]') {
+				if (debug)
+					console.log('suspendTabGroup Requested.');
+				parkTabGroup(request.tab);
+				sendResponse({ successful: true });
 			} else if (request.method === '[AutomaticTabCleaner:suspendWindow]') {
 				parkTabs(request.tab, request.tab.windowId);
 				sendResponse({ successful: true });
@@ -209,6 +214,11 @@ class BGMessageListener {
 				sendResponse({ successful: true });
 			} else if (request.method === '[AutomaticTabCleaner:unsuspendTab]') {
 				self.tabManager.unsuspendTab(request.tab);
+				sendResponse({ successful: true });
+			} else if (request.method === '[AutomaticTabCleaner:unsuspendTabGroup]') {
+				if (debug)
+					console.log('unsuspendTabGroup Requested.');
+				unsuspendTabGroup(request.tab);
 				sendResponse({ successful: true });
 			} else if (request.method === '[AutomaticTabCleaner:pause]') {
 				if (debug)
