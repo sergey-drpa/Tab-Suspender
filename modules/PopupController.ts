@@ -16,6 +16,7 @@ interface PopupQueryBGResponse {
 	TSVersion: string;
 	sendErrors: any;
 	popup_showWindowSessionByDefault: any;
+	isTabInGroup: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -57,5 +58,6 @@ async function popupQuery(tab) {
 		TSVersion: chrome.runtime.getManifest().version,
 		sendErrors: await settings.get('sendErrors'),
 		popup_showWindowSessionByDefault: await settings.get('popup_showWindowSessionByDefault'),
+		isTabInGroup: tab.groupId != null && tab.groupId !== -1,
 	};
 }

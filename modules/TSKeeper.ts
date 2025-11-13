@@ -1,13 +1,18 @@
 /**
- * Tracks when a service worker was last alive and extends the service worker
- * lifetime by writing the current time to extension storage every 20 seconds.
- * You should still prepare for unexpected termination - for example, if the
- * extension process crashes or your extension is manually stopped at
- * chrome://serviceworker-internals.
+ * DEPRECATED: This approach using setInterval does not reliably keep MV3 service workers alive.
+ *
+ * The new approach uses the offscreen document (offscreenDocument.ts) to send periodic
+ * heartbeat messages to the service worker. Offscreen documents can run setInterval
+ * reliably and message handling resets the service worker's idle timer.
+ *
+ * See offscreenDocument.ts:startServiceWorkerHeartbeat() for the active implementation.
+ *
+ * This code is kept for backward compatibility but may not be effective in MV3.
  */
 let heartbeatInterval;
 
-void startHeartbeat();
+// Disabled - using offscreen document heartbeat instead
+// void startHeartbeat();
 
 async function runHeartbeat() {
 	await chrome.storage.local.set({ 'last-heartbeat': new Date().getTime() });
@@ -18,6 +23,7 @@ async function runHeartbeat() {
  * this sparingly when you are doing work which requires persistence, and call
  * stopHeartbeat once that work is complete.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function startHeartbeat() {
 	// Run the heartbeat once at service worker startup.
 	void runHeartbeat().then(() => {
@@ -26,6 +32,7 @@ async function startHeartbeat() {
 	});
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function stopHeartbeat() {
 	clearInterval(heartbeatInterval);
 }
@@ -34,6 +41,7 @@ async function stopHeartbeat() {
  * Returns the last heartbeat stored in extension storage, or undefined if
  * the heartbeat has never run before.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getLastHeartbeat() {
 	return (await chrome.storage.local.get('last-heartbeat'))['last-heartbeat'];
 }

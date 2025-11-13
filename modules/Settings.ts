@@ -65,6 +65,7 @@ class Settings {
 	ignoreSuspendGroupedTabs: boolean;
 	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
+	suspendOnCtrlClick: boolean;
 	// v2.0.0
 	localStorageMigrated: boolean;
 	localStorageFormDataCleaned: boolean;
@@ -112,6 +113,7 @@ const DEFAULT_SETTINGS: Settings = {
 	ignoreSuspendGroupedTabs: false,
 	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,
+	suspendOnCtrlClick: true,
 	// v2.0.0
 	localStorageMigrated: null,
 	localStorageFormDataCleaned: null,

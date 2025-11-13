@@ -149,6 +149,36 @@ class TabManager {
 
 			self.historyOpenerController.onNewTab(tab);
 
+			// Check if tab should be suspended (Ctrl+Click or Cmd+Click)
+			if (nextTabShouldBeSuspended && tab.active === false && await settings.get('suspendOnCtrlClick')) {
+				nextTabShouldBeSuspended = false; // Reset flag
+
+				// Get URL for suspension
+				const urlForSuspend = tab.pendingUrl || tab.url;
+
+				// Verify URL is valid before marking for suspension
+				// NOTE: Don't save URL here if it's about:blank - we'll get the real URL in onUpdated
+				if (urlForSuspend &&
+					urlForSuspend !== 'null' &&
+					urlForSuspend !== 'undefined' &&
+					urlForSuspend !== 'about:blank' &&
+					!urlForSuspend.startsWith('chrome-extension://') &&
+					!urlForSuspend.startsWith('chrome://')) {
+					// Mark tab to suspend when favicon loads
+					tabInfo.markedForLoadSuspended = true;
+					tabInfo.originalUrlBeforeSuspend = urlForSuspend;
+				} else if (urlForSuspend === 'about:blank' || !urlForSuspend) {
+					// URL is not ready yet (about:blank or empty), mark for suspension but don't save URL
+					// We'll get the real URL in onUpdated
+					tabInfo.markedForLoadSuspended = true;
+					// Don't set originalUrlBeforeSuspend - we'll get it from updatedTab.url in onUpdated
+				}
+			}
+			if (nextTabShouldBeSuspended && !await settings.get('suspendOnCtrlClick')) {
+				// Reset flag if setting is disabled
+				nextTabShouldBeSuspended = false;
+			}
+
 			if (tab.active === false)
 				if (await settings.get('openUnfocusedTabDiscarded') == true) {
 					tabInfo.markedForDiscard = true;
@@ -212,6 +242,75 @@ class TabManager {
 				}
 			} catch (e) {
 				console.error(e);
+			}
+
+			// Check if tab should be suspended without screenshot (Ctrl/Cmd+Click)
+			if (tabInfo.markedForLoadSuspended === true && tab.active === false) {
+				// Wait for status=complete to ensure we have all metadata
+				if (tab.status === 'complete') {
+					// Poll for favicon with retries
+					const MAX_ATTEMPTS = 10;
+					const POLL_INTERVAL_MS = 200;
+					let attempts = 0;
+
+					const pollForFavicon = () => {
+						attempts++;
+						chrome.tabs.get(tab.id).then((updatedTab) => {
+							// Get the URL - prefer saved URL, but use current tab URL if not saved or if saved was about:blank
+							let originalUrl = tabInfo.originalUrlBeforeSuspend;
+							if (!originalUrl || originalUrl === 'about:blank') {
+								originalUrl = updatedTab.url;
+							}
+
+							// Verify URL is valid and not still about:blank
+							if (!originalUrl ||
+								originalUrl === 'null' ||
+								originalUrl === 'undefined' ||
+								originalUrl === 'about:blank' ||
+								originalUrl.startsWith('chrome-extension://') ||
+								originalUrl.startsWith('chrome://')) {
+
+								// If we haven't reached max attempts and URL is still about:blank, keep trying
+								if (originalUrl === 'about:blank' && attempts < MAX_ATTEMPTS) {
+									setTimeout(pollForFavicon, POLL_INTERVAL_MS);
+									return;
+								}
+
+								// Clear flags and do NOT park
+								tabInfo.markedForLoadSuspended = false;
+								tabInfo.originalUrlBeforeSuspend = null;
+								return;
+							}
+
+							// Check if we have favicon or reached max attempts
+							if (updatedTab.favIconUrl || attempts >= MAX_ATTEMPTS) {
+								let url = parkUrl;
+								url += '?tabId=' + encodeURIComponent(updatedTab.id);
+								url += '&title=' + encodeURIComponent(updatedTab.title || 'New Tab');
+								url += '&url=' + encodeURIComponent(originalUrl);
+								url += '&sessionId=' + encodeURIComponent(TSSessionId);
+								if (updatedTab.favIconUrl)
+									url += '&icon=' + encodeURIComponent(updatedTab.favIconUrl);
+
+								// Clear flags
+								tabInfo.markedForLoadSuspended = false;
+								tabInfo.originalUrlBeforeSuspend = null;
+
+								chrome.tabs.update(updatedTab.id, { url: url }).then(() => {
+									self.markTabParked(updatedTab);
+								}).catch(console.error);
+							} else {
+								// Favicon not ready yet, try again
+								setTimeout(pollForFavicon, POLL_INTERVAL_MS);
+							}
+						}).catch(console.error);
+					};
+
+					// Start polling after initial delay
+					setTimeout(pollForFavicon, POLL_INTERVAL_MS);
+
+					return; // Skip further processing
+				}
 			}
 
 			if (debug && Object.keys(changeInfo).length == 1 && Object.keys(changeInfo)[0] == 'title')
@@ -709,9 +808,17 @@ class TabManager {
 		}
 	}
 
-	checkAndTurnOffAutoDiscardable(tab) {
+	checkAndTurnOffAutoDiscardable(tab: chrome.tabs.Tab) {
 		if (tab.autoDiscardable === true)
-			chrome.tabs.update(tab.id, { autoDiscardable: false }).catch(console.error);
+			try {
+				chrome.tabs.update(tab.id, { autoDiscardable: false }).catch(console.error);
+			} catch (error) {
+				if (error.message.includes('split mode')) {
+					console.log('Tab is in split mode, skipping autoDiscardable setting');
+				} else {
+					throw error;
+				}
+			}
 	};
 
 	private static readonly CHROME_STORE_URL_1 = 'https://chrome.google.com/webstore';

@@ -66,6 +66,10 @@ class TabInfo implements ITabInfo {
 	private _lstSwchTime: number;
 	private _missingCheckTime: number;
 
+	// Execution-time only fields (not serialized)
+	private _markedForLoadSuspended: boolean;
+	private _originalUrlBeforeSuspend: string;
+
 	constructor(tab: chrome.tabs.Tab) {
 		this._id = tab.id;
 		this._winId = tab.windowId;
@@ -89,6 +93,9 @@ class TabInfo implements ITabInfo {
 		this._lstCapTime = null;
 		this._lstSwchTime = null;
 		this._missingCheckTime = null;
+		// Execution-time only fields
+		this._markedForLoadSuspended = false;
+		this._originalUrlBeforeSuspend = null;
 	}
 
 	toObject(): ITabInfo {
@@ -96,9 +103,12 @@ class TabInfo implements ITabInfo {
 		const self = this;
 		const object = {};
 
+		// Execution-time only fields that should NOT be serialized
+		const excludedFields = ['_markedForLoadSuspended', '_originalUrlBeforeSuspend'];
+
 		Object.getOwnPropertyNames(this).forEach(
 			function(propName: string) {
-				if (propName.startsWith('_')) {
+				if (propName.startsWith('_') && !excludedFields.includes(propName)) {
 					object[propName.substring(1)] = self[propName];
 				}
 			}
@@ -248,6 +258,14 @@ class TabInfo implements ITabInfo {
 		this._markedForDiscard = value;
 	}
 
+	get markedForLoadSuspended(): boolean {
+		return this._markedForLoadSuspended;
+	}
+
+	set markedForLoadSuspended(value: boolean) {
+		this._markedForLoadSuspended = value;
+	}
+
 	get parkedCount(): number {
 		return this._parkedCount;
 	}
@@ -326,6 +344,14 @@ class TabInfo implements ITabInfo {
 
 	set missingCheckTime(value: number) {
 		this._missingCheckTime = value;
+	}
+
+	get originalUrlBeforeSuspend(): string {
+		return this._originalUrlBeforeSuspend;
+	}
+
+	set originalUrlBeforeSuspend(value: string) {
+		this._originalUrlBeforeSuspend = value;
 	}
 }
 

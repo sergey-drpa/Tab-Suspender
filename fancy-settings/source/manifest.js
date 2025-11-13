@@ -207,6 +207,20 @@ this.manifest = {
 			'type': 'description',
 			'text': 'Enable automatic discard suspended tabs to free up even more memory'
 		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Advanced',
+			'name': 'suspendOnCtrlClick',
+			'type': 'checkbox',
+			'label': 'Immediately suspend tabs opened with Ctrl/Cmd+Click <font color="#0099FF">(New)</font>'
+		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Advanced',
+			'name': 'suspendOnCtrlClick-description',
+			'type': 'description',
+			'text': 'Automatically suspend background tabs opened with Ctrl+Click (Windows/Linux) or Cmd+Click (Mac) without taking a screenshot to save memory'
+		},
 
 
 

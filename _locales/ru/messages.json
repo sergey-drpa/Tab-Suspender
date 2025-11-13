@@ -109,6 +109,11 @@
     "message": "Немедленно усыпить все вкладки в текущем окне.",
     "description": "Immediately suspend all tabs at current window."
   },
+  "suspendTabGroup":
+  {
+    "message": "Немедленно усыпить все вкладки в текущей группе.",
+    "description": "Immediately suspend all tabs in current tab group."
+  },
   "suspendAll":
   {
     "message": "Немедленно усыпить все остальные вкладки за исключением текущей.",
@@ -124,6 +129,11 @@
   {
     "message": "Мгновенно размораживает все вкладки в текущем окне.",
     "description": "Immediately unsuspend all tabs at current window."
+  },
+  "unsuspendTabGroup":
+  {
+    "message": "Мгновенно размораживает все вкладки в текущей группе.",
+    "description": "Immediately unsuspend all tabs in current tab group."
   },
   "unsuspendAll":
   {

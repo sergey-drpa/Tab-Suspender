@@ -1,5 +1,14 @@
 import Reason = chrome.offscreen.Reason;
 
+/**
+ * Manages the offscreen document lifecycle.
+ *
+ * IMPORTANT: The offscreen document is kept alive (not closed) after initialization
+ * because it serves dual purposes:
+ * 1. Migrating localStorage data and monitoring battery status
+ * 2. Keeping the MV3 service worker alive by sending periodic heartbeat messages
+ *    (see offscreenDocument.ts:startServiceWorkerHeartbeat)
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class OffscreenDocumentProvider {
 
@@ -10,13 +19,28 @@ class OffscreenDocumentProvider {
 
 			await new Promise(r => setTimeout(r, 1500));
 
-			chrome.offscreen.createDocument({
-				url: 'offscreenDocument.html',
-				reasons: [Reason.LOCAL_STORAGE, Reason.BATTERY_STATUS],
-				justification: 'Need to migrate from localStorage and battery status'
-			}).then(() => { resolve(); })
-				.catch((error) => { console.error(error);  reject(); });
-			console.log(`Offscreen Document Creating...`);
+			try {
+				// Check if an offscreen document already exists
+				const hasDocument = await chrome.offscreen.hasDocument();
+
+				if (hasDocument) {
+					console.log('Offscreen Document already exists, skipping creation');
+					resolve();
+					return;
+				}
+
+				console.log('Offscreen Document Creating...');
+				await chrome.offscreen.createDocument({
+					url: 'offscreenDocument.html',
+					reasons: [Reason.LOCAL_STORAGE, Reason.BATTERY_STATUS],
+					justification: 'Need to migrate from localStorage and battery status'
+				});
+				console.log('Offscreen Document Created successfully');
+				resolve();
+			} catch (error) {
+				console.error('Error creating offscreen document:', error);
+				reject(error);
+			}
 		});
 	}
 
@@ -33,9 +57,10 @@ class OffscreenDocumentProvider {
 
 		console.log('LocalStorageData: ', localStorageData);
 
-		/*chrome.offscreen.closeDocument(() => {
-			console.log('OffscreenDocument closed.');
-		});*/
+		// DO NOT close the offscreen document - it's needed for:
+		// 1. Battery status monitoring
+		// 2. Service worker heartbeat (keeps the service worker alive)
+		// See class documentation for details
 
 		return localStorageData;
 	}
@@ -50,9 +75,7 @@ class OffscreenDocumentProvider {
 			const messageListener = (message) => {
 				if (message.method === '[TS:offscreenDocument:cleanupComplete]') {
 					console.log(`CleanupFormDatas - Complete.`);
-					/*chrome.offscreen.closeDocument(() => {
-						console.log('offscreenDocument closed.');
-					});*/
+					// DO NOT close the offscreen document - it's needed for service worker heartbeat
 					chrome.runtime.onMessage.removeListener(messageListener);
 					resolve();
 				}

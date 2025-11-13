@@ -190,7 +190,12 @@ class TabObserver {
 								/* Restore session logic When uninstall */
 
 								if (!stateOnly) {
-									tabInfo.time += TabObserver.tickSize;
+									// Only accumulate suspension time for INACTIVE tabs
+									// Active tabs should not accumulate time (handled by line 338 reset)
+									// Audible tabs should not accumulate time even if inactive
+									if (!tab.active && !(ignoreAudible && TabManager.isAudible(tab))) {
+										tabInfo.time += TabObserver.tickSize;
+									}
 
 									if (isTabParked)
 										tabInfo.suspended_time += TabObserver.tickSize;

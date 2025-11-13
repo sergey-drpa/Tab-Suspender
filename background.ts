@@ -63,6 +63,11 @@ const TABS_MARKED_FOR_UNSUSPEND_TTL = 5000;
 let batteryLevel = -1.0;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let getScreenCache = null;
+// Track Ctrl+Click (Cmd+Click on Mac) for suspending next tab
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let nextTabShouldBeSuspended = false;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const NEXT_TAB_SUSPEND_TTL = 3000; // 3 seconds to create tab after Ctrl/Cmd+click
 // eslint-disable-next-line prefer-const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

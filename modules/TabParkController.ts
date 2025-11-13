@@ -37,6 +37,33 @@ function parkTabs(requestTab?, windowId?) {
 		chrome.windows.getAll({ 'populate': true }, callbackAll);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function parkTabGroup(tab: chrome.tabs.Tab) {
+	if (tab == null || tab.groupId === -1) {
+		console.warn('Cannot suspend tab group: tab is not in a group');
+		return;
+	}
+
+	const groupId = tab.groupId;
+
+	chrome.windows.get(tab.windowId, { 'populate': true }, async function(window: chrome.windows.Window) {
+		let number = 0;
+		for (const j in window.tabs) {
+			if (window.tabs.hasOwnProperty(j)) {
+				const currentTab = window.tabs[j];
+				// Only suspend tabs in the same group
+				if (currentTab.groupId === groupId) {
+					if (TabManager.isTabURLAllowedForPark(currentTab)) {
+						if (!await tabManager.isExceptionTab(currentTab)) {
+							await parkTab(currentTab, currentTab.id, { bulkNumber: (currentTab.discarded ? number++ : null) });
+						}
+					}
+				}
+			}
+		}
+	});
+}
+
 function genYoutubeUrlWithTimeMark(url, videoTime) {
 	const urlWithTimeMark = new URL(url);
 	urlWithTimeMark.searchParams.set('t', videoTime + 's');
@@ -229,6 +256,36 @@ function unsuspendTabs(windowId?: number) {
 		chrome.windows.get(windowId, { 'populate': true }, callbackSingle);
 	else
 		chrome.windows.getAll({ 'populate': true }, callbackAll);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function unsuspendTabGroup(tab: chrome.tabs.Tab) {
+	if (tab == null || tab.groupId === -1) {
+		console.warn('Cannot unsuspend tab group: tab is not in a group');
+		return;
+	}
+
+	const groupId = tab.groupId;
+	let openedIndex = 1;
+
+	chrome.windows.get(tab.windowId, { 'populate': true }, function(window: chrome.windows.Window) {
+		for (const j in window.tabs) {
+			if (window.tabs.hasOwnProperty(j)) {
+				const currentTab = window.tabs[j];
+				// Only unsuspend tabs in the same group
+				if (currentTab.groupId === groupId && TabManager.isTabParked(currentTab)) {
+					const tmpFunction = function(currentTab: chrome.tabs.Tab) {
+						const clzOpenedIndex = openedIndex++;
+						setTimeout(function() {
+							tabManager.unsuspendTab(currentTab);
+						}, 1000 * clzOpenedIndex);
+					};
+
+					tmpFunction(currentTab);
+				}
+			}
+		}
+	});
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
