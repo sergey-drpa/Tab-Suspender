@@ -104,14 +104,17 @@
             },
             "description": "Suspend All Window"
         },
-        "unsuspend-current-window": {
+        "suspend-tab-group": {
             "suggested_key": {
-              "default": "Alt+U",
-              "mac": "Command+Shift+U",
-              "windows": "Alt+U",
-              "chromeos": "Alt+U",
-              "linux": "Alt+U"
+              "default": "Alt+G",
+              "mac": "Command+Shift+G",
+              "windows": "Alt+G",
+              "chromeos": "Alt+G",
+              "linux": "Alt+G"
             },
+            "description": "Suspend Tab Group"
+        },
+        "unsuspend-current-window": {
             "description": "Unsuspend Current Window"
         },
         "unsuspend-current-tab": {

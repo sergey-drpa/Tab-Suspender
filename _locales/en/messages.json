@@ -109,6 +109,11 @@
     "message": "Immediately suspend all tabs at current window.",
     "description": "Immediately suspend all tabs at current window."
   },
+  "suspendTabGroup":
+  {
+    "message": "Immediately suspend all tabs in current tab group.",
+    "description": "Immediately suspend all tabs in current tab group."
+  },
   "suspendAll":
   {
     "message": "Immediately suspend all tabs except current tab.",
@@ -124,6 +129,11 @@
   {
     "message": "Immediately unsuspend all tabs at current window.",
     "description": "Immediately unsuspend all tabs at current window."
+  },
+  "unsuspendTabGroup":
+  {
+    "message": "Immediately unsuspend all tabs in current tab group.",
+    "description": "Immediately unsuspend all tabs in current tab group."
   },
   "unsuspendAll":
   {
