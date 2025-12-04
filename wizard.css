@@ -188,7 +188,7 @@
     font: 14px 'Roboto', Arial, sans-serif !important;
 }
 
-.unused-tabs:hover span {
+.unused-tabs:hover #tooltip-span {
     display: block !important;
     z-index: 1000000;
 }
@@ -198,11 +198,11 @@
     position: relative;
 }
 
-.tooltip span {
+#tooltip-span {
     display: none;
 }
 
-.tooltip:hover span {
+.tooltip:hover #tooltip-span {
     display: block;
     position: fixed;
     overflow: hidden;

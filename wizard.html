@@ -18,54 +18,53 @@
 <div id="" class='atcs-site-dialog'>
 	<header class="dialog-header">
 		<h1><img style="padding-right: 10px; width: 16px; height: 16px;" src="img/icon16.png" />
-			<span id="wizardTitle">Welcome to Tab Suspender Wizard &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <span style="font-size: 10px;">( step 1 of 3 )</span>
-      </span>
+			<span id="wizardTitle" data-i18n="wizardTitle">Welcome to Tab Suspender Wizard</span>
+			<span id="wizardStepIndicator" style="font-size: 10px;">( step 1 of 4 )</span>
 		</h1>
 	</header>
 	<div class="dialog-content-main">
 		<div step="1" class="dialog-content active-step" style="padding-top: 34px !important;">
 			<p class="header" style="margin-bottom: 10px; font-size: 15px !important;">
 				<span style="color: #558eab;">Tab Suspender</span>
-				- allows you to not worry about the huge number of opened tabs and their memory!
+				<span data-i18n="wizardIntro">- allows you to not worry about the huge number of opened tabs and their memory!</span>
 			</p>
 			<ul>
 				<li>
-					<p class="" style="margin-bottom: 5px">click <span
-						style="font-weight: bold;font-size: 11px; text-decoration: underline;">NEXT</span> to configure basic
+					<p class="" style="margin-bottom: 5px" data-i18n-html="wizardClickNext">click <span
+						class="bold-underline">NEXT</span> to configure basic
 						settings.</p>
 				</li>
 				<li>
-					<p class="" style="">or <span
-						style="font-weight: bold;font-size: 11px; text-decoration: underline;">SKIP</span> to use predefined
+					<p class="" style="" data-i18n-html="wizardOrSkip">or <span
+						class="bold-underline">SKIP</span> to use predefined
 						configuration.</p>
 				</li>
 			</ul>
 		</div>
 		<div step="2" class="dialog-content" style="display: none;">
-			<p class="header" style="height: 40px; margin-top: 16px !important;">After what idle amount of time you want to
+			<p class="header" style="height: 40px; margin-top: 16px !important;" data-i18n="wizardStep2Question">After what idle amount of time you want to
 				move each unused tab to sleep?</p>
 			<div style="padding-top:48px; width: 60%; margin: auto;">
 				<input type="hidden" id="timeoutInput" class="js-range-slider-suspend-timeout" value="900" />
 			</div>
 		</div>
 		<div step="3" class="dialog-content" style="display: none;">
-			<p class="header" style="margin-bottom: 0px; padding-top: 16px;">Do you want to allow Tab Suspender to look for most rarely used or
+			<p class="header" style="margin-bottom: 0px; padding-top: 16px;" data-i18n="wizardStep3Question">Do you want to allow Tab Suspender to look for most rarely used or
 				forgotten tabs and smoothly close them automatically?</p>
 			<p
 				style="font-size: 11px !important; margin-top: 11px; color: #aaa; font-weight: 100 !important; padding-left: 0px;">
-				Helps you not to think about closing
-				<a class="unused-tabs tooltip" href="" style="position: relative; font-weight: bold;">
-					unused tabs
+				<span data-i18n="wizardStep3HintPrefix">Helps you not to think about closing</span>
+				<a class="unused-tabs tooltip" href="javascript:void(0)" style="position: relative; font-weight: bold; cursor: default; color: #666; text-decoration: underline;">
+					<span data-i18n="wizardStep3HintLink">unused tabs</span>
 					<span id="tooltip-span"
 								style="display:none; /*position: absolute; */ left: -155px; top: 15px; width: 502px; height: 99px; /*background-image: radial-gradient(#fff 0%, #fff 60%, transparent 100%);*/">
 			<img src="/img/tabs-count-overhead.png"
 					 style=" -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0% , rgba(0,0,0,1) 1% , rgba(0,0,0,1) 97%,transparent); height: 66px;     position: absolute; left: 93px; top: 15px;" />
 		</span>
-				</a> manually.</p>
+				</a> <span data-i18n="wizardStep3HintSuffix">manually.</span></p>
 			<p class="header">
-				<label><input type="radio" name="closeRadio" class="closeRadio no" value="no">No</label>
-				<label><input type="radio" name="closeRadio" class="closeRadio yes" value="yes">Yes</label>
+				<label><input type="radio" name="closeRadio" class="closeRadio no" value="no"><span data-i18n="wizardNo">No</span></label>
+				<label><input type="radio" name="closeRadio" class="closeRadio yes" value="yes"><span data-i18n="wizardYes">Yes</span></label>
 			</p>
 			<div class="">
 
@@ -86,12 +85,12 @@
 		</div>
 		<div step="4" class="dialog-content" style="display: none;">
 			<div style="float: left; width: 265px; padding-top: 5px; padding-right: 17px;">
-				<p class="header" style="margin-bottom: 14px; !important;">Complete!</p>
-				<p class="header" style="margin-bottom: 18px; !important;"> Tab Suspender, now, starts automatically suspend
+				<p class="header" style="margin-bottom: 14px; !important;" data-i18n="wizardComplete">Complete!</p>
+				<p class="header" style="margin-bottom: 18px; !important;" id="wizardCompleteTextContainer"> Tab Suspender, now, starts automatically suspend
 					first unused tabs after <span id="resultTimeoutValue"
 																				style="text-decoration: underline; color: #48d648;">${}</span> from this moment.
 				</p>
-				<p style="margin-bottom: 10px">If you want to suspend tabs earlier, you can suspend any tab by click button as
+				<p style="margin-bottom: 10px" data-i18n="wizardVideoHint">If you want to suspend tabs earlier, you can suspend any tab by click button as
 					shown on the video:</p>
 			</div>
 			<div style="float:left; width: 130px;">
@@ -103,17 +102,17 @@
 							 title="">
 					<input id="debugCheckbox" type="checkbox" name="vehicle"
 								 style="margin-right: 0px; margin-left: 3px; vertical-align: sub;">
-					Help Tab Suspender improve quality and send error reports
+					<span data-i18n="wizardErrorReports">Help Tab Suspender improve quality and send error reports</span>
 				</label>
 			</div>
 		</div>
 	</div>
 	<div class="btn-group cf">
-		<button class="atcsbtn active btn-cancel" id="defaultsButton">Skip / Use Defaults</button>
-		<button class="atcsbtn btn-cancel" id="previousButton">< Back</button>
-		<button class="atcsbtn active btn-danger" id="nextButton">Next ></button>
-		<button class="atcsbtn btn-danger" id="finishButton">Finish</button>
-		<button class="atcsbtn btn-danger" id="closeButton">Close</button>
+		<button class="atcsbtn active btn-cancel" id="defaultsButton" data-i18n="wizardBtnSkip">Skip / Use Defaults</button>
+		<button class="atcsbtn btn-cancel" id="previousButton" data-i18n="wizardBtnBack">< Back</button>
+		<button class="atcsbtn active btn-danger" id="nextButton" data-i18n="wizardBtnNext">Next ></button>
+		<button class="atcsbtn btn-danger" id="finishButton" data-i18n="wizardBtnFinish">Finish</button>
+		<button class="atcsbtn btn-danger" id="closeButton" data-i18n="wizardBtnClose">Close</button>
 	</div>
 </div>
 <script src='wizard.js'></script>

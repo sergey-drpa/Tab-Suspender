@@ -12,6 +12,8 @@ import '../typing/global.d';
 (global as any).debugScreenCache = false;
 (global as any).TSSessionId = 123456;
 (global as any).getScreenCache = null;
+(global as any).nextTabShouldBeSuspended = false;
+(global as any).NEXT_TAB_SUSPEND_TTL = 3000;
 
 (global as any).parseUrlParam = jest.fn((url: string, param: string) => {
   const urlParams = new URLSearchParams(url.split('?')[1]);
@@ -31,7 +33,11 @@ import '../typing/global.d';
 
 // Mock global objects
 (global as any).settings = {
-  get: jest.fn().mockResolvedValue(false)
+  get: jest.fn().mockImplementation((key: string) => {
+    // Disable suspendOnCtrlClick by default for integration tests
+    if (key === 'suspendOnCtrlClick') return Promise.resolve(false);
+    return Promise.resolve(false);
+  })
 };
 
 (global as any).whiteList = {
@@ -99,6 +105,7 @@ describe('TabManager Integration Tests', () => {
 
     // Clear global variables
     (global as any).getScreenCache = null;
+    (global as any).nextTabShouldBeSuspended = false;
     ((global as any).Date.now as jest.Mock).mockReturnValue(1640995200000);
 
     // Setup Chrome event listeners capture

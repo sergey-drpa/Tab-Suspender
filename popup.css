@@ -1,5 +1,9 @@
 @charset "utf-8";
 
+.slider-value {
+    font-size: 11px;
+}
+
 .invisible {
     display: none;
 }
@@ -168,7 +172,7 @@ div.disabled .irs-single {
     background-color: #3e91d8;
     border: solid 1px #296ba2;
     color: #fff;
-    position: absolute;
+    /*position: absolute;*/
     height: 16px;
     /*background-color: rgba(243, 241, 241, 0.17);
     border: solid 1px #f7f7f7;
@@ -183,6 +187,7 @@ div.disabled .irs-single {
     padding-right: 3px;
     margin-top: 3px;
     opacity: 1;
+    white-space: nowrap;
 }
 
 .inline-btn:hover:not(.disabled) {
@@ -275,7 +280,7 @@ img.checked {
 
 .slider-background {
     position: absolute;
-    width: 300px;
+    width: 380px;
     height: 80px;
     left: -20px;
     z-index: -10000;
@@ -291,11 +296,11 @@ img.checked {
 .disabled .slider-blocker {
     display: block !important;
     position: absolute;
-    width: 300px;
+    width: 380px;
     height: 106px;
     left: -20px;
     z-index: 100;
-    opacity: 0.4;
+    opacity: 0.8;
     background-color: #eee;
     text-align: center;
     font-size: 16px;
@@ -345,8 +350,9 @@ img.checked {
     display: none;
     position: absolute;
     background-color: white;
-    width: 294px;
-    left: 2px;
+    width: 337px;
+    left: 34px;
+    height: 104px;
     z-index: 1000;
     border: 1px #ddd solid;
     padding-top: 6px;
@@ -374,15 +380,17 @@ img.checked {
     z-index: 10000;
     height: 19px;
     position: relative;
-    width: 215px;
+    width: fit-content;
+    max-width: 280px;
     padding-right: 2px;
     border-radius: 5px 5px 0px 0px;
     font-weight: bold;
     cursor: pointer;
     user-select: none;
     float: right;
-    margin-right: 2px;
+    margin-right: 7px;
     display: inline-flex;
+    justify-content: flex-end;
     border-bottom: 2px solid #fff;
 }
 

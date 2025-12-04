@@ -18,6 +18,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		trackErrors('wizard', true);
 
+		// Apply localization
+		function applyLocalization() {
+			// Localize text content with data-i18n attribute
+			const elementsWithDataI18n = document.querySelectorAll('[data-i18n]');
+			for (const i in elementsWithDataI18n)
+				if (elementsWithDataI18n.hasOwnProperty(i)) {
+					const msgKey = elementsWithDataI18n[i].getAttribute('data-i18n');
+					if (msgKey != null) {
+						const localizedMsg = chrome.i18n.getMessage(msgKey);
+						if (localizedMsg) {
+							elementsWithDataI18n[i].textContent = localizedMsg;
+						}
+					}
+				}
+
+			// Localize HTML content with data-i18n-html attribute
+			const elementsWithDataI18nHtml = document.querySelectorAll('[data-i18n-html]');
+			for (const i in elementsWithDataI18nHtml)
+				if (elementsWithDataI18nHtml.hasOwnProperty(i)) {
+					const msgKey = elementsWithDataI18nHtml[i].getAttribute('data-i18n-html');
+					if (msgKey != null) {
+						const localizedMsg = chrome.i18n.getMessage(msgKey);
+						if (localizedMsg) {
+							elementsWithDataI18nHtml[i].innerHTML = localizedMsg;
+						}
+					}
+				}
+		}
+		applyLocalization();
+
 		void chrome.runtime.sendMessage({
 			method: '[AutomaticTabCleaner:installed]'
 		});
@@ -26,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			void chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:hideDialog]' });
 		});
 
-		let WIZARD_TITLE = 'Tab Suspender Wizard';
+		let WIZARD_TITLE = chrome.i18n.getMessage('wizardTitle') || 'Tab Suspender Wizard';
 
 		document.querySelector('#defaultsButton').addEventListener('click', closeDialog);
 
@@ -67,7 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			currentElementStep = parseInt(document.querySelector('.dialog-content.active-step').getAttribute('step'));
 			console.log('Step: ', currentElementStep);
 
-			document.getElementById('wizardTitle').innerText = WIZARD_TITLE + ' (Step ' + currentElementStep + ' of ' + stepElements.length + ')';
+			document.getElementById('wizardTitle').innerText = WIZARD_TITLE;
+			const stepText = chrome.i18n.getMessage('wizardStep', [currentElementStep.toString(), stepElements.length.toString()]) || '( step ' + currentElementStep + ' of ' + stepElements.length + ' )';
+			document.getElementById('wizardStepIndicator').innerText = stepText;
 
 			if (currentElementStep == 3)
 				$('input[type="radio"].closeRadio').change();

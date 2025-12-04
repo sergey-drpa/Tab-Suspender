@@ -333,7 +333,7 @@ function applyScreenshotsVisibility(screenshotsEnabled) {
 			// @ts-expect-error
 			document.getElementById('title').href = new URLSearchParams(window.location.search).get('url');
 		}
-		if (favicon) {
+		if (favicon && favicon !== 'undefined' && favicon !== 'null') {
 			// @ts-expect-error
 			document.getElementById('favicon').src = favicon;
 		}
@@ -345,7 +345,12 @@ function createTitleAndIcon(force?) {
 		console.log('createTitleAndIcon...');
 	}
 
-	if(faviconDrawed)
+	// If force is true, reset faviconDrawed to allow regeneration
+	if (force) {
+		faviconDrawed = false;
+	}
+
+	if(faviconDrawed && !force)
 		return;
 
 	if (title == null)
@@ -372,6 +377,13 @@ function createTitleAndIcon(force?) {
 			if (link.id !== 'faviconLink') {
 				link.id = 'faviconLink';
 				document.getElementsByTagName('head')[0].appendChild(link);
+			}
+
+			// Update page favicon element if in no-screenshot mode
+			const faviconElement = document.getElementById('favicon');
+			if (faviconElement && proccesedIcon && proccesedIcon !== 'undefined' && proccesedIcon !== 'null') {
+				// @ts-expect-error
+				faviconElement.src = proccesedIcon;
 			}
 		});
 		faviconDrawed = true;
@@ -433,7 +445,7 @@ function generateFaviconUri(url, callback) {
 		console.log('Loading Favicon Error', e);
 		img.src = chrome.runtime.getURL('img/new_page.png');
 	};
-	img.src = url && url != 'undefined' ? url : chrome.runtime.getURL('img/new_page.png');
+	img.src = (url && url !== 'undefined' && url !== 'null') ? url : chrome.runtime.getURL('img/new_page.png');
 
 }
 
@@ -511,8 +523,10 @@ function drawContent(parkData) {
 		document.getElementById('title').textContent = title;
 		// @ts-expect-error
 		document.getElementById('title').href = searchParams.get('url');
-		// @ts-expect-error
-		document.getElementById('favicon').src = favicon;
+		if (favicon && favicon !== 'undefined' && favicon !== 'null') {
+			// @ts-expect-error
+			document.getElementById('favicon').src = favicon;
+		}
 		document.getElementById('title_div').style.display = 'block';
 		document.getElementById('nativeUrl').classList.add('visible');
 
@@ -524,7 +538,8 @@ function drawContent(parkData) {
 	/* TODO: add dynamic restoreImg resize */
 
 	bgScreen = null;
-	favicon = null;
+	// Don't null out favicon here - it's still being used by generateFaviconUri callback
+	// favicon = null;
 
 	if (debugPerformance) {
 		console.log('Complete!!!: ', Date.now());
@@ -861,7 +876,7 @@ function initNativeUrlAnimation() {
 				const mainMenuIframe = document.createElement('iframe');
 				mainMenuIframe.src = "./popup.html?showSessions=no";
 				mainMenuIframe.style.cssText = `border: 0px;
-				width: 300px;
+				width: 380px;
 				height: 423px;`;
 				mainMenuDivInner.appendChild(mainMenuIframe);
 
@@ -874,7 +889,7 @@ function initNativeUrlAnimation() {
 				top: 47px;
 				left: 25px;
 				height: 100%;
-				width: 300px;
+				width: 380px;
 				/*border-radius: 10px;
 				overflow: hidden;*/`;
 				mainMenuDiv.appendChild(mainMenuDivInner);

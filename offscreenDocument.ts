@@ -7,6 +7,26 @@ const batteryDebug = false;
 const oldSettingsKeyPrefix = "store.tabSuspenderSettings.";
 
 setTimeout(startBatteryStatusNotifier, 3500);
+setTimeout(startServiceWorkerHeartbeat, 4000);
+
+function startServiceWorkerHeartbeat() {
+	console.log('Starting service worker heartbeat from offscreen document...');
+
+	// Send a heartbeat ping every 20 seconds to keep the service worker alive
+	// This works because handling messages resets the service worker's idle timer
+	setInterval(() => {
+		chrome.runtime.sendMessage({
+			method: '[TS:offscreenDocument:heartbeat]'
+		}).catch((error) => {
+			// Service worker might not be running yet, that's ok
+			if (error.message !== 'Could not establish connection. Receiving end does not exist.') {
+				console.error('Heartbeat error:', error);
+			}
+		});
+	}, 20000); // Every 20 seconds
+
+	console.log('Service worker heartbeat started');
+}
 
 function startBatteryStatusNotifier() {
 	try {
@@ -48,38 +68,43 @@ function startBatteryStatusNotifier() {
 }
 
 // @ts-ignore
-Sentry.init({
-	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
-	allowUrls: [/.*/],
-	integrations: (defaultIntegrations) => {
-		// Remove browser session
-		return defaultIntegrations.filter(
-			(integration) => {
-				console.log(`integration: `, integration);
-				return integration.name !== "BrowserSession"
-			},
-		);
-	},
-});
+// Sentry.init({
+// 	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
+// 	allowUrls: [/.*/],
+// 	integrations: (defaultIntegrations) => {
+// 		// Remove browser session
+// 		return defaultIntegrations.filter(
+// 			(integration) => {
+// 				console.log(`integration: `, integration);
+// 				return integration.name !== "BrowserSession"
+// 			},
+// 		);
+// },
+// });
 
 function sendError(errorData) {
 	const targetError = new Error(errorData.message);
 	targetError.stack = errorData.stack;
 
 	// @ts-ignore
-	Sentry
-		.captureException(targetError);
+	//Sentry
+	//	.captureException(targetError);
 }
 
 function sendEvent(event) {
 	// @ts-ignore
-	Sentry
-		.captureEvent(event);
+	//Sentry
+	//	.captureEvent(event);
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-		if (message.method === '[TS:offscreenDocument:sendError]') {
+		if (message.method === '[TS:offscreenDocument:heartbeatAck]') {
+			// Heartbeat acknowledgment received from service worker
+			// No action needed, this is just to confirm the connection
+			return true;
+
+		} else if (message.method === '[TS:offscreenDocument:sendError]') {
 
 			console.log(`[TS:offscreenDocument:sendError]: ${message.type}`);
 

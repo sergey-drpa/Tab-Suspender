@@ -229,6 +229,18 @@ class ContextMenuController {
 				_command: 'suspend-all-window'
 			},
 			{
+				title: 'Suspend Tab Group',
+				contexts: ['all'],
+				onclick: function(info, tab) {
+					if (tab.groupId !== -1) {
+						parkTabGroup(tab);
+					}
+				},
+				parentId: this.TOP_MENU_ID,
+				id: 'suspend-tab-group',
+				_command: 'suspend-tab-group'
+			},
+			{
 				title: 'Unsuspend all Tabs',
 				contexts: ['all'],
 				onclick: function() {
@@ -247,6 +259,19 @@ class ContextMenuController {
 				parentId: this.TOP_MENU_ID,
 				id: 'unsuspend-current-window',
 				_command: 'unsuspend-current-window'
+			},
+			{
+				title: 'Unsuspend Tab Group',
+				contexts: ['all'],
+				onclick: function(info, tab) {
+					if (tab.groupId !== -1) {
+						unsuspendTabGroup(tab);
+					}
+				},
+				parentId: this.TOP_MENU_ID,
+				id: 'unsuspend-tab-group',
+				_command: 'unsuspend-tab-group',
+				documentUrlPatterns: [extUrl + '**']
 			},
 			{
 				title: 'Unsuspend Current Tab',

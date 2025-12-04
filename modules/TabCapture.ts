@@ -48,7 +48,7 @@ class TabCapture {
 
 						if (actualTab.id !== tab.id) {
 							console.warn(`Active tab to Capture already changed [${tab.id}] != [${actualTab.id}]`, {...actualTab, favIconUrl: undefined});
-							reject(new Error(`Active tab changed [${tab.id}] != [${actualTab.id}]`));
+							reject(/*new Error(`Active tab changed [${tab.id}] != [${actualTab.id}]`)*/);
 							return;
 						}
 

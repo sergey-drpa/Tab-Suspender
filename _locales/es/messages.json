@@ -2,7 +2,7 @@
   "extName":
   {
     "message": "Tab Suspender",
-    "description": "Clear Tab Suspender"
+    "description": "Tab Suspender"
   },
   "extTitle":
   {
@@ -11,285 +11,283 @@
   },
   "extDescription":
   {
-    "message": "Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat.",
+    "message": "Suspende automáticamente las pestañas inactivas y ahorra hasta un 80% de memoria, reduce la carga en tu dispositivo, batería y calor.",
     "description": "MAX 128: Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat."
   },
   "rateIt":
   {
-    "message": "Rate it, please.",
+    "message": "Por favor, califícalo.",
     "description": "Rate it, please."
   },
   "autoCloseTabsSwitch":
   {
-    "message": "",
+    "message": "Cerrar pestañas automáticamente",
     "description": "Close Tabs Automatically"
   },
   "autoSuspendSliderValue":
   {
-    "message": "Will suspend tab after $1 of inactivity",
+    "message": "Suspenderá la pestaña después de $1 de inactividad",
     "description": "Will suspend tab after $1 of inactivity"
   },
   "autoSuspendInterval":
   {
-    "message": "",
+    "message": "Intervalo de auto-suspensión",
     "description": "Auto-Suspend Interval"
   },
   "recycleAfterSliderValue":
   {
-    "message": "",
-    "description": "Сan close tabs after $1 of tab inactivity"
+    "message": "Cerrará pestañas después de $1 de inactividad",
+    "description": "Can close tabs after $1 of tab inactivity"
   },
   "recycleKeepSliderValue":
   {
-    "message": "",
+    "message": "...si hay más de $1 pestañas abiertas",
     "description": "Will close tabs if there are more than $1 tabs"
   },
 
   "wizard_recycleAfterSliderValue":
   {
-    "message": "Can close tabs after <b class=\"slider-value\">$1</b> of tab inactivity",
+    "message": "Puede cerrar pestañas después de <b class=\"slider-value\">$1</b> de inactividad",
     "description": "Slider label for auto-close tabs after inactivity"
   },
   "wizard_recycleKeepSliderValue":
   {
-    "message": "...and only when window have more than <b class=\"slider-value\">$1</b> opened tabs",
+    "message": "...y solo cuando haya más de <b class=\"slider-value\">$1</b> pestañas abiertas",
     "description": "Slider label for minimum tabs threshold"
   },
 
   "pageIsInWhitelist":
   {
-    "message": "",
-    "description": "Page is in Whilelist"
+    "message": "Esta página está en la lista blanca",
+    "description": "Page is in Whitelist"
   },
   "removeFromWhilelist":
   {
-    "message": "",
+    "message": "Eliminar de la lista blanca",
     "description": "Remove from Whitelist"
   },
   "pauseSuspender":
   {
-    "message": "Stop Tab Suspender for a while...",
+    "message": "Pausar Tab Suspender por un tiempo...",
     "description": "Stop Tab Suspender for a while..."
   },
   "resumeSuspender":
   {
-    "message": "Cancel timer and activate Tab Suspender.",
+    "message": "Cancelar temporizador y activar Tab Suspender.",
     "description": "Cancel timer and activate Tab Suspender."
   },
   "pauseSuspenderFor10M":
   {
-    "message": "Stop Tab Suspender for 10 minutes.",
+    "message": "Pausar Tab Suspender por 10 minutos.",
     "description": "Stop Tab Suspender for 10 minutes."
   },
   "pauseSuspenderFor1H":
   {
-    "message": "Stop Tab Suspender for 1 hour.",
+    "message": "Pausar Tab Suspender por 1 hora.",
     "description": "Stop Tab Suspender for 1 hour."
   },
   "pauseSuspenderFor5H":
   {
-    "message": "Stop Tab Suspender for 5 hours.",
+    "message": "Pausar Tab Suspender por 5 horas.",
     "description": "Stop Tab Suspender for 5 hours."
   },
 
-
-
   "addToWhitelist":
   {
-    "message": "Add to Whitelist to NOT suspend this site in future.",
+    "message": "Añadir a la lista blanca para NO suspender este sitio en el futuro.",
     "description": "Add to Whitelist to NOT suspend this site in future."
   },
   "suspendCurrentTab":
   {
-    "message": "Immediately suspend current tab.",
+    "message": "Suspender la pestaña actual inmediatamente.",
     "description": "Immediately suspend current tab."
   },
   "suspendCurrentWindow":
   {
-    "message": "Immediately suspend all tabs at current window.",
+    "message": "Suspender todas las pestañas de la ventana actual inmediatamente.",
     "description": "Immediately suspend all tabs at current window."
   },
   "suspendTabGroup":
   {
-    "message": "Immediately suspend all tabs in current tab group.",
+    "message": "Suspender todas las pestañas del grupo actual inmediatamente.",
     "description": "Immediately suspend all tabs in current tab group."
   },
   "suspendAll":
   {
-    "message": "Immediately suspend all tabs except current tab.",
+    "message": "Suspender todas las pestañas excepto la actual inmediatamente.",
     "description": "Immediately suspend all tabs except current tab."
   },
   "suspendAllTabs":
   {
-    "message": "Immediately suspend all tabs.",
+    "message": "Suspender todas las pestañas inmediatamente.",
     "description": "Immediately suspend all tabs."
   },
 
   "unsuspend":
   {
-    "message": "Unsuspend tab.",
+    "message": "Reactivar pestaña.",
     "description": "Unsuspend tab."
   },
   "unsuspendAllWindow":
   {
-    "message": "Immediately unsuspend all tabs at current window.",
+    "message": "Reactivar todas las pestañas de la ventana actual inmediatamente.",
     "description": "Immediately unsuspend all tabs at current window."
   },
   "unsuspendTabGroup":
   {
-    "message": "Immediately unsuspend all tabs in current tab group.",
+    "message": "Reactivar todas las pestañas del grupo actual inmediatamente.",
     "description": "Immediately unsuspend all tabs in current tab group."
   },
   "unsuspendAll":
   {
-    "message": "Immediately unsuspend all tabs.",
+    "message": "Reactivar todas las pestañas inmediatamente.",
     "description": "Immediately unsuspend all tabs."
   },
 
   "ignoreCurrentTab":
   {
-    "message": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).",
-    "description": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist)."
+    "message": "Esta pestaña será ignorada por Tab Suspender (Se reiniciará después de reiniciar el navegador, si necesita ignorar permanentemente use la lista blanca).",
+    "description": "The marked tab will be ignored by Tab Suspender."
   },
   "suspendHistory":
   {
-    "message": "Open suspended tabs history.",
+    "message": "Abrir historial de pestañas suspendidas.",
     "description": "Open suspended tabs history."
   },
   "changeHotkeys":
   {
-    "message": "Setup/Change hotkeys for fast access to Tab Suspender functions.",
+    "message": "Configurar/Cambiar atajos de teclado para acceso rápido a las funciones.",
     "description": "Setup/Change hotkeys for fast access to Tab Suspender functions."
   },
   "allSettings":
   {
-    "message": "Open full settings page.",
+    "message": "Abrir página de configuración completa.",
     "description": "Open full settings page."
   },
 
   "popupToggle":
   {
-    "message": "Toggle",
+    "message": "Activar",
     "description": "Toggle checkbox label"
   },
   "popupOnOffAutoSuspend":
   {
-    "message": "On/Off Automatic Suspend",
+    "message": "Activar/Desactivar suspensión automática",
     "description": "Title for auto-suspend toggle"
   },
   "popupCloseUnusedTabs":
   {
-    "message": "Close Unused Tabs Automatically",
+    "message": "Cerrar pestañas no usadas automáticamente",
     "description": "Label for close unused tabs feature"
   },
   "popupAutoSuspendInterval":
   {
-    "message": "Auto-Suspend Interval",
+    "message": "Intervalo de auto-suspensión",
     "description": "Label for auto-suspend interval slider"
   },
   "popupAutoSuspendTurnedOff":
   {
-    "message": "Automatic Suspend is Turned Off",
-    "description": "Tab-Suspender temporarily disabled"
+    "message": "La suspensión automática está desactivada",
+    "description": "Message when auto-suspend is disabled"
   },
   "popupIncreaseInterval":
   {
-    "message": "Increase interval...",
+    "message": "Aumentar intervalo...",
     "description": "Title for increase interval button"
   },
   "popupDontSuspendSite":
   {
-    "message": "Don't Suspend this Site...",
+    "message": "No suspender este sitio...",
     "description": "Button to add site to whitelist"
   },
   "popupSiteInWhitelist":
   {
-    "message": "Site already in Whitelist",
+    "message": "El sitio ya está en la lista blanca",
     "description": "Message when site is already whitelisted"
   },
   "popupRemove":
   {
-    "message": "Remove",
+    "message": "Eliminar",
     "description": "Remove from whitelist button"
   },
   "popupDontSuspendTab":
   {
-    "message": "Don't Suspend this Tab (Ignore while tab alive)",
+    "message": "No suspender esta pestaña (mientras esté abierta)",
     "description": "Button to ignore current tab"
   },
   "popupSuspendLabel":
   {
-    "message": "Suspend:",
+    "message": "Suspender:",
     "description": "Label for suspend buttons section"
   },
   "popupBtnTab":
   {
-    "message": "Tab",
+    "message": "Pestaña",
     "description": "Suspend/Unsuspend Tab button"
   },
   "popupBtnGroup":
   {
-    "message": "Group",
+    "message": "Grupo",
     "description": "Suspend/Unsuspend Group button"
   },
   "popupBtnWindow":
   {
-    "message": "Window",
+    "message": "Ventana",
     "description": "Suspend/Unsuspend Window button"
   },
   "popupBtnAllOther":
   {
-    "message": "All Other",
+    "message": "Otras",
     "description": "Suspend All Other button"
   },
   "popupBtnAll":
   {
-    "message": "All",
+    "message": "Todas",
     "description": "Suspend/Unsuspend All button"
   },
   "popupUnsuspendLabel":
   {
-    "message": "Unsuspend:",
+    "message": "Reactivar:",
     "description": "Label for unsuspend buttons section"
   },
   "popupSessionManager":
   {
-    "message": "Session Manager...",
+    "message": "Gestor de sesiones...",
     "description": "Session Manager menu item"
   },
   "popupOpenSessionManager":
   {
-    "message": "Open Session Manager.",
+    "message": "Abrir gestor de sesiones.",
     "description": "Title for Session Manager"
   },
   "popupHistoryLabel":
   {
-    "message": "History:",
+    "message": "Historial:",
     "description": "Label for history section"
   },
   "popupBtnSuspended":
   {
-    "message": "Suspended",
+    "message": "Suspendidas",
     "description": "Suspended history button"
   },
   "popupBtnClosed":
   {
-    "message": "Closed",
+    "message": "Cerradas",
     "description": "Closed history button"
   },
   "popupShowSuspendedHistory":
   {
-    "message": "Show history of Suspended Tabs.",
+    "message": "Mostrar historial de pestañas suspendidas.",
     "description": "Title for suspended tabs history"
   },
   "popupShowClosedHistory":
   {
-    "message": "Show history of Closed Tabs.",
+    "message": "Mostrar historial de pestañas cerradas.",
     "description": "Title for closed tabs history"
   },
   "popupPauseSuspenderLabel":
   {
-    "message": "Pause Suspender:",
+    "message": "Pausar extensión:",
     "description": "Label for pause section"
   },
   "popupBtn10min":
@@ -299,113 +297,113 @@
   },
   "popupBtn1hour":
   {
-    "message": "1 hour",
+    "message": "1 hora",
     "description": "Pause for 1 hour button"
   },
   "popupBtn5hours":
   {
-    "message": "5 hours",
+    "message": "5 horas",
     "description": "Pause for 5 hours button"
   },
   "popupBtn1day":
   {
-    "message": "1 day",
+    "message": "1 día",
     "description": "Pause for 1 day button"
   },
   "pauseSuspenderFor1D":
   {
-    "message": "Stop Tab Suspender for 1 Day.",
+    "message": "Pausar Tab Suspender por 1 día.",
     "description": "Title for pause 1 day button"
   },
   "popupChangeHotkeys":
   {
-    "message": "Change Hotkeys...",
+    "message": "Cambiar atajos...",
     "description": "Change hotkeys menu item"
   },
   "popupSettings":
   {
-    "message": "Settings...",
+    "message": "Configuración...",
     "description": "Settings menu item"
   },
   "popupDonateTitle":
   {
-    "message": "If you like Tab Suspender, and would like to see it continue, new features and handling support requests...support project!",
+    "message": "Si te gusta Tab Suspender y quieres que continúe, nuevas funciones y soporte... ¡apoya el proyecto!",
     "description": "Donate link title"
   },
   "popupDonateText":
   {
-    "message": "Like Tab Suspender? Consider donating!",
+    "message": "¿Te gusta Tab Suspender? ¡Considera donar!",
     "description": "Donate link text"
   },
   "popupShowWindowSessions":
   {
-    "message": "Show Window Sessions",
+    "message": "Mostrar sesiones de ventana",
     "description": "Show window sessions button"
   },
   "popupOpenSessionsNewWindow":
   {
-    "message": "Open Window Sessions in New window",
+    "message": "Abrir sesiones en nueva ventana",
     "description": "Title for open sessions in new window"
   },
   "popupShowByDefault":
   {
-    "message": "Show by default",
+    "message": "Mostrar por defecto",
     "description": "Show sessions by default checkbox label"
   },
   "popupSuspenderPausedFor":
   {
-    "message": "Suspender Paused for:",
+    "message": "Suspender pausado por:",
     "description": "Label shown when suspender is paused"
   },
 
   "wizardTitle":
   {
-    "message": "Welcome to Tab Suspender Wizard",
+    "message": "Bienvenido al asistente de Tab Suspender",
     "description": "Wizard page title"
   },
   "wizardStep":
   {
-    "message": "( step $1 of $2 )",
+    "message": "( paso $1 de $2 )",
     "description": "Wizard step indicator"
   },
   "wizardIntro":
   {
-    "message": "- allows you to not worry about the huge number of opened tabs and their memory!",
+    "message": "- te permite no preocuparte por la gran cantidad de pestañas abiertas y su memoria!",
     "description": "Wizard intro text"
   },
   "wizardClickNext":
   {
-    "message": "click <span class=\"bold-underline\">NEXT</span> to configure basic settings.",
+    "message": "haz clic en <span class=\"bold-underline\">SIGUIENTE</span> para configurar los ajustes básicos.",
     "description": "Wizard click next instruction"
   },
   "wizardOrSkip":
   {
-    "message": "or <span class=\"bold-underline\">SKIP</span> to use predefined configuration.",
+    "message": "o <span class=\"bold-underline\">OMITIR</span> para usar la configuración predeterminada.",
     "description": "Wizard skip instruction"
   },
   "wizardStep2Question":
   {
-    "message": "After what idle amount of time you want to move each unused tab to sleep?",
+    "message": "¿Después de cuánto tiempo de inactividad quieres poner cada pestaña no usada a dormir?",
     "description": "Wizard step 2 question"
   },
   "wizardStep3Question":
   {
-    "message": "Do you want to allow Tab Suspender to look for most rarely used or forgotten tabs and smoothly close them automatically?",
+    "message": "¿Quieres permitir que Tab Suspender busque las pestañas menos usadas u olvidadas y las cierre automáticamente?",
     "description": "Wizard step 3 question"
   },
   "wizardStep3HintPrefix":
   {
-    "message": "Helps you not to think about closing",
+    "message": "Te ayuda a no pensar en cerrar",
     "description": "Wizard step 3 hint prefix"
   },
   "wizardStep3HintLink":
   {
-    "message": "unused tabs",
+    "message": "pestañas no usadas",
     "description": "Wizard step 3 hint link text"
   },
   "wizardStep3HintSuffix":
   {
-    "message": "manually.",
+    "message": "manualmente.",
     "description": "Wizard step 3 hint suffix"
   },
   "wizardNo":
@@ -415,52 +413,52 @@
   },
   "wizardYes":
   {
-    "message": "Yes",
+    "message": "Sí",
     "description": "Yes option"
   },
   "wizardComplete":
   {
-    "message": "Complete!",
+    "message": "¡Completado!",
     "description": "Wizard completion title"
   },
   "wizardCompleteText":
   {
-    "message": "Tab Suspender, now, starts automatically suspend first unused tabs after <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> from this moment.",
+    "message": "Tab Suspender ahora comenzará a suspender automáticamente las primeras pestañas no usadas después de <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> desde este momento.",
     "description": "Wizard completion text"
   },
   "wizardVideoHint":
   {
-    "message": "If you want to suspend tabs earlier, you can suspend any tab by click button as shown on the video:",
+    "message": "Si quieres suspender pestañas antes, puedes suspender cualquier pestaña haciendo clic en el botón como se muestra en el video:",
     "description": "Wizard video hint"
   },
   "wizardErrorReports":
   {
-    "message": "Help Tab Suspender improve quality and send error reports",
+    "message": "Ayudar a Tab Suspender a mejorar la calidad y enviar informes de errores",
     "description": "Error reports checkbox label"
   },
   "wizardBtnSkip":
   {
-    "message": "Skip / Use Defaults",
+    "message": "Omitir / Usar predeterminados",
     "description": "Skip button"
   },
   "wizardBtnBack":
   {
-    "message": "< Back",
+    "message": "< Atrás",
     "description": "Back button"
   },
   "wizardBtnNext":
   {
-    "message": "Next >",
+    "message": "Siguiente >",
     "description": "Next button"
   },
   "wizardBtnFinish":
   {
-    "message": "Finish",
+    "message": "Finalizar",
     "description": "Finish button"
   },
   "wizardBtnClose":
   {
-    "message": "Close",
+    "message": "Cerrar",
     "description": "Close button"
   }
 }
