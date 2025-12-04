@@ -356,5 +356,111 @@
   {
     "message": "Приостановлено на:",
     "description": "Label shown when suspender is paused"
+  },
+
+  "wizardTitle":
+  {
+    "message": "Добро пожаловать в мастер Tab Suspender",
+    "description": "Wizard page title"
+  },
+  "wizardStep":
+  {
+    "message": "( шаг $1 из $2 )",
+    "description": "Wizard step indicator"
+  },
+  "wizardIntro":
+  {
+    "message": "- позволяет не беспокоиться об огромном количестве открытых вкладок и их памяти!",
+    "description": "Wizard intro text"
+  },
+  "wizardClickNext":
+  {
+    "message": "нажмите <span class=\"bold-underline\">ДАЛЕЕ</span> для настройки базовых параметров.",
+    "description": "Wizard click next instruction"
+  },
+  "wizardOrSkip":
+  {
+    "message": "или <span class=\"bold-underline\">ПРОПУСТИТЬ</span> для использования настроек по умолчанию.",
+    "description": "Wizard skip instruction"
+  },
+  "wizardStep2Question":
+  {
+    "message": "Через какое время неактивности вы хотите отправлять неиспользуемые вкладки в сон?",
+    "description": "Wizard step 2 question"
+  },
+  "wizardStep3Question":
+  {
+    "message": "Хотите ли вы разрешить Tab Suspender искать редко используемые или забытые вкладки и автоматически закрывать их?",
+    "description": "Wizard step 3 question"
+  },
+  "wizardStep3HintPrefix":
+  {
+    "message": "Помогает не думать о закрытии",
+    "description": "Wizard step 3 hint prefix"
+  },
+  "wizardStep3HintLink":
+  {
+    "message": "неиспользуемых вкладок",
+    "description": "Wizard step 3 hint link text"
+  },
+  "wizardStep3HintSuffix":
+  {
+    "message": "вручную.",
+    "description": "Wizard step 3 hint suffix"
+  },
+  "wizardNo":
+  {
+    "message": "Нет",
+    "description": "No option"
+  },
+  "wizardYes":
+  {
+    "message": "Да",
+    "description": "Yes option"
+  },
+  "wizardComplete":
+  {
+    "message": "Готово!",
+    "description": "Wizard completion title"
+  },
+  "wizardCompleteText":
+  {
+    "message": "Tab Suspender теперь автоматически начнёт приостанавливать неиспользуемые вкладки через <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> с этого момента.",
+    "description": "Wizard completion text"
+  },
+  "wizardVideoHint":
+  {
+    "message": "Если вы хотите приостановить вкладки раньше, вы можете сделать это нажатием кнопки, как показано на видео:",
+    "description": "Wizard video hint"
+  },
+  "wizardErrorReports":
+  {
+    "message": "Помочь Tab Suspender улучшить качество и отправлять отчёты об ошибках",
+    "description": "Error reports checkbox label"
+  },
+  "wizardBtnSkip":
+  {
+    "message": "Пропустить / По умолчанию",
+    "description": "Skip button"
+  },
+  "wizardBtnBack":
+  {
+    "message": "< Назад",
+    "description": "Back button"
+  },
+  "wizardBtnNext":
+  {
+    "message": "Далее >",
+    "description": "Next button"
+  },
+  "wizardBtnFinish":
+  {
+    "message": "Готово",
+    "description": "Finish button"
+  },
+  "wizardBtnClose":
+  {
+    "message": "Закрыть",
+    "description": "Close button"
   }
 }

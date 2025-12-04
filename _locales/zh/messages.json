@@ -348,5 +348,111 @@
 	{
 	"message":"暂停扩展:",
 	"description":"Label shown when suspender is paused"
+	},
+
+	"wizardTitle":
+	{
+	"message":"欢迎使用 Tab Suspender 向导",
+	"description":"Wizard page title"
+	},
+	"wizardStep":
+	{
+	"message":"( 第 $1 步，共 $2 步 )",
+	"description":"Wizard step indicator"
+	},
+	"wizardIntro":
+	{
+	"message":"- 让您不必担心大量打开的标签页及其内存占用！",
+	"description":"Wizard intro text"
+	},
+	"wizardClickNext":
+	{
+	"message":"点击 <span class=\"bold-underline\">下一步</span> 配置基本设置。",
+	"description":"Wizard click next instruction"
+	},
+	"wizardOrSkip":
+	{
+	"message":"或 <span class=\"bold-underline\">跳过</span> 使用预设配置。",
+	"description":"Wizard skip instruction"
+	},
+	"wizardStep2Question":
+	{
+	"message":"您希望在多长时间不活动后将未使用的标签页休眠？",
+	"description":"Wizard step 2 question"
+	},
+	"wizardStep3Question":
+	{
+	"message":"您是否希望 Tab Suspender 查找最少使用或被遗忘的标签页并自动关闭它们？",
+	"description":"Wizard step 3 question"
+	},
+	"wizardStep3HintPrefix":
+	{
+	"message":"帮助您无需手动关闭",
+	"description":"Wizard step 3 hint prefix"
+	},
+	"wizardStep3HintLink":
+	{
+	"message":"未使用的标签页",
+	"description":"Wizard step 3 hint link text"
+	},
+	"wizardStep3HintSuffix":
+	{
+	"message":"。",
+	"description":"Wizard step 3 hint suffix"
+	},
+	"wizardNo":
+	{
+	"message":"否",
+	"description":"No option"
+	},
+	"wizardYes":
+	{
+	"message":"是",
+	"description":"Yes option"
+	},
+	"wizardComplete":
+	{
+	"message":"完成！",
+	"description":"Wizard completion title"
+	},
+	"wizardCompleteText":
+	{
+	"message":"Tab Suspender 现在将在 <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> 后自动开始休眠首批未使用的标签页。",
+	"description":"Wizard completion text"
+	},
+	"wizardVideoHint":
+	{
+	"message":"如果您想更早休眠标签页，可以按视频所示点击按钮休眠任何标签页：",
+	"description":"Wizard video hint"
+	},
+	"wizardErrorReports":
+	{
+	"message":"帮助 Tab Suspender 提高质量并发送错误报告",
+	"description":"Error reports checkbox label"
+	},
+	"wizardBtnSkip":
+	{
+	"message":"跳过 / 使用默认",
+	"description":"Skip button"
+	},
+	"wizardBtnBack":
+	{
+	"message":"< 返回",
+	"description":"Back button"
+	},
+	"wizardBtnNext":
+	{
+	"message":"下一步 >",
+	"description":"Next button"
+	},
+	"wizardBtnFinish":
+	{
+	"message":"完成",
+	"description":"Finish button"
+	},
+	"wizardBtnClose":
+	{
+	"message":"关闭",
+	"description":"Close button"
 	}
 	}

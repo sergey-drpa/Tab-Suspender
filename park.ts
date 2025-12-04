@@ -876,7 +876,7 @@ function initNativeUrlAnimation() {
 				const mainMenuIframe = document.createElement('iframe');
 				mainMenuIframe.src = "./popup.html?showSessions=no";
 				mainMenuIframe.style.cssText = `border: 0px;
-				width: 300px;
+				width: 380px;
 				height: 423px;`;
 				mainMenuDivInner.appendChild(mainMenuIframe);
 
@@ -889,7 +889,7 @@ function initNativeUrlAnimation() {
 				top: 47px;
 				left: 25px;
 				height: 100%;
-				width: 300px;
+				width: 380px;
 				/*border-radius: 10px;
 				overflow: hidden;*/`;
 				mainMenuDiv.appendChild(mainMenuDivInner);

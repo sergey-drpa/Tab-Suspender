@@ -356,5 +356,111 @@
   {
     "message": "Suspender Paused for:",
     "description": "Label shown when suspender is paused"
+  },
+
+  "wizardTitle":
+  {
+    "message": "Welcome to Tab Suspender Wizard",
+    "description": "Wizard page title"
+  },
+  "wizardStep":
+  {
+    "message": "( step $1 of $2 )",
+    "description": "Wizard step indicator"
+  },
+  "wizardIntro":
+  {
+    "message": "- allows you to not worry about the huge number of opened tabs and their memory!",
+    "description": "Wizard intro text"
+  },
+  "wizardClickNext":
+  {
+    "message": "click <span class=\"bold-underline\">NEXT</span> to configure basic settings.",
+    "description": "Wizard click next instruction"
+  },
+  "wizardOrSkip":
+  {
+    "message": "or <span class=\"bold-underline\">SKIP</span> to use predefined configuration.",
+    "description": "Wizard skip instruction"
+  },
+  "wizardStep2Question":
+  {
+    "message": "After what idle amount of time you want to move each unused tab to sleep?",
+    "description": "Wizard step 2 question"
+  },
+  "wizardStep3Question":
+  {
+    "message": "Do you want to allow Tab Suspender to look for most rarely used or forgotten tabs and smoothly close them automatically?",
+    "description": "Wizard step 3 question"
+  },
+  "wizardStep3HintPrefix":
+  {
+    "message": "Helps you not to think about closing",
+    "description": "Wizard step 3 hint prefix"
+  },
+  "wizardStep3HintLink":
+  {
+    "message": "unused tabs",
+    "description": "Wizard step 3 hint link text"
+  },
+  "wizardStep3HintSuffix":
+  {
+    "message": "manually.",
+    "description": "Wizard step 3 hint suffix"
+  },
+  "wizardNo":
+  {
+    "message": "No",
+    "description": "No option"
+  },
+  "wizardYes":
+  {
+    "message": "Yes",
+    "description": "Yes option"
+  },
+  "wizardComplete":
+  {
+    "message": "Complete!",
+    "description": "Wizard completion title"
+  },
+  "wizardCompleteText":
+  {
+    "message": "Tab Suspender, now, starts automatically suspend first unused tabs after <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> from this moment.",
+    "description": "Wizard completion text"
+  },
+  "wizardVideoHint":
+  {
+    "message": "If you want to suspend tabs earlier, you can suspend any tab by click button as shown on the video:",
+    "description": "Wizard video hint"
+  },
+  "wizardErrorReports":
+  {
+    "message": "Help Tab Suspender improve quality and send error reports",
+    "description": "Error reports checkbox label"
+  },
+  "wizardBtnSkip":
+  {
+    "message": "Skip / Use Defaults",
+    "description": "Skip button"
+  },
+  "wizardBtnBack":
+  {
+    "message": "< Back",
+    "description": "Back button"
+  },
+  "wizardBtnNext":
+  {
+    "message": "Next >",
+    "description": "Next button"
+  },
+  "wizardBtnFinish":
+  {
+    "message": "Finish",
+    "description": "Finish button"
+  },
+  "wizardBtnClose":
+  {
+    "message": "Close",
+    "description": "Close button"
   }
 }

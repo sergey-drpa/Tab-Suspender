@@ -354,5 +354,111 @@
   {
     "message": "Suspender pausado por:",
     "description": "Label shown when suspender is paused"
+  },
+
+  "wizardTitle":
+  {
+    "message": "Bienvenido al asistente de Tab Suspender",
+    "description": "Wizard page title"
+  },
+  "wizardStep":
+  {
+    "message": "( paso $1 de $2 )",
+    "description": "Wizard step indicator"
+  },
+  "wizardIntro":
+  {
+    "message": "- te permite no preocuparte por la gran cantidad de pestañas abiertas y su memoria!",
+    "description": "Wizard intro text"
+  },
+  "wizardClickNext":
+  {
+    "message": "haz clic en <span class=\"bold-underline\">SIGUIENTE</span> para configurar los ajustes básicos.",
+    "description": "Wizard click next instruction"
+  },
+  "wizardOrSkip":
+  {
+    "message": "o <span class=\"bold-underline\">OMITIR</span> para usar la configuración predeterminada.",
+    "description": "Wizard skip instruction"
+  },
+  "wizardStep2Question":
+  {
+    "message": "¿Después de cuánto tiempo de inactividad quieres poner cada pestaña no usada a dormir?",
+    "description": "Wizard step 2 question"
+  },
+  "wizardStep3Question":
+  {
+    "message": "¿Quieres permitir que Tab Suspender busque las pestañas menos usadas u olvidadas y las cierre automáticamente?",
+    "description": "Wizard step 3 question"
+  },
+  "wizardStep3HintPrefix":
+  {
+    "message": "Te ayuda a no pensar en cerrar",
+    "description": "Wizard step 3 hint prefix"
+  },
+  "wizardStep3HintLink":
+  {
+    "message": "pestañas no usadas",
+    "description": "Wizard step 3 hint link text"
+  },
+  "wizardStep3HintSuffix":
+  {
+    "message": "manualmente.",
+    "description": "Wizard step 3 hint suffix"
+  },
+  "wizardNo":
+  {
+    "message": "No",
+    "description": "No option"
+  },
+  "wizardYes":
+  {
+    "message": "Sí",
+    "description": "Yes option"
+  },
+  "wizardComplete":
+  {
+    "message": "¡Completado!",
+    "description": "Wizard completion title"
+  },
+  "wizardCompleteText":
+  {
+    "message": "Tab Suspender ahora comenzará a suspender automáticamente las primeras pestañas no usadas después de <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> desde este momento.",
+    "description": "Wizard completion text"
+  },
+  "wizardVideoHint":
+  {
+    "message": "Si quieres suspender pestañas antes, puedes suspender cualquier pestaña haciendo clic en el botón como se muestra en el video:",
+    "description": "Wizard video hint"
+  },
+  "wizardErrorReports":
+  {
+    "message": "Ayudar a Tab Suspender a mejorar la calidad y enviar informes de errores",
+    "description": "Error reports checkbox label"
+  },
+  "wizardBtnSkip":
+  {
+    "message": "Omitir / Usar predeterminados",
+    "description": "Skip button"
+  },
+  "wizardBtnBack":
+  {
+    "message": "< Atrás",
+    "description": "Back button"
+  },
+  "wizardBtnNext":
+  {
+    "message": "Siguiente >",
+    "description": "Next button"
+  },
+  "wizardBtnFinish":
+  {
+    "message": "Finalizar",
+    "description": "Finish button"
+  },
+  "wizardBtnClose":
+  {
+    "message": "Cerrar",
+    "description": "Close button"
   }
 }

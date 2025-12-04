@@ -356,5 +356,111 @@
   {
     "message": "सस्पेंडर के लिए रोका गया:",
     "description": "Label shown when suspender is paused"
+  },
+
+  "wizardTitle":
+  {
+    "message": "Tab Suspender विज़ार्ड में आपका स्वागत है",
+    "description": "Wizard page title"
+  },
+  "wizardStep":
+  {
+    "message": "( चरण $1 का $2 )",
+    "description": "Wizard step indicator"
+  },
+  "wizardIntro":
+  {
+    "message": "- आपको खुले टैब की बड़ी संख्या और उनकी मेमोरी की चिंता नहीं करने देता!",
+    "description": "Wizard intro text"
+  },
+  "wizardClickNext":
+  {
+    "message": "बुनियादी सेटिंग्स कॉन्फ़िगर करने के लिए <span class=\"bold-underline\">आगे</span> क्लिक करें।",
+    "description": "Wizard click next instruction"
+  },
+  "wizardOrSkip":
+  {
+    "message": "या पूर्वनिर्धारित कॉन्फ़िगरेशन का उपयोग करने के लिए <span class=\"bold-underline\">छोड़ें</span>।",
+    "description": "Wizard skip instruction"
+  },
+  "wizardStep2Question":
+  {
+    "message": "आप कितनी निष्क्रियता के बाद प्रत्येक अप्रयुक्त टैब को सोने में डालना चाहते हैं?",
+    "description": "Wizard step 2 question"
+  },
+  "wizardStep3Question":
+  {
+    "message": "क्या आप Tab Suspender को सबसे कम उपयोग किए गए या भूले हुए टैब खोजने और उन्हें स्वचालित रूप से बंद करने की अनुमति देना चाहते हैं?",
+    "description": "Wizard step 3 question"
+  },
+  "wizardStep3HintPrefix":
+  {
+    "message": "मैन्युअल रूप से बंद करने के बारे में न सोचने में मदद करता है",
+    "description": "Wizard step 3 hint prefix"
+  },
+  "wizardStep3HintLink":
+  {
+    "message": "अप्रयुक्त टैब",
+    "description": "Wizard step 3 hint link text"
+  },
+  "wizardStep3HintSuffix":
+  {
+    "message": "।",
+    "description": "Wizard step 3 hint suffix"
+  },
+  "wizardNo":
+  {
+    "message": "नहीं",
+    "description": "No option"
+  },
+  "wizardYes":
+  {
+    "message": "हाँ",
+    "description": "Yes option"
+  },
+  "wizardComplete":
+  {
+    "message": "पूर्ण!",
+    "description": "Wizard completion title"
+  },
+  "wizardCompleteText":
+  {
+    "message": "Tab Suspender अब इस समय से <span id=\"resultTimeoutValue\" class=\"highlight-value\">$1</span> के बाद स्वचालित रूप से पहले अप्रयुक्त टैब को सस्पेंड करना शुरू कर देगा।",
+    "description": "Wizard completion text"
+  },
+  "wizardVideoHint":
+  {
+    "message": "यदि आप पहले टैब सस्पेंड करना चाहते हैं, तो आप वीडियो में दिखाए अनुसार बटन क्लिक करके कोई भी टैब सस्पेंड कर सकते हैं:",
+    "description": "Wizard video hint"
+  },
+  "wizardErrorReports":
+  {
+    "message": "Tab Suspender की गुणवत्ता सुधारने में मदद करें और त्रुटि रिपोर्ट भेजें",
+    "description": "Error reports checkbox label"
+  },
+  "wizardBtnSkip":
+  {
+    "message": "छोड़ें / डिफ़ॉल्ट उपयोग करें",
+    "description": "Skip button"
+  },
+  "wizardBtnBack":
+  {
+    "message": "< वापस",
+    "description": "Back button"
+  },
+  "wizardBtnNext":
+  {
+    "message": "आगे >",
+    "description": "Next button"
+  },
+  "wizardBtnFinish":
+  {
+    "message": "समाप्त",
+    "description": "Finish button"
+  },
+  "wizardBtnClose":
+  {
+    "message": "बंद करें",
+    "description": "Close button"
   }
 }

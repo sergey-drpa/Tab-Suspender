@@ -380,7 +380,8 @@ img.checked {
     z-index: 10000;
     height: 19px;
     position: relative;
-    width: 215px;
+    width: fit-content;
+    max-width: 280px;
     padding-right: 2px;
     border-radius: 5px 5px 0px 0px;
     font-weight: bold;
