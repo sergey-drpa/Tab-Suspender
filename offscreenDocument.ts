@@ -68,33 +68,33 @@ function startBatteryStatusNotifier() {
 }
 
 // @ts-ignore
-Sentry.init({
-	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
-	allowUrls: [/.*/],
-	integrations: (defaultIntegrations) => {
-		// Remove browser session
-		return defaultIntegrations.filter(
-			(integration) => {
-				console.log(`integration: `, integration);
-				return integration.name !== "BrowserSession"
-			},
-		);
-	},
-});
+// Sentry.init({
+// 	dsn: "https://d03bb30d517ec1594272cf217fc44f39@o4509192171945984.ingest.de.sentry.io/4509192186495056",
+// 	allowUrls: [/.*/],
+// 	integrations: (defaultIntegrations) => {
+// 		// Remove browser session
+// 		return defaultIntegrations.filter(
+// 			(integration) => {
+// 				console.log(`integration: `, integration);
+// 				return integration.name !== "BrowserSession"
+// 			},
+// 		);
+// },
+// });
 
 function sendError(errorData) {
 	const targetError = new Error(errorData.message);
 	targetError.stack = errorData.stack;
 
 	// @ts-ignore
-	Sentry
-		.captureException(targetError);
+	//Sentry
+	//	.captureException(targetError);
 }
 
 function sendEvent(event) {
 	// @ts-ignore
-	Sentry
-		.captureEvent(event);
+	//Sentry
+	//	.captureEvent(event);
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -11,12 +11,12 @@
   },
   "extDescription":
   {
-    "message": "Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat.",
+    "message": "निष्क्रिय टैब को स्वचालित रूप से सस्पेंड करें और 80% तक मेमोरी बचाएं, अपने डिवाइस, बैटरी पर लोड और गर्मी कम करें।",
     "description": "MAX 128: Automatically suspend, park, hibernate inactive tabs and save up to 80% of memory, reduce load on your device, battery and heat."
   },
   "rateIt":
   {
-    "message": "Rate it, please.",
+    "message": "कृपया रेट करें।",
     "description": "Rate it, please."
   },
   "autoCloseTabsSwitch":
@@ -26,7 +26,7 @@
   },
   "autoSuspendSliderValue":
   {
-    "message": "Will suspend tab after $1 of inactivity",
+    "message": "$1 निष्क्रियता के बाद टैब सस्पेंड होगा",
     "description": "Will suspend tab after $1 of inactivity"
   },
   "autoSuspendInterval":
@@ -47,12 +47,12 @@
 
   "wizard_recycleAfterSliderValue":
   {
-    "message": "Can close tabs after <b class=\"slider-value\">$1</b> of tab inactivity",
+    "message": "<b class=\"slider-value\">$1</b> निष्क्रियता के बाद टैब बंद कर सकते हैं",
     "description": "Slider label for auto-close tabs after inactivity"
   },
   "wizard_recycleKeepSliderValue":
   {
-    "message": "...and only when window have more than <b class=\"slider-value\">$1</b> opened tabs",
+    "message": "...और केवल जब विंडो में <b class=\"slider-value\">$1</b> से अधिक टैब खुले हों",
     "description": "Slider label for minimum tabs threshold"
   },
 
@@ -68,27 +68,27 @@
   },
   "pauseSuspender":
   {
-    "message": "Stop Tab Suspender for a while...",
+    "message": "Tab Suspender को कुछ समय के लिए रोकें...",
     "description": "Stop Tab Suspender for a while..."
   },
   "resumeSuspender":
   {
-    "message": "Cancel timer and activate Tab Suspender.",
+    "message": "टाइमर रद्द करें और Tab Suspender सक्रिय करें।",
     "description": "Cancel timer and activate Tab Suspender."
   },
   "pauseSuspenderFor10M":
   {
-    "message": "Stop Tab Suspender for 10 minutes.",
+    "message": "Tab Suspender को 10 मिनट के लिए रोकें।",
     "description": "Stop Tab Suspender for 10 minutes."
   },
   "pauseSuspenderFor1H":
   {
-    "message": "Stop Tab Suspender for 1 hour.",
+    "message": "Tab Suspender को 1 घंटे के लिए रोकें।",
     "description": "Stop Tab Suspender for 1 hour."
   },
   "pauseSuspenderFor5H":
   {
-    "message": "Stop Tab Suspender for 5 hours.",
+    "message": "Tab Suspender को 5 घंटे के लिए रोकें।",
     "description": "Stop Tab Suspender for 5 hours."
   },
 
@@ -96,265 +96,265 @@
 
   "addToWhitelist":
   {
-    "message": "Add to Whitelist to NOT suspend this site in future.",
+    "message": "इस साइट को भविष्य में सस्पेंड न करने के लिए व्हाइटलिस्ट में जोड़ें।",
     "description": "Add to Whitelist to NOT suspend this site in future."
   },
   "suspendCurrentTab":
   {
-    "message": "Immediately suspend current tab.",
+    "message": "वर्तमान टैब को तुरंत सस्पेंड करें।",
     "description": "Immediately suspend current tab."
   },
   "suspendCurrentWindow":
   {
-    "message": "Immediately suspend all tabs at current window.",
+    "message": "वर्तमान विंडो के सभी टैब तुरंत सस्पेंड करें।",
     "description": "Immediately suspend all tabs at current window."
   },
   "suspendTabGroup":
   {
-    "message": "Immediately suspend all tabs in current tab group.",
+    "message": "वर्तमान टैब समूह के सभी टैब तुरंत सस्पेंड करें।",
     "description": "Immediately suspend all tabs in current tab group."
   },
   "suspendAll":
   {
-    "message": "Immediately suspend all tabs except current tab.",
+    "message": "वर्तमान टैब को छोड़कर सभी टैब तुरंत सस्पेंड करें।",
     "description": "Immediately suspend all tabs except current tab."
   },
   "suspendAllTabs":
   {
-    "message": "Immediately suspend all tabs.",
+    "message": "सभी टैब तुरंत सस्पेंड करें।",
     "description": "Immediately suspend all tabs."
   },
 
   "unsuspend":
   {
-    "message": "Unsuspend tab.",
+    "message": "टैब अनसस्पेंड करें।",
     "description": "Unsuspend tab."
   },
   "unsuspendAllWindow":
   {
-    "message": "Immediately unsuspend all tabs at current window.",
+    "message": "वर्तमान विंडो के सभी टैब तुरंत अनसस्पेंड करें।",
     "description": "Immediately unsuspend all tabs at current window."
   },
   "unsuspendTabGroup":
   {
-    "message": "Immediately unsuspend all tabs in current tab group.",
+    "message": "वर्तमान टैब समूह के सभी टैब तुरंत अनसस्पेंड करें।",
     "description": "Immediately unsuspend all tabs in current tab group."
   },
   "unsuspendAll":
   {
-    "message": "Immediately unsuspend all tabs.",
+    "message": "सभी टैब तुरंत अनसस्पेंड करें।",
     "description": "Immediately unsuspend all tabs."
   },
 
   "ignoreCurrentTab":
   {
-    "message": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist).",
+    "message": "चिह्नित टैब को Tab Suspender द्वारा अनदेखा किया जाएगा (ब्राउज़र पुनः आरंभ के बाद रीसेट हो जाएगा, स्थायी अनदेखा के लिए व्हाइटलिस्ट का उपयोग करें)।",
     "description": "The marked tab will be ignored by Tab Suspender (Will be reset after browser restart, if you need permanent ignore please use Whitelist)."
   },
   "suspendHistory":
   {
-    "message": "Open suspended tabs history.",
+    "message": "सस्पेंड किए गए टैब का इतिहास खोलें।",
     "description": "Open suspended tabs history."
   },
   "changeHotkeys":
   {
-    "message": "Setup/Change hotkeys for fast access to Tab Suspender functions.",
+    "message": "Tab Suspender फ़ंक्शन तक त्वरित पहुंच के लिए हॉटकी सेटअप/बदलें।",
     "description": "Setup/Change hotkeys for fast access to Tab Suspender functions."
   },
   "allSettings":
   {
-    "message": "Open full settings page.",
+    "message": "पूर्ण सेटिंग्स पेज खोलें।",
     "description": "Open full settings page."
   },
 
   "popupToggle":
   {
-    "message": "Toggle",
+    "message": "टॉगल",
     "description": "Toggle checkbox label"
   },
   "popupOnOffAutoSuspend":
   {
-    "message": "On/Off Automatic Suspend",
+    "message": "स्वचालित सस्पेंड चालू/बंद",
     "description": "Title for auto-suspend toggle"
   },
   "popupCloseUnusedTabs":
   {
-    "message": "Close Unused Tabs Automatically",
+    "message": "अप्रयुक्त टैब स्वचालित रूप से बंद करें",
     "description": "Label for close unused tabs feature"
   },
   "popupAutoSuspendInterval":
   {
-    "message": "Auto-Suspend Interval",
+    "message": "स्वचालित-सस्पेंड अंतराल",
     "description": "Label for auto-suspend interval slider"
   },
   "popupAutoSuspendTurnedOff":
   {
-    "message": "Automatic Suspend is Turned Off",
+    "message": "स्वचालित सस्पेंड बंद है",
     "description": "Tab-Suspender temporarily disabled"
   },
   "popupIncreaseInterval":
   {
-    "message": "Increase interval...",
+    "message": "अंतराल बढ़ाएं...",
     "description": "Title for increase interval button"
   },
   "popupDontSuspendSite":
   {
-    "message": "Don't Suspend this Site...",
+    "message": "इस साइट को सस्पेंड न करें...",
     "description": "Button to add site to whitelist"
   },
   "popupSiteInWhitelist":
   {
-    "message": "Site already in Whitelist",
+    "message": "साइट पहले से व्हाइटलिस्ट में है",
     "description": "Message when site is already whitelisted"
   },
   "popupRemove":
   {
-    "message": "Remove",
+    "message": "हटाएं",
     "description": "Remove from whitelist button"
   },
   "popupDontSuspendTab":
   {
-    "message": "Don't Suspend this Tab (Ignore while tab alive)",
+    "message": "इस टैब को सस्पेंड न करें (टैब जीवित रहने तक अनदेखा करें)",
     "description": "Button to ignore current tab"
   },
   "popupSuspendLabel":
   {
-    "message": "Suspend:",
+    "message": "सस्पेंड:",
     "description": "Label for suspend buttons section"
   },
   "popupBtnTab":
   {
-    "message": "Tab",
+    "message": "टैब",
     "description": "Suspend/Unsuspend Tab button"
   },
   "popupBtnGroup":
   {
-    "message": "Group",
+    "message": "समूह",
     "description": "Suspend/Unsuspend Group button"
   },
   "popupBtnWindow":
   {
-    "message": "Window",
+    "message": "विंडो",
     "description": "Suspend/Unsuspend Window button"
   },
   "popupBtnAllOther":
   {
-    "message": "All Other",
+    "message": "अन्य सभी",
     "description": "Suspend All Other button"
   },
   "popupBtnAll":
   {
-    "message": "All",
+    "message": "सभी",
     "description": "Suspend/Unsuspend All button"
   },
   "popupUnsuspendLabel":
   {
-    "message": "Unsuspend:",
+    "message": "अनसस्पेंड:",
     "description": "Label for unsuspend buttons section"
   },
   "popupSessionManager":
   {
-    "message": "Session Manager...",
+    "message": "सेशन मैनेजर...",
     "description": "Session Manager menu item"
   },
   "popupOpenSessionManager":
   {
-    "message": "Open Session Manager.",
+    "message": "सेशन मैनेजर खोलें।",
     "description": "Title for Session Manager"
   },
   "popupHistoryLabel":
   {
-    "message": "History:",
+    "message": "इतिहास:",
     "description": "Label for history section"
   },
   "popupBtnSuspended":
   {
-    "message": "Suspended",
+    "message": "सस्पेंड किए गए",
     "description": "Suspended history button"
   },
   "popupBtnClosed":
   {
-    "message": "Closed",
+    "message": "बंद किए गए",
     "description": "Closed history button"
   },
   "popupShowSuspendedHistory":
   {
-    "message": "Show history of Suspended Tabs.",
+    "message": "सस्पेंड किए गए टैब का इतिहास दिखाएं।",
     "description": "Title for suspended tabs history"
   },
   "popupShowClosedHistory":
   {
-    "message": "Show history of Closed Tabs.",
+    "message": "बंद किए गए टैब का इतिहास दिखाएं।",
     "description": "Title for closed tabs history"
   },
   "popupPauseSuspenderLabel":
   {
-    "message": "Pause Suspender:",
+    "message": "सस्पेंडर रोकें:",
     "description": "Label for pause section"
   },
   "popupBtn10min":
   {
-    "message": "10 min",
+    "message": "10 मिनट",
     "description": "Pause for 10 minutes button"
   },
   "popupBtn1hour":
   {
-    "message": "1 hour",
+    "message": "1 घंटा",
     "description": "Pause for 1 hour button"
   },
   "popupBtn5hours":
   {
-    "message": "5 hours",
+    "message": "5 घंटे",
     "description": "Pause for 5 hours button"
   },
   "popupBtn1day":
   {
-    "message": "1 day",
+    "message": "1 दिन",
     "description": "Pause for 1 day button"
   },
   "pauseSuspenderFor1D":
   {
-    "message": "Stop Tab Suspender for 1 Day.",
+    "message": "Tab Suspender को 1 दिन के लिए रोकें।",
     "description": "Title for pause 1 day button"
   },
   "popupChangeHotkeys":
   {
-    "message": "Change Hotkeys...",
+    "message": "हॉटकी बदलें...",
     "description": "Change hotkeys menu item"
   },
   "popupSettings":
   {
-    "message": "Settings...",
+    "message": "सेटिंग्स...",
     "description": "Settings menu item"
   },
   "popupDonateTitle":
   {
-    "message": "If you like Tab Suspender, and would like to see it continue, new features and handling support requests...support project!",
+    "message": "अगर आपको Tab Suspender पसंद है, और आप इसे जारी रखना चाहते हैं, नई सुविधाएं और सहायता अनुरोधों को संभालना...प्रोजेक्ट का समर्थन करें!",
     "description": "Donate link title"
   },
   "popupDonateText":
   {
-    "message": "Like Tab Suspender? Consider donating!",
+    "message": "Tab Suspender पसंद है? दान करने पर विचार करें!",
     "description": "Donate link text"
   },
   "popupShowWindowSessions":
   {
-    "message": "Show Window Sessions",
+    "message": "विंडो सेशन दिखाएं",
     "description": "Show window sessions button"
   },
   "popupOpenSessionsNewWindow":
   {
-    "message": "Open Window Sessions in New window",
+    "message": "विंडो सेशन नई विंडो में खोलें",
     "description": "Title for open sessions in new window"
   },
   "popupShowByDefault":
   {
-    "message": "Show by default",
+    "message": "डिफ़ॉल्ट रूप से दिखाएं",
     "description": "Show sessions by default checkbox label"
   },
   "popupSuspenderPausedFor":
   {
-    "message": "Suspender Paused for:",
+    "message": "सस्पेंडर के लिए रोका गया:",
     "description": "Label shown when suspender is paused"
   }
 }

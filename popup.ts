@@ -39,9 +39,9 @@
 					.menu { color: #cccccc !important; }
 					.irs-line { background: linear-gradient(to bottom, #8e8e8e -50%, #fff 150%); }
 					div.menu:hover:not(.disabled) { background-color: #585858; }
-					.recicle-section { background-color: #383838; border: 1px #545454 solid; }
+					.recicle-section { background-color: #252424; border: 1px #545454 solid; }
 					.tab-button { border-bottom: 2px solid #222;}
-					.tab-button.visible { background-color: #383838; border: 1px #545454 solid; border-bottom: 1px #383838 solid; }
+					.tab-button.visible { background-color: #252424; border: 1px #545454 solid; border-bottom: 1px #252424 solid; }
 					.inline-btn { color: #eaeaea; }
 					.menu:hover .inline-btn.disabled { background-color: #fff; border: solid 1px #f7f7f7; color: #a9aeaf; opacity: 0.6; }
 					.sessionManagerLinkNew { filter: brightness(3.5); }
@@ -53,6 +53,41 @@
 		trackErrors('popup', true);
 
 		document.getElementsByTagName('body')[0].className = chrome.i18n.getMessage('@@ui_locale');
+		console.log('Current locale:', chrome.i18n.getMessage('@@ui_locale'));
+
+		// Localize titles with __MSG_ prefix
+		const elementsWithLocalTitles = document.querySelectorAll('[title^="__MSG_"]');
+		console.log('Found elements with __MSG_ titles:', elementsWithLocalTitles.length);
+		for (const i in elementsWithLocalTitles)
+			if (elementsWithLocalTitles.hasOwnProperty(i)) {
+				// @ts-expect-error
+				const titleKey = elementsWithLocalTitles[i].title;
+				if (titleKey != null) {
+					const msgKey = titleKey.substr(6, titleKey.length - 8);
+					const localizedMsg = chrome.i18n.getMessage(msgKey);
+					console.log('Localizing:', msgKey, '->', localizedMsg || '(empty)');
+					if (localizedMsg) {
+						// @ts-expect-error
+						elementsWithLocalTitles[i].title = localizedMsg;
+					}
+				}
+			}
+
+		// Localize text content with data-i18n attribute
+		const elementsWithDataI18n = document.querySelectorAll('[data-i18n]');
+		console.log('Found elements with data-i18n:', elementsWithDataI18n.length);
+		for (const i in elementsWithDataI18n)
+			if (elementsWithDataI18n.hasOwnProperty(i)) {
+				const msgKey = elementsWithDataI18n[i].getAttribute('data-i18n');
+				if (msgKey != null) {
+					const localizedMsg = chrome.i18n.getMessage(msgKey);
+					console.log('Localizing text:', msgKey, '->', localizedMsg || '(empty)');
+					if (localizedMsg) {
+						elementsWithDataI18n[i].textContent = localizedMsg;
+					}
+				}
+			}
+
 		//BG = chrome.extension.getBackgroundPage();
 
 		chrome.tabs.query({ currentWindow: true, active: true }, async function(tabs) {
@@ -279,7 +314,7 @@
 					}
 				}
 
-				return 'Can close tabs after <b style=\'font-size: 11px;\'>' + result + '</b> of tab inactivity';
+				return chrome.i18n.getMessage('wizard_recycleAfterSliderValue', [result]) || 'Can close tabs after <b class="slider-value">' + result + '</b> of tab inactivity';
 			},
 			onFinish: function(data) {
 				console.log('onFinish', data);
@@ -310,7 +345,7 @@
 					updateRecycleKeepSliderTitle(seconds);
 				}, 100);
 
-				return '...and only when window have more than <b style=\'font-size: 11px;\'>' + seconds + '</b> opened tabs';
+				return chrome.i18n.getMessage('wizard_recycleKeepSliderValue', [seconds]) || '...and only when window have more than <b class="slider-value">' + seconds + '</b> opened tabs';
 			},
 			onFinish: function(data) {
 
@@ -322,16 +357,6 @@
 			$('.js-range-slider-recicle-keep').parent().find('.irs-single').attr('title', chrome.i18n.getMessage('recycleKeepSliderValue', [time]));
 		}
 
-
-		const elementsWithLocalTitles = document.querySelectorAll('[title^="__MSG_"]');
-		for (const i in elementsWithLocalTitles)
-			if (elementsWithLocalTitles.hasOwnProperty(i)) {
-				// @ts-expect-error
-				const titleKey = elementsWithLocalTitles[i].title;
-				if (titleKey != null)
-					// @ts-expect-error
-					elementsWithLocalTitles[i].title = chrome.i18n.getMessage(titleKey.substr(6, titleKey.length - 8));
-			}
 
 		function renderPreviews() {
 			document.getElementById('previewsBar').innerHTML = '';
@@ -856,14 +881,14 @@
 		//let sliders = document.querySelectorAll('#slider');
 		if (pauseTics > 0) {
 			document.querySelector('#pause').className = 'menu stage2';
-			document.querySelector('#pause .menu').innerHTML = 'Suspender Paused for:';
+			document.querySelector('#pause .menu').innerHTML = chrome.i18n.getMessage('popupSuspenderPausedFor') || 'Suspender Paused for:';
 			changePausedUI(true);
 			/*for (let i in sliders)
 				if (sliders.hasOwnProperty(i))
 					sliders[i].className = 'disabled';*/
 		} else {
 			document.querySelector('#pause').className = 'menu ';
-			document.querySelector('#pause .menu').innerHTML = 'Pause Suspender:';
+			document.querySelector('#pause .menu').innerHTML = chrome.i18n.getMessage('popupPauseSuspenderLabel') || 'Pause Suspender:';
 			changePausedUI(false);
 			/*for (let j in sliders)
 				if (sliders.hasOwnProperty(j))

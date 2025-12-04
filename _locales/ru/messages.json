@@ -47,13 +47,13 @@
 
   "wizard_recycleAfterSliderValue":
   {
-    "message": "Suspender может закрывать вкладки после <b>$1</b> неактивности вкладки",
-    "description": "Suspender can close tabs after <b>$1</b> of tab inactivity"
+    "message": "Может закрывать вкладки после <b class=\"slider-value\">$1</b> их не активности",
+    "description": "Slider label for auto-close tabs after inactivity"
   },
   "wizard_recycleKeepSliderValue":
   {
-    "message": "...и только когда открытых вкладок больше <b>$1</b>",
-    "description": "...and only when window have more than <b>$1</b> opened tabs"
+    "message": "...и только когда открытых вкладок больше <b class=\"slider-value\">$1</b>",
+    "description": "Slider label for minimum tabs threshold"
   },
 
   "pageIsInWhitelist":
@@ -119,6 +119,11 @@
     "message": "Немедленно усыпить все остальные вкладки за исключением текущей.",
     "description": "Immediately suspend all tabs except current tab."
   },
+  "suspendAllTabs":
+  {
+    "message": "Немедленно усыпить все вкладки.",
+    "description": "Immediately suspend all tabs."
+  },
 
   "unsuspend":
   {
@@ -160,5 +165,196 @@
   {
     "message": "Открыть полные настойки...",
     "description": "Open full settings page."
+  },
+
+  "popupToggle":
+  {
+    "message": "Вкл/Выкл",
+    "description": "Toggle checkbox label"
+  },
+  "popupOnOffAutoSuspend":
+  {
+    "message": "Вкл/Выкл автоматическую приостановку",
+    "description": "Title for auto-suspend toggle"
+  },
+  "popupCloseUnusedTabs":
+  {
+    "message": "Автоматически закрывать вкладки",
+    "description": "Label for close unused tabs feature"
+  },
+  "popupAutoSuspendInterval":
+  {
+    "message": "Интервал авто-приостановки",
+    "description": "Label for auto-suspend interval slider"
+  },
+  "popupAutoSuspendTurnedOff":
+  {
+    "message": "Расширение временно приостановлено",
+    "description": "Tab-Suspender temporarily disabled"
+  },
+  "popupIncreaseInterval":
+  {
+    "message": "Увеличить интервал...",
+    "description": "Title for increase interval button"
+  },
+  "popupDontSuspendSite":
+  {
+    "message": "Не приостанавливать этот сайт...",
+    "description": "Button to add site to whitelist"
+  },
+  "popupSiteInWhitelist":
+  {
+    "message": "Сайт уже в белом списке",
+    "description": "Message when site is already whitelisted"
+  },
+  "popupRemove":
+  {
+    "message": "Удалить",
+    "description": "Remove from whitelist button"
+  },
+  "popupDontSuspendTab":
+  {
+    "message": "Не приостанавливать эту вкладку",
+    "description": "Button to ignore current tab"
+  },
+  "popupSuspendLabel":
+  {
+    "message": "Приостановить:",
+    "description": "Label for suspend buttons section"
+  },
+  "popupBtnTab":
+  {
+    "message": "Вкладку",
+    "description": "Suspend/Unsuspend Tab button"
+  },
+  "popupBtnGroup":
+  {
+    "message": "Группу",
+    "description": "Suspend/Unsuspend Group button"
+  },
+  "popupBtnWindow":
+  {
+    "message": "Окно",
+    "description": "Suspend/Unsuspend Window button"
+  },
+  "popupBtnAllOther":
+  {
+    "message": "Остальные",
+    "description": "Suspend All Other button"
+  },
+  "popupBtnAll":
+  {
+    "message": "Все",
+    "description": "Suspend/Unsuspend All button"
+  },
+  "popupUnsuspendLabel":
+  {
+    "message": "Разморозить:",
+    "description": "Label for unsuspend buttons section"
+  },
+  "popupSessionManager":
+  {
+    "message": "Менеджер сессий...",
+    "description": "Session Manager menu item"
+  },
+  "popupOpenSessionManager":
+  {
+    "message": "Открыть менеджер сессий.",
+    "description": "Title for Session Manager"
+  },
+  "popupHistoryLabel":
+  {
+    "message": "История:",
+    "description": "Label for history section"
+  },
+  "popupBtnSuspended":
+  {
+    "message": "Приостановленные",
+    "description": "Suspended history button"
+  },
+  "popupBtnClosed":
+  {
+    "message": "Закрытые",
+    "description": "Closed history button"
+  },
+  "popupShowSuspendedHistory":
+  {
+    "message": "Показать историю приостановленных вкладок.",
+    "description": "Title for suspended tabs history"
+  },
+  "popupShowClosedHistory":
+  {
+    "message": "Показать историю закрытых вкладок.",
+    "description": "Title for closed tabs history"
+  },
+  "popupPauseSuspenderLabel":
+  {
+    "message": "Приостановить расширение:",
+    "description": "Label for pause section"
+  },
+  "popupBtn10min":
+  {
+    "message": "10 мин",
+    "description": "Pause for 10 minutes button"
+  },
+  "popupBtn1hour":
+  {
+    "message": "1 час",
+    "description": "Pause for 1 hour button"
+  },
+  "popupBtn5hours":
+  {
+    "message": "5 часов",
+    "description": "Pause for 5 hours button"
+  },
+  "popupBtn1day":
+  {
+    "message": "1 день",
+    "description": "Pause for 1 day button"
+  },
+  "pauseSuspenderFor1D":
+  {
+    "message": "Приостановить расширение на 1 день.",
+    "description": "Title for pause 1 day button"
+  },
+  "popupChangeHotkeys":
+  {
+    "message": "Горячие клавиши...",
+    "description": "Change hotkeys menu item"
+  },
+  "popupSettings":
+  {
+    "message": "Настройки...",
+    "description": "Settings menu item"
+  },
+  "popupDonateTitle":
+  {
+    "message": "Если вам нравится Tab Suspender и вы хотите видеть его развитие, новые функции и поддержку...поддержите проект!",
+    "description": "Donate link title"
+  },
+  "popupDonateText":
+  {
+    "message": "Нравится Tab Suspender? Поддержите проект!",
+    "description": "Donate link text"
+  },
+  "popupShowWindowSessions":
+  {
+    "message": "Показать сессии окна",
+    "description": "Show window sessions button"
+  },
+  "popupOpenSessionsNewWindow":
+  {
+    "message": "Открыть сессии в новом окне",
+    "description": "Title for open sessions in new window"
+  },
+  "popupShowByDefault":
+  {
+    "message": "Показывать по умолчанию",
+    "description": "Show sessions by default checkbox label"
+  },
+  "popupSuspenderPausedFor":
+  {
+    "message": "Приостановлено на:",
+    "description": "Label shown when suspender is paused"
   }
 }
