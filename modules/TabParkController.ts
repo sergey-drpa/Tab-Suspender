@@ -130,8 +130,10 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 					await parkTab(tab, tabId, {...options, retry: 1});
 					return;
 				} catch (e) {
-					console.error(`Park Error: `, e);
-					return;
+					// Capture failed - continue with suspend WITHOUT screenshot
+					// This fixes Issue #44: tabs not auto-suspending due to capture failures
+					console.warn(`Capture failed, proceeding to suspend without screenshot:`, e);
+					// Don't return - fall through to parkByMessage below
 				}
 
 			tabManager.getTabInfoOrCreate(tab).lstCapUrl = tab.url;
