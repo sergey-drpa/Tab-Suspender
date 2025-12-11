@@ -66,6 +66,7 @@ class Settings {
 	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
 	suspendOnCtrlClick: boolean;
+	suspendOnCtrlClick_hotfix_migrated: boolean;
 	// v2.0.0
 	localStorageMigrated: boolean;
 	localStorageFormDataCleaned: boolean;
@@ -113,11 +114,19 @@ const DEFAULT_SETTINGS: Settings = {
 	ignoreSuspendGroupedTabs: false,
 	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,
-	suspendOnCtrlClick: true,
+	suspendOnCtrlClick: false,
+	suspendOnCtrlClick_hotfix_migrated: null,
 	// v2.0.0
 	localStorageMigrated: null,
 	localStorageFormDataCleaned: null,
 };
 
 // @ts-ignore
-if (typeof global !== "undefined") global.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
+if (typeof global !== "undefined") {
+	(global as any).DEFAULT_SETTINGS = DEFAULT_SETTINGS;
+	(global as any).SETTINGS_TYPES = SETTINGS_TYPES;
+	(global as any).GET_SETTINGS_TYPE = GET_SETTINGS_TYPE;
+	(global as any).NUMBER_TYPE = NUMBER_TYPE;
+	(global as any).STRING_TYPE = STRING_TYPE;
+	(global as any).BOOLEAN_TYPE = BOOLEAN_TYPE;
+}

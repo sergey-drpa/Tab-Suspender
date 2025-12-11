@@ -52,10 +52,13 @@ describe('Settings Export/Import Functionality', () => {
             set: jest.fn().mockResolvedValue(undefined),
             remove: jest.fn().mockResolvedValue(undefined),
             clear: jest.fn().mockResolvedValue(undefined)
+        },
+        onChanged: {
+            addListener: jest.fn()
         }
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // Reset storage data before each test
         mockStorageData = {};
 
@@ -74,8 +77,11 @@ describe('Settings Export/Import Functionality', () => {
         // Create a new SettingsStore instance for each test
         settingsStore = new (global as any).SettingsStore('tabSuspenderSettings', (global as any).DEFAULT_SETTINGS, mockOffscreenProvider);
 
+        // Wait for storage initialization to complete before tests run
+        await settingsStore.getOnStorageInitialized();
+
         // Mock console methods to reduce noise during tests
-        jest.spyOn(console, 'log').mockImplementation(() => {});
+        // jest.spyOn(console, 'log').mockImplementation(() => {});
         jest.spyOn(console, 'error').mockImplementation(() => {});
         jest.spyOn(console, 'warn').mockImplementation(() => {});
     });
@@ -276,15 +282,19 @@ describe('Settings Export/Import Functionality', () => {
             // All default settings should exist, even if not in import
             const allDefaults = Object.keys((global as any).DEFAULT_SETTINGS);
 
+            // Keys that are set by migrations and should be excluded from default value check
+            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned'];
+
             for (const key of allDefaults) {
                 const value = await settingsStore.get(key);
                 expect(value).toBeDefined();
 
                 if (key === 'active') {
                     expect(value).toBe(false); // Our imported value
-                } else {
+                } else if (!migrationKeys.includes(key)) {
                     expect(value).toBe((global as any).DEFAULT_SETTINGS[key]); // Default value
                 }
+                // Migration keys may have non-default values due to migration logic
             }
         });
     });
@@ -319,14 +329,16 @@ describe('Settings Export/Import Functionality', () => {
             // Verify all settings are preserved
             for (const [key, expectedValue] of Object.entries(customSettings)) {
                 const importedValue = await settingsStore.get(key);
-
-
                 expect(importedValue).toBe(expectedValue);
             }
 
+            // Keys that are set by migrations and should be excluded from default value check
+            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned'];
+
             // Verify settings not customized maintain defaults
             const defaultOnlyKeys = Object.keys((global as any).DEFAULT_SETTINGS)
-                .filter(key => !Object.hasOwnProperty.call(customSettings, key));
+                .filter(key => !Object.hasOwnProperty.call(customSettings, key))
+                .filter(key => !migrationKeys.includes(key));
 
             for (const key of defaultOnlyKeys) {
                 const importedValue = await settingsStore.get(key);

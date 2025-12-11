@@ -92,12 +92,12 @@ class SettingsStoreClient {
                 }
             }*/
 
-            chrome.storage.local.set({
+            await chrome.storage.local.set({
                 [SettingsStoreClient.genName(name, this.namespace)]: value
             }).catch(console.error);
 
             if(!skipSync) {
-                this.setSync(name, value).catch(console.error);
+                await this.setSync(name, value).catch(console.error);
             }
         }
 
@@ -239,6 +239,13 @@ class SettingsStore extends SettingsStoreClient {
                 await this.set('localStorageMigrated', true);
                 await LocalStore.set(LocalStoreKeys.INSTALLED, true);
             }
+        }
+
+        // Hotfix migration: reset suspendOnCtrlClick to false for users who got wrong default
+        if (!await this.get('suspendOnCtrlClick_hotfix_migrated')) {
+            console.log('Applying suspendOnCtrlClick hotfix migration...');
+            await this.set('suspendOnCtrlClick', false, true);
+            await this.set('suspendOnCtrlClick_hotfix_migrated', true, true);
         }
 
         // Store DEFAULT_SETTINGS
