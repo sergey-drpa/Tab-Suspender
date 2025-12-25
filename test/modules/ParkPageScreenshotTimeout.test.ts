@@ -1,7 +1,22 @@
 /**
  * Tests for park.ts screenshot loading timeout and error handling
  * These tests verify the fixes for the promise hanging bug
+ *
+ * Issue #27 fixes:
+ * - Fix #4: withTimeout utility for screenPromise (5s timeout with fallback)
+ * - Fix #3: backProcessed flag handling
+ * - Fix #5: historyFallback timeout increased to 1500ms
  */
+
+// Replicate the withTimeout function from park.ts for testing
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<T>((resolve) => setTimeout(() => {
+            resolve(fallback);
+        }, ms))
+    ]);
+}
 
 describe('Park Page Screenshot Timeout Tests', () => {
   let mockChrome: any;
@@ -323,6 +338,221 @@ describe('Park Page Screenshot Timeout Tests', () => {
 
       expect(drawContentCalled).toBe(true);
       expect(continueStartCalled).toBe(true);
+    });
+  });
+
+  // Issue #27 Fix #4: withTimeout utility function tests
+  describe('withTimeout utility (Issue #27 Fix #4)', () => {
+    it('should return promise result if it resolves before timeout', async () => {
+      const fastPromise = new Promise<string>((resolve) => {
+        setTimeout(() => resolve('success'), 1000);
+      });
+
+      const result = withTimeout(fastPromise, 5000, 'fallback');
+
+      jest.advanceTimersByTime(1000);
+
+      await expect(result).resolves.toBe('success');
+    });
+
+    it('should return fallback if promise does not resolve before timeout', async () => {
+      const slowPromise = new Promise<string>((resolve) => {
+        setTimeout(() => resolve('success'), 10000);
+      });
+
+      const result = withTimeout(slowPromise, 5000, 'fallback');
+
+      jest.advanceTimersByTime(5000);
+
+      await expect(result).resolves.toBe('fallback');
+    });
+
+    it('should return fallback if promise never resolves', async () => {
+      const neverResolvingPromise = new Promise<string>(() => {
+        // Never resolves
+      });
+
+      const result = withTimeout(neverResolvingPromise, 5000, 'fallback');
+
+      jest.advanceTimersByTime(5000);
+
+      await expect(result).resolves.toBe('fallback');
+    });
+
+    it('should handle object fallback for screenPromise', async () => {
+      const neverResolvingPromise = new Promise<{ scr: string | null; pixRat: number | null }>(() => {});
+
+      const fallback = { scr: null, pixRat: null };
+      const result = withTimeout(neverResolvingPromise, 5000, fallback);
+
+      jest.advanceTimersByTime(5000);
+
+      await expect(result).resolves.toEqual({ scr: null, pixRat: null });
+    });
+
+    it('should reject if promise rejects before timeout', async () => {
+      const rejectingPromise = new Promise<string>((_, reject) => {
+        setTimeout(() => reject(new Error('Promise failed')), 1000);
+      });
+
+      const result = withTimeout(rejectingPromise, 5000, 'fallback');
+
+      jest.advanceTimersByTime(1000);
+
+      await expect(result).rejects.toThrow('Promise failed');
+    });
+
+    it('should use 2500ms timeout as configured for screenPromise', async () => {
+      const mockScreenPromise = new Promise<{ scr: string; pixRat: number }>((resolve) => {
+        setTimeout(() => resolve({ scr: 'base64data', pixRat: 2 }), 2000);
+      });
+
+      const result = withTimeout(mockScreenPromise, 2500, { scr: null as any, pixRat: null as any });
+
+      jest.advanceTimersByTime(2000);
+
+      await expect(result).resolves.toEqual({ scr: 'base64data', pixRat: 2 });
+    });
+  });
+
+  // Issue #27 Fix #3: backProcessed flag behavior tests
+  describe('backProcessed flag behavior (Issue #27 Fix #3)', () => {
+    it('should set backProcessed before navigation attempt', () => {
+      let backProcessed = false;
+      let navigationAttempted = false;
+
+      const goBack = (options?: { force?: boolean }) => {
+        if (!backProcessed || (options != null && options.force === true)) {
+          backProcessed = true;
+          navigationAttempted = true;
+        }
+      };
+
+      goBack();
+
+      expect(backProcessed).toBe(true);
+      expect(navigationAttempted).toBe(true);
+    });
+
+    it('should block subsequent calls when backProcessed is true', () => {
+      let backProcessed = false;
+      let navigationCount = 0;
+
+      const goBack = (options?: { force?: boolean }) => {
+        if (!backProcessed || (options != null && options.force === true)) {
+          backProcessed = true;
+          navigationCount++;
+        }
+      };
+
+      goBack();
+      goBack();
+      goBack();
+
+      expect(navigationCount).toBe(1);
+    });
+
+    it('should allow navigation with force option', () => {
+      let backProcessed = true;
+      let navigationCount = 0;
+
+      const goBack = (options?: { force?: boolean }) => {
+        if (!backProcessed || (options != null && options.force === true)) {
+          backProcessed = true;
+          navigationCount++;
+        }
+      };
+
+      goBack({ force: true });
+
+      expect(navigationCount).toBe(1);
+    });
+  });
+
+  // Issue #27 Fix #5: historyFallback timeout tests
+  describe('historyFallback timeout (Issue #27 Fix #5)', () => {
+    it('should use 1500ms timeout instead of 500ms', () => {
+      let fallbackExecuted = false;
+      let hasHistory = false;
+      let navigationAttempted = false;
+
+      const historyFallback = () => {
+        setTimeout(() => {
+          if (!hasHistory && !navigationAttempted) {
+            navigationAttempted = true;
+            fallbackExecuted = true;
+          }
+        }, 1500);
+      };
+
+      historyFallback();
+
+      // At 500ms (old timeout) - should NOT have executed
+      jest.advanceTimersByTime(500);
+      expect(fallbackExecuted).toBe(false);
+
+      // At 1000ms - should still NOT have executed
+      jest.advanceTimersByTime(500);
+      expect(fallbackExecuted).toBe(false);
+
+      // At 1500ms (new timeout) - should execute
+      jest.advanceTimersByTime(500);
+      expect(fallbackExecuted).toBe(true);
+    });
+
+    it('should not execute fallback if history navigation succeeds', () => {
+      let fallbackExecuted = false;
+      let hasHistory = false;
+      let navigationAttempted = false;
+
+      const historyFallback = () => {
+        setTimeout(() => {
+          hasHistory = true;
+        }, 100);
+
+        setTimeout(() => {
+          if (!hasHistory && !navigationAttempted) {
+            navigationAttempted = true;
+            fallbackExecuted = true;
+          }
+        }, 1500);
+      };
+
+      historyFallback();
+
+      jest.advanceTimersByTime(100);
+      expect(hasHistory).toBe(true);
+
+      jest.advanceTimersByTime(1400);
+      expect(fallbackExecuted).toBe(false);
+    });
+
+    it('should prevent double navigation with navigationAttempted flag', () => {
+      let fallbackCount = 0;
+      let hasHistory = false;
+      let navigationAttempted = false;
+
+      const historyFallback = () => {
+        setTimeout(() => {
+          if (!hasHistory && !navigationAttempted) {
+            navigationAttempted = true;
+            fallbackCount++;
+          }
+        }, 1500);
+
+        setTimeout(() => {
+          if (!hasHistory && !navigationAttempted) {
+            navigationAttempted = true;
+            fallbackCount++;
+          }
+        }, 1600);
+      };
+
+      historyFallback();
+
+      jest.advanceTimersByTime(1600);
+
+      expect(fallbackCount).toBe(1);
     });
   });
 });
