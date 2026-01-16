@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Suspender Sync</title>
+    <link rel="icon" type="image/png" href="icon128.png">
+</head>
+<body>
+<script>
+/**
+ * Tab Suspender Backup Sync
+ *
+ * This page receives suspended tabs data from the Tab Suspender extension
+ * via postMessage and stores it in localStorage.
+ *
+ * The data persists even after the extension is uninstalled.
+ */
+
+console.log('[SyncPage] Script loaded');
+console.log('[SyncPage] Location:', window.location.href);
+console.log('[SyncPage] Is in iframe:', window.parent !== window);
+
+const STORAGE_KEY = 'ts_suspended_tabs';
+const EXTENSION_ID = 'fiabciakcmgepblmdkmemdbbkilneeeh';
+
+function isAllowedOrigin(origin) {
+    const allowed = origin.startsWith('chrome-extension://');
+    console.log('[SyncPage] isAllowedOrigin check:', origin, '→', allowed);
+    return allowed;
+}
+
+// Listen for messages from extension
+window.addEventListener('message', function(event) {
+    console.log('[SyncPage] Received message:', {
+        origin: event.origin,
+        data: event.data
+    });
+
+    // Validate origin
+    if (!isAllowedOrigin(event.origin)) {
+        console.warn('[SyncPage] Rejected message from unauthorized origin:', event.origin);
+        return;
+    }
+
+    const data = event.data;
+
+    if (data?.type === 'SYNC_TABS') {
+        console.log('[SyncPage] Processing SYNC_TABS with', data.tabs?.length, 'tabs');
+
+        // Save tabs to localStorage
+        const storageData = {
+            tabs: data.tabs || [],
+            lastSync: data.timestamp || Date.now(),
+            extensionOrigin: event.origin
+        };
+
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+            console.log('[SyncPage] Saved to localStorage');
+
+            // Send acknowledgment
+            event.source.postMessage({
+                type: 'SYNC_ACK',
+                count: storageData.tabs.length,
+                timestamp: Date.now()
+            }, event.origin);
+            console.log('[SyncPage] Sent SYNC_ACK');
+
+        } catch (e) {
+            console.error('[SyncPage] Error saving to localStorage:', e);
+        }
+    }
+});
+
+// Notify parent that we're ready
+function notifyReady() {
+    if (window.parent !== window) {
+        console.log('[SyncPage] Sending SYNC_READY to parent...');
+        console.log('[SyncPage] Parent window:', window.parent);
+
+        try {
+            window.parent.postMessage({
+                type: 'SYNC_READY',
+                timestamp: Date.now()
+            }, '*');
+            console.log('[SyncPage] SYNC_READY sent successfully');
+        } catch (e) {
+            console.error('[SyncPage] Error sending SYNC_READY:', e);
+        }
+    } else {
+        console.log('[SyncPage] Not in iframe, skipping SYNC_READY');
+    }
+}
+
+// Try sending on load
+window.addEventListener('load', function() {
+    console.log('[SyncPage] Window load event fired');
+    notifyReady();
+});
+
+// Also try sending on DOMContentLoaded (earlier)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[SyncPage] DOMContentLoaded event fired');
+    notifyReady();
+});
+
+// And try immediately
+console.log('[SyncPage] Trying immediate SYNC_READY...');
+setTimeout(notifyReady, 100);
+setTimeout(notifyReady, 500);
+setTimeout(notifyReady, 1000);
+setTimeout(notifyReady, 2000);
+</script>
+</body>
+</html>

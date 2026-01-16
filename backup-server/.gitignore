@@ -1,0 +1,10 @@
+# Firebase cache
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Node modules (for local dev)
+node_modules/
+
+# System files
+.DS_Store

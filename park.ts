@@ -74,11 +74,28 @@ window.domLoadedPromise = new Promise<void>((resolve) => {
 if (debugPerformance)
 	console.log('getBackgroundPage: ', Date.now());
 
+// Fix for Issue #27: Utility function for Promise with timeout
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+	return Promise.race([
+		promise,
+		new Promise<T>((resolve) => setTimeout(() => {
+			if (DEBUG)
+				console.warn(`Promise timed out after ${ms}ms, using fallback`);
+			resolve(fallback);
+		}, ms))
+	]);
+}
+
 try {
 
 	tabId = searchParams.get('tabId');
 
-	screenPromise = chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId, sessionId: searchParams.get('sessionId') });
+	// Fix for Issue #27: Add 2.5-second timeout to screenPromise to prevent hanging
+	screenPromise = withTimeout(
+		chrome.runtime.sendMessage({ method: '[TS:getScreen]', tabId, sessionId: searchParams.get('sessionId') }),
+		2500,
+		{ scr: null, pixRat: null }  // fallback: screenshot unavailable
+	);
 
 	const parkData: ParkPageDataBGResponse = await chrome.runtime.sendMessage({ method: '[TS:dataForParkPage]', tabId, sessionId: searchParams.get('sessionId') }); //.then((parkData: ParkPageDataBGResponse) => {
 
@@ -102,10 +119,12 @@ try {
 							if(DEBUG) {
 								console.log('bgpage.isFirstTimeTabDiscard(tabId): ', parkData.isFirstTimeTabDiscard);
 							}
-							chrome.tabs.getCurrent((tab) => {
-								if (tab.active === false) {
+							// Fix for Issue #27: Use chrome.tabs.query instead of deprecated chrome.tabs.getCurrent()
+							chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+								const tab = tabs[0];
+								if (!tab || tab.active === false) {
 									if(DEBUG) {
-										console.log('tab.active: ', tab.active);
+										console.log('tab.active: ', tab?.active);
 									}
 									window.stop();
 									chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:DiscardTab]' }).catch(console.error);
@@ -577,8 +596,10 @@ chrome.runtime.onMessage.addListener((message) => {
 		if (message.anyWay)
 			goBack();
 		else
-			chrome.tabs.getCurrent((tab) => {
-				if (message.tab.id == tab.id)
+			// Fix for Issue #27: Use chrome.tabs.query instead of deprecated chrome.tabs.getCurrent()
+			// chrome.tabs.getCurrent() may return undefined in Manifest V3 for extension pages
+			chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+				if (tabs[0] && message.tab.id == tabs[0].id)
 					goBack();
 			});
 	} else if (message.method === '[AutomaticTabCleaner:UpdateTabsSettings]') {
@@ -662,6 +683,10 @@ function goBack(options?) {
 	}).catch(console.error);
 
 	if (!backProcessed || options != null && options.force === true) {
+		// Fix for Issue #27: Set backProcessed BEFORE navigation attempt
+		// This prevents race conditions but allows retry on failure
+		backProcessed = true;
+
 		if (reloadTabOnRestore === false &&
 			!isFromHistory() &&
 			parkedUrl != null
@@ -675,11 +700,11 @@ function goBack(options?) {
 			window.location.replace(targetUrl);
 		}
 	}
-	backProcessed = true;
 }
 
 function historyFallback(fallbackUrl) {
 	let hasHistory = false;
+	let navigationAttempted = false;
 
 	window.onbeforeunload = () => {
 		hasHistory = true;
@@ -693,13 +718,15 @@ function historyFallback(fallbackUrl) {
 		}, 100);
 	}
 
+	// Fix for Issue #27: Increased timeout from 500ms to 1500ms for slower systems
 	setTimeout(() => {
-		if (hasHistory != true) {
+		if (!hasHistory && !navigationAttempted) {
+			navigationAttempted = true;
 			window.location.assign(fallbackUrl);
 			if (DEBUG)
-				console.log('Force Back 500ms!!!');
+				console.log('Force Back 1500ms!!!');
 		}
-	}, 500);
+	}, 1500);
 }
 
 // @ts-expect-error

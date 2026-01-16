@@ -190,8 +190,16 @@ class TabObserver {
 								/* Restore session logic When uninstall */
 
 								if (!stateOnly) {
+									// Reset time for AUDIBLE tabs FIRST (before any suspend checks)
+									// This protects tabs playing audio from being suspended even if
+									// there's a race condition with tab.audible detection
+									// Fix for Issue #44: audible check must happen BEFORE suspend logic
+									if (ignoreAudible && TabManager.isAudible(tab)) {
+										tabInfo.time = 0;
+									}
+
 									// Only accumulate suspension time for INACTIVE tabs
-									// Active tabs should not accumulate time (handled by line 338 reset)
+									// Active tabs should not accumulate time (handled by line 350 reset)
 									// Audible tabs should not accumulate time even if inactive
 									if (!tab.active && !(ignoreAudible && TabManager.isAudible(tab))) {
 										tabInfo.time += TabObserver.tickSize;
@@ -255,10 +263,6 @@ class TabObserver {
 											}
 									}
 								}
-
-								/* PINNED TABS */
-								if (ignoreAudible && TabManager.isAudible(tab))
-									tabInfo.time = 0;
 
 								/* DISCARD TABS */
 								if (isTabParked) {

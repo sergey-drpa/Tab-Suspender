@@ -4,10 +4,12 @@ import Reason = chrome.offscreen.Reason;
  * Manages the offscreen document lifecycle.
  *
  * IMPORTANT: The offscreen document is kept alive (not closed) after initialization
- * because it serves dual purposes:
+ * because it serves multiple purposes:
  * 1. Migrating localStorage data and monitoring battery status
  * 2. Keeping the MV3 service worker alive by sending periodic heartbeat messages
  *    (see offscreenDocument.ts:startServiceWorkerHeartbeat)
+ * 3. Syncing suspended tabs to external backup via iframe
+ *    (see offscreenDocument.ts:initBackupSync)
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class OffscreenDocumentProvider {
@@ -32,8 +34,8 @@ class OffscreenDocumentProvider {
 				console.log('Offscreen Document Creating...');
 				await chrome.offscreen.createDocument({
 					url: 'offscreenDocument.html',
-					reasons: [Reason.LOCAL_STORAGE, Reason.BATTERY_STATUS],
-					justification: 'Need to migrate from localStorage and battery status'
+					reasons: [Reason.LOCAL_STORAGE, Reason.BATTERY_STATUS, Reason.IFRAME_SCRIPTING],
+					justification: 'Need to migrate from localStorage, monitor battery status, and sync suspended tabs backup via iframe'
 				});
 				console.log('Offscreen Document Created successfully');
 				resolve();

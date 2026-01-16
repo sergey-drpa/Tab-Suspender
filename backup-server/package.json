@@ -1,0 +1,21 @@
+{
+  "name": "tab-suspender-backup-server",
+  "version": "1.0.0",
+  "description": "Simple server for Tab Suspender backup sync and recovery pages",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:https": "node server.js --https",
+    "dev": "node server.js --port 3000",
+    "dev:https": "node server.js --port 8080 --https",
+    "deploy": "firebase deploy --only hosting",
+    "deploy:preview": "firebase hosting:channel:deploy preview",
+    "firebase:init": "firebase login && firebase init hosting"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+}

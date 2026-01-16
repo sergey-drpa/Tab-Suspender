@@ -3,11 +3,19 @@ type BatteryStatusMessage = {
 	level: number;
 };
 
+type SuspendedTabInfo = {
+	url: string;
+	title: string;
+	favicon?: string;
+};
+
 const batteryDebug = false;
 const oldSettingsKeyPrefix = "store.tabSuspenderSettings.";
+const BACKUP_SYNC_ORIGIN = 'https://uninstall.tab-suspender.com';
 
 setTimeout(startBatteryStatusNotifier, 3500);
 setTimeout(startServiceWorkerHeartbeat, 4000);
+setTimeout(initBackupSync, 5000);
 
 function startServiceWorkerHeartbeat() {
 	console.log('Starting service worker heartbeat from offscreen document...');
@@ -155,4 +163,107 @@ async function cleanup() {
 	});
 
 	console.log(`f_t cleanup completed.`);
+}
+
+// ============================================
+// BACKUP SYNC - Sync suspended tabs to external localStorage
+// ============================================
+
+let backupSyncFrame: HTMLIFrameElement | null = null;
+let backupSyncReady = false;
+
+function initBackupSync() {
+	console.log('[BackupSync] Initializing...');
+	console.log('[BackupSync] Expected origin:', BACKUP_SYNC_ORIGIN);
+
+	backupSyncFrame = document.getElementById('backupSyncFrame') as HTMLIFrameElement;
+
+	if (!backupSyncFrame) {
+		console.error('[BackupSync] ERROR: iframe element not found in DOM');
+		return;
+	}
+
+	console.log('[BackupSync] iframe element found:', backupSyncFrame);
+	console.log('[BackupSync] iframe src:', backupSyncFrame.src);
+
+	// Function to mark iframe as ready and start sync
+	const markReady = () => {
+		console.log('[BackupSync] iframe onload fired');
+		// Give iframe 500ms to initialize its scripts
+		setTimeout(() => {
+			backupSyncReady = true;
+			console.log('[BackupSync] iframe marked as ready, starting initial sync');
+			syncSuspendedTabs();
+		}, 500);
+	};
+
+	// Check if iframe is already loaded (if we attached listener after load event)
+	// For cross-origin iframes we can't check contentDocument, so we just assume it's loaded
+	// if we're attaching the listener after a delay
+	const isAlreadyLoaded = backupSyncFrame.src && document.readyState === 'complete';
+
+	if (isAlreadyLoaded) {
+		console.log('[BackupSync] iframe appears to be already loaded, marking ready immediately');
+		markReady();
+	} else {
+		// Wait for iframe to load
+		// Note: postMessage from cross-origin iframe to parent doesn't work in offscreen documents
+		backupSyncFrame.addEventListener('load', markReady);
+		console.log('[BackupSync] Waiting for iframe load event...');
+	}
+
+	backupSyncFrame.addEventListener('error', (e) => {
+		console.error('[BackupSync] iframe onerror:', e);
+	});
+
+	// Listen for acknowledgment messages from iframe
+	window.addEventListener('message', (event) => {
+		console.log('[BackupSync] Received message:', {
+			origin: event.origin,
+			data: event.data,
+			expectedOrigin: BACKUP_SYNC_ORIGIN,
+			originMatch: event.origin === BACKUP_SYNC_ORIGIN
+		});
+
+		if (event.origin !== BACKUP_SYNC_ORIGIN) {
+			console.log('[BackupSync] Origin mismatch, ignoring message');
+			return;
+		}
+
+		if (event.data?.type === 'SYNC_ACK') {
+			console.log(`[BackupSync] Acknowledged: ${event.data.count} tabs saved`);
+		}
+	});
+
+	// Start periodic sync (every 20 seconds, aligned with heartbeat)
+	setInterval(syncSuspendedTabs, 20000);
+
+	console.log('[BackupSync] Initialization complete');
+}
+
+async function syncSuspendedTabs() {
+	if (!backupSyncFrame || !backupSyncReady) {
+		console.log('Backup sync not ready, skipping...');
+		return;
+	}
+
+	try {
+		// Request suspended tabs list from background
+		const response = await chrome.runtime.sendMessage({
+			method: '[TS:offscreenDocument:getSuspendedTabs]'
+		});
+
+		if (response?.tabs && Array.isArray(response.tabs)) {
+			// Send to iframe
+			backupSyncFrame.contentWindow?.postMessage({
+				type: 'SYNC_TABS',
+				tabs: response.tabs,
+				timestamp: Date.now()
+			}, BACKUP_SYNC_ORIGIN);
+
+			console.log(`Synced ${response.tabs.length} suspended tabs to backup`);
+		}
+	} catch (error) {
+		console.error('Error syncing suspended tabs:', error);
+	}
 }
