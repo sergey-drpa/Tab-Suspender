@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Suspender - Recover Your Tabs</title>
+    <link rel="icon" type="image/png" href="icon128.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
+        .status.info {
+            background: #e7f3ff;
+            border: 1px solid #b6d4fe;
+            color: #084298;
+        }
+
+        .tabs-list {
+            list-style: none;
+        }
+
+        .tab-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .tab-favicon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .tab-favicon.placeholder {
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tab-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tab-title {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .tab-url {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tab-url a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .tab-url a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .last-sync {
+            font-size: 12px;
+            color: #999;
+            margin-top: 16px;
+        }
+
+        .privacy-notice {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .reinstall-section {
+            text-align: center;
+            padding: 24px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 24px;
+        }
+
+        .reinstall-section p {
+            margin-bottom: 16px;
+            color: #666;
+        }
+
+        /* Manual recovery section */
+        .manual-recovery {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .manual-recovery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .manual-recovery-header:hover {
+            background: #e9ecef;
+        }
+
+        .manual-recovery-header h3 {
+            color: #333;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .manual-recovery-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            padding: 0 16px;
+        }
+
+        .manual-recovery-content.expanded {
+            max-height: 600px;
+            padding: 16px;
+        }
+
+        .manual-recovery ol {
+            color: #666;
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .manual-recovery li {
+            margin-bottom: 8px;
+        }
+
+        .manual-recovery code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .parse-result {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .parse-result a {
+            color: #667eea;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>
+                <img src="icon128.png" alt="Tab Suspender" class="header-icon">
+                Tab Suspender - Recover Your Tabs
+            </h1>
+            <p class="subtitle">We're sorry to see you go! Here are your suspended tabs.</p>
+
+            <div id="status"></div>
+
+            <div id="tabs-container">
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>Loading your tabs...</p>
+                </div>
+            </div>
+
+            <div id="last-sync" class="last-sync"></div>
+            <div class="privacy-notice">
+                This backup is stored locally in your browser and is never shared over the internet.
+            </div>
+
+            <div class="reinstall-section">
+                <p>Want to keep suspending tabs and saving memory?</p>
+                <a href="https://chrome.google.com/webstore/detail/tab-suspender/fiabciakcmgepblmdkmemdbbkilneeeh"
+                   class="btn btn-primary" target="_blank">
+                    Reinstall Tab Suspender
+                </a>
+            </div>
+
+            <div class="manual-recovery">
+                <div class="manual-recovery-header" onclick="toggleManualRecovery()">
+                    <h3>
+                        <span>⚙️</span>
+                        Manual URL Recovery
+                    </h3>
+                    <span class="toggle-icon" id="toggle-icon">▼</span>
+                </div>
+                <div class="manual-recovery-content" id="manual-recovery-content">
+                    <p style="color: #666; margin-bottom: 12px;">
+                        If you have a suspended tab URL from your browser history, paste it here to extract the original URL:
+                    </p>
+                    <textarea id="manual-url" placeholder="Paste suspended tab URL here...
+Example: chrome-extension://fiabciakcmgepblmdkmemdbbkilneeeh/park.html?url=https%3A%2F%2Fexample.com&title=Example"></textarea>
+                    <button class="btn btn-secondary" onclick="parseManualUrl()" style="margin-top: 8px;">
+                        Extract Original URL
+                    </button>
+                    <div id="parse-result" class="parse-result" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'ts_suspended_tabs';
+
+        function loadTabs() {
+            const statusEl = document.getElementById('status');
+            const containerEl = document.getElementById('tabs-container');
+            const lastSyncEl = document.getElementById('last-sync');
+
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+
+                if (!data) {
+                    statusEl.innerHTML = `
+                        <div class="status warning">
+                            No backup found. This could mean:
+                            <ul style="margin-top: 8px; margin-left: 20px;">
+                                <li>The extension was recently installed and hadn't synced yet</li>
+                                <li>You cleared your browser data</li>
+                                <li>You're using a different browser profile</li>
+                            </ul>
+                        </div>
+                    `;
+                    containerEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            <p>No suspended tabs found in backup</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const parsed = JSON.parse(data);
+                const tabs = parsed.tabs || [];
+
+                if (tabs.length === 0) {
+                    statusEl.innerHTML = `
+                        <div class="status info">
+                            Your backup is empty - you had no suspended tabs when the extension was removed.
+                        </div>
+                    `;
+                    containerEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <p>All clear! No tabs to recover.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Show success status
+                statusEl.innerHTML = `
+                    <div class="status success">
+                        Found <strong>${tabs.length}</strong> suspended tab${tabs.length !== 1 ? 's' : ''} in your backup!
+                    </div>
+                `;
+
+                // Render tabs list
+                let html = '<ul class="tabs-list">';
+                tabs.forEach((tab, index) => {
+                    const favicon = tab.favicon
+                        ? `<img class="tab-favicon" src="${escapeHtml(tab.favicon)}" onerror="this.style.display='none'">`
+                        : '<div class="tab-favicon placeholder">?</div>';
+
+                    html += `
+                        <li class="tab-item">
+                            ${favicon}
+                            <div class="tab-info">
+                                <div class="tab-title">${escapeHtml(tab.title || 'Untitled')}</div>
+                                <div class="tab-url">
+                                    <a href="${escapeHtml(tab.url)}" target="_blank">${escapeHtml(tab.url)}</a>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+
+                html += `
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="openAllTabs()">
+                            Open All Tabs
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyAllUrls()">
+                            Copy All URLs
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportAsHtml()">
+                            Export as HTML
+                        </button>
+                    </div>
+                `;
+
+                containerEl.innerHTML = html;
+
+                // Show last sync time
+                if (parsed.lastSync) {
+                    const date = new Date(parsed.lastSync);
+                    lastSyncEl.textContent = `Last backup: ${date.toLocaleString()}`;
+                }
+
+            } catch (e) {
+                console.error('Error loading tabs:', e);
+                statusEl.innerHTML = `
+                    <div class="status warning">
+                        Error reading backup data. The data may be corrupted.
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function getTabs() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (!data) return [];
+                return JSON.parse(data).tabs || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function openAllTabs() {
+            const tabs = getTabs();
+            if (tabs.length > 10) {
+                if (!confirm(`This will open ${tabs.length} tabs. Continue?`)) {
+                    return;
+                }
+            }
+            tabs.forEach(tab => {
+                window.open(tab.url, '_blank');
+            });
+        }
+
+        function copyAllUrls() {
+            const tabs = getTabs();
+            const urls = tabs.map(t => t.url).join('\n');
+            navigator.clipboard.writeText(urls).then(() => {
+                alert(`Copied ${tabs.length} URLs to clipboard!`);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = urls;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert(`Copied ${tabs.length} URLs to clipboard!`);
+            });
+        }
+
+        function exportAsHtml() {
+            const tabs = getTabs();
+            let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tab Suspender Backup - ${new Date().toLocaleDateString()}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        h1 { color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        a { color: #667eea; }
+    </style>
+</head>
+<body>
+    <h1>Tab Suspender Backup</h1>
+    <p>Exported on ${new Date().toLocaleString()}</p>
+    <p>Total tabs: ${tabs.length}</p>
+    <ul>
+`;
+            tabs.forEach(tab => {
+                html += `        <li><a href="${escapeHtml(tab.url)}">${escapeHtml(tab.title || tab.url)}</a></li>\n`;
+            });
+            html += `    </ul>
+</body>
+</html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tab-suspender-backup-${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function parseManualUrl() {
+            const input = document.getElementById('manual-url').value.trim();
+            const resultEl = document.getElementById('parse-result');
+
+            if (!input) {
+                resultEl.style.display = 'none';
+                return;
+            }
+
+            try {
+                const url = new URL(input);
+                const originalUrl = url.searchParams.get('url');
+                const title = url.searchParams.get('title');
+
+                if (originalUrl) {
+                    const decodedUrl = decodeURIComponent(originalUrl);
+                    resultEl.style.display = 'block';
+                    resultEl.innerHTML = `
+                        <strong>Original URL:</strong><br>
+                        <a href="${escapeHtml(decodedUrl)}" target="_blank">${escapeHtml(decodedUrl)}</a>
+                        ${title ? `<br><br><strong>Title:</strong> ${escapeHtml(decodeURIComponent(title))}` : ''}
+                    `;
+                } else {
+                    resultEl.style.display = 'block';
+                    resultEl.innerHTML = '<span style="color: #dc3545;">Could not find URL parameter. Make sure you pasted the full suspended tab URL.</span>';
+                }
+            } catch (e) {
+                resultEl.style.display = 'block';
+                resultEl.innerHTML = '<span style="color: #dc3545;">Invalid URL format. Please paste a valid URL.</span>';
+            }
+        }
+
+        function toggleManualRecovery() {
+            const content = document.getElementById('manual-recovery-content');
+            const icon = document.getElementById('toggle-icon');
+
+            content.classList.toggle('expanded');
+            icon.classList.toggle('expanded');
+        }
+
+        // Load tabs on page load
+        document.addEventListener('DOMContentLoaded', loadTabs);
+    </script>
+</body>
+</html>

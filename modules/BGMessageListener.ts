@@ -156,6 +156,30 @@ class BGMessageListener {
 				// Send acknowledgment back to maintain bidirectional communication
 				sendResponse({ method: '[TS:offscreenDocument:heartbeatAck]', timestamp: Date.now() });
 				return true; // For async sendResponse()
+			} else if (request.method === '[TS:offscreenDocument:getSuspendedTabs]') {
+				// Return list of all suspended tabs for backup sync
+				void (async () => {
+					try {
+						const allTabs = await chrome.tabs.query({});
+						const suspendedTabs = allTabs
+							.filter(tab => tab.url && TabManager.isTabParked(tab))
+							.map(tab => {
+								const tabUrl = new URL(tab.url);
+								return {
+									url: tabUrl.searchParams.get('url') || '',
+									title: tabUrl.searchParams.get('title') || tab.title || '',
+									favicon: tabUrl.searchParams.get('icon') || tab.favIconUrl || ''
+								};
+							})
+							.filter(t => t.url); // Only include tabs with valid URLs
+
+						sendResponse({ tabs: suspendedTabs });
+					} catch (e) {
+						console.error('Error getting suspended tabs for backup:', e);
+						sendResponse({ tabs: [] });
+					}
+				})();
+				return true; // For async sendResponse()
 			} else if (request.method === '[AutomaticTabCleaner:addExceptionPatterns]') {/* DEPREACTED! */
 				if (debug)
 					console.log('AddExceptionPatterns info Requested.');
