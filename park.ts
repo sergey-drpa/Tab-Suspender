@@ -595,13 +595,23 @@ chrome.runtime.onMessage.addListener((message) => {
 	if (message.method === '[AutomaticTabCleaner:RestoreMessage]') {
 		if (message.anyWay)
 			goBack();
-		else
-			// Fix for Issue #27: Use chrome.tabs.query instead of deprecated chrome.tabs.getCurrent()
-			// chrome.tabs.getCurrent() may return undefined in Manifest V3 for extension pages
-			chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-				if (tabs[0] && message.tab.id == tabs[0].id)
-					goBack();
-			});
+		else {
+			// Fix for Tab Group bug: Check if THIS tab (where park.html is running) matches the message
+			// Chrome changes tab ID on discard/restore, so we need to check both:
+			// 1. Current tab ID (message.tab.id) - new ID after restore
+			// 2. Origin tab ID (message.originRefId) - old ID before discard (stored in URL)
+			const myTabId = parseInt(tabId);
+			const messageTabId = message.tab && message.tab.id;
+			const originRefId = message.originRefId;
+
+			// Match if either current ID or origin ID matches
+			const isMatch = (!isNaN(myTabId) && messageTabId && myTabId === messageTabId) ||
+			                (!isNaN(myTabId) && originRefId && myTabId === originRefId);
+
+			if (isMatch) {
+				goBack();
+			}
+		}
 	} else if (message.method === '[AutomaticTabCleaner:UpdateTabsSettings]') {
 		loaded.then(() => {
 			if (message.restoreEvent != null)
