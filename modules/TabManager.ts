@@ -587,8 +587,17 @@ class TabManager {
 							markForUnsuspend(tab);
 						}
 					}).catch(console.error);
-			} else
-				chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:RestoreMessage]', 'tab': tab }).catch(console.error);
+			} else {
+				// Get originRefId if tab was replaced (Chrome changes tab ID on discard/restore)
+				const tabInfo = this.getTabInfoById(tab.id);
+				const originRefId = tabInfo?.originRefId;
+
+				chrome.runtime.sendMessage({
+					'method': '[AutomaticTabCleaner:RestoreMessage]',
+					'tab': tab,
+					'originRefId': originRefId  // Include old tab ID for matching in park.html
+				}).catch(console.error);
+			}
 		}
 	}
 
