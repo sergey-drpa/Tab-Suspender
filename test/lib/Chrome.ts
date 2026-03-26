@@ -55,7 +55,8 @@ const mockTabs = {
     callback(1.0);
   }),
   setZoom: jest.fn().mockResolvedValue(undefined),
-  sendMessage: jest.fn().mockResolvedValue(undefined)
+  sendMessage: jest.fn().mockResolvedValue(undefined),
+  query: jest.fn().mockResolvedValue([mockTab])
 };
 
 const mockWindows = {

@@ -71,6 +71,15 @@ class BGMessageListener {
 				})();
 				return true; // For async sendResponse()
 			} else if (request.method === '[TS:fetchFavicon]') {
+				// Validate sender.tab.id before calling chrome.tabs.get()
+				// Chrome API requires tabId >= 0
+				// Possible causes: closed tab, service worker context, detached page
+				if (!sender.tab || typeof sender.tab.id !== 'number' || sender.tab.id < 0) {
+					console.warn(`[TS:fetchFavicon] Invalid sender context. Tab ID: ${sender.tab?.id}, URL: ${sender.url}, frameId: ${sender.frameId}`);
+					sendResponse(null);
+					return false;
+				}
+
 				chrome.tabs.get(sender.tab.id).then((tab) => {
 					if (tab.favIconUrl == null || tab.favIconUrl.trim() === '') {
 						console.warn(`Error fetch() favicon, empty: tab.favIconUrl=(${tab.favIconUrl})`);

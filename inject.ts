@@ -9,19 +9,8 @@
  * @suppress {globalThis|checkVars}
  */
 
-/* Definitions for Syntax Check */
-// eslint-disable-next-line no-redeclare
-//window.chrome = window.chrome || {};
-// eslint-disable-next-line no-redeclare
-//window.html2canvas = window.html2canvas || {};
-
-
-/*document.addEventListener('DOMContentLoaded', function() {
-	//debugger;
-	window.focus();
-}, true);*/
-
-/*** Function for Automated puppeteer Tests only ***/
+/*** Function for Automated puppeteer Tests only DoNotRemove ***/
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getTabId() {
 	return await chrome.runtime.sendMessage({ method: '[TS:getTabId]' });
 }
@@ -29,7 +18,7 @@ async function getTabId() {
 (function() {
 	'use strict';
 
-	window.addEventListener('pageshow', function (e) {
+	window.addEventListener('pageshow', function() {
 		resotreForm();
 	});
 
@@ -149,6 +138,7 @@ async function getTabId() {
 	}
 
 	document.body.addEventListener('change', function(e) {
+		let messageSent = false;
 		//@ts-ignore
 		if (e.target.tagName != null && (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') && e.target.hidden != true) {
 			if (calcNotCompleteInputsLength() <= 3) {
@@ -157,7 +147,10 @@ async function getTabId() {
 						const element = notCompleteInputs.splice(Number(i), 1);
 						if (debug)
 							console.log('Input removed: ', element);
-						chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:UnmarkPageAsNonCompleteInput]' });
+						if (!messageSent) {
+							void chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:UnmarkPageAsNonCompleteInput]' });
+							messageSent=true;
+						}
 					}
 				}
 			}
@@ -174,7 +167,7 @@ async function getTabId() {
 				notCompleteInputs.push(e.target);
 
 			if (calcNotCompleteInputsLength() > 2) {
-				chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:MarkPageAsNonCompleteInput]' });
+				void chrome.runtime.sendMessage({ 'method': '[AutomaticTabCleaner:MarkPageAsNonCompleteInput]' });
 				if (debug)
 					console.log('Input Changed 3 times: Page Marked As Non Complete');
 			}
@@ -243,7 +236,7 @@ async function getTabId() {
 						url += '&url=' + encodeURIComponent(_request.url ? _request.url : window.location.href);
 						url += '&icon=' + encodeURIComponent(getOriginalFaviconUrl());
 
-						await chrome.runtime.sendMessage(canvas.toDataURL("image/jpeg", _request.screenshotQuality/100));
+						await chrome.runtime.sendMessage(canvas.toDataURL('image/jpeg', _request.screenshotQuality / 100));
 
 						await chrome.runtime.sendMessage({
 							'method': '[AutomaticTabCleaner:ParkPageFromInjectFinished]',
@@ -256,7 +249,8 @@ async function getTabId() {
 						console.error('Failed to process `html2canvas` result: ', e);
 						sendResponse({ result: 'fail', error: e });
 					}
-				}}/*,
+				}
+			}/*,
 				'width': (width != null ? width : window.outerWidth),//window.innerWidth,
 				'height': (window.outerHeight > 0 ? window.outerHeight : height)//window.innerHeight//  //document.height
 			}*/);
@@ -302,6 +296,7 @@ async function getTabId() {
 
 	/************************************/
 	/*	     DrawSetupWizardDialog      */
+
 	/************************************/
 
 
@@ -327,6 +322,7 @@ async function getTabId() {
 
 	/************************************/
 	/*	   AddPageToWhiteListDialog     */
+
 	/************************************/
 
 
@@ -360,7 +356,6 @@ async function getTabId() {
 
 	let originalFaviconUrl;
 	let originalCanvas;
-	//let currentFaviconUrl;
 
 	let originalIconUrlBase64;
 
@@ -373,104 +368,6 @@ async function getTabId() {
 		return originalFaviconUrl;
 	}
 
-	function genPageFaviconURL() {
-
-		/*		chrome.runtime.sendMessage({
-					method: '[AutomaticTabCleaner:getPageFavicon]',
-					origin: document.location.origin,
-				}, function(response) {
-					if (response == null) {
-						return;
-					}*/
-
-		let url: string;
-
-		try {
-			for (let i = 0; i < document.head.children.length; i++) {
-				const childElement = document.head.children[i];
-
-				const rel = childElement.getAttribute('rel');
-
-				if (rel != null && rel.indexOf("icon") >= 0) {
-					url = childElement.getAttribute('href');
-					if (url.indexOf('//') == 0) {
-						url = document.location.protocol + url;
-					}
-					break;
-				}
-
-				// Выполнение действий с каждым дочерним элементом
-				console.log(childElement.textContent);
-			}
-		} catch (e) {
-			console.log(`Error occurred while extracting icon url from header`, e);
-		}
-
-		  const alternativeUrl = new URL(chrome.runtime.getURL("/_favicon/"));
-			alternativeUrl.searchParams.set("pageUrl", document.location.origin);
-			alternativeUrl.searchParams.set("size", String(ICON_DIMENSION));
-			return [url, alternativeUrl.toString()];
-		//return 'https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196';
-		//});
-
-
-	}
-
-	/*function extractIconBase64(faviconUrl, retries)
-	{
-		const url = faviconUrl ? faviconUrl : faviconInfo.faviconUrl;
-
-		fetch(url,
-			{
-				method: 'get',
-				mode: 'no-cors',
-				headers: {'Content-Type':'image/x-icon'}
-			})
-			//          .then(response => parseResults(response.results))
-			.then(response => console.log(response.body))
-			.catch(console.error);
-
-		const xhr = new XMLHttpRequest();
-		xhr.open('GET', url, true);
-
-		xhr.responseType = 'arraybuffer';
-
-		xhr.onload = function() {
-			if (this.status == 200) {
-				const uInt8Array = new Uint8Array(this.response);
-				let i = uInt8Array.length;
-				const binaryString = new Array(i);
-				while (i--)
-				{
-					binaryString[i] = String.fromCharCode(uInt8Array[i]);
-				}
-				const data = binaryString.join('');
-
-				const base64 = window.btoa(data);
-
-				originalIconUrlBase64 = "data:image/png;base64,"+base64;
-				prepareIcon(originalIconUrlBase64);
-			}
-			else
-			if(!retries)
-				extractIconBase64(chrome.runtime.getURL('img/new_page.ico') ,1);
-
-		};
-
-		try {
-			xhr.send();
-		} catch (e) {
-			console.debug(e);
-		}
-	}*/
-
-	function normalizeUrl(url: string): string {
-		if (url.indexOf('http') != 0 && url.indexOf('file') != 0 && url.indexOf('chrome') != 0) {
-			url = document.location.origin + '/' + url;
-		}
-		return url;
-	}
-
 	function extractIconBase64(faviconUrl?, retries?) {
 
 		if (retries == null) {
@@ -481,127 +378,17 @@ async function getTabId() {
 			return;
 		}
 
-		/*if(originalIconUrlBase64 != null) {
-			return;
-		}*/
-
-		// TODO-v3-old: Try to first get url from header: <link rel="shortcut icon" href="https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico?v=ec617d715196">
-		/*const urls: string[] = faviconUrl ? [faviconUrl] : genPageFaviconURL();
-
-		void (async () => {
-			for (const i in urls) {
-				const url = urls[i];
-				if (url == null)
-					continue;
-
-				await new Promise<void>(async (resolve, reject) => {
-					try {
-						if (url.startsWith('data:')) {
-							originalIconUrlBase64 = url;
-						} else {*/
-							chrome.runtime.sendMessage({ method: '[TS:fetchFavicon]'/*, url: normalizeUrl(url)*/ })
-								.then(dataUrl => {
-									if (dataUrl == null)
-										return;
-									originalIconUrlBase64 = dataUrl;
-									prepareIcon(originalIconUrlBase64);
-								})
-								.catch((e) => {
-									console.error(e);
-									extractIconBase64(chrome.runtime.getURL('img/new_page.ico') ,1);
-								});
-						/*}*/
-
-
-						/*fetch(url,
-							{
-								method: 'get',
-								//mode: 'no-cors',
-								//headers: {'Content-Type':'image/x-icon'}
-							})
-							//          .then(response => parseResults(response.results))
-							.then(async response => {
-
-								const arrayBuffer = null; //await response.arrayBuffer();
-
-								// eslint-disable-next-line @typescript-eslint/no-unused-vars
-								const b = await response.blob();
-
-								console.log('Blob', b);
-
-								const base64 = btoa(
-									new Uint8Array(await response.arrayBuffer())
-										.reduce((data, byte) => data + String.fromCharCode(byte), '')
-								);
-
-								console.log('Blob', base64);
-
-								const blob = new Blob([arrayBuffer]);
-								const reader = new FileReader();
-
-								reader.onload = (event) => {
-									// eslint-disable-next-line @typescript-eslint/no-unused-vars
-									const dataUrl = event.target.result;
-								};
-
-								reader.readAsDataURL(blob);
-
-								/!*const base64 = btoa(
-									new Uint8Array(await response.arrayBuffer())
-										.reduce((data, byte) => data + String.fromCharCode(byte), '')
-								);*!/
-
-								/!*const uInt8Array = response.body; //new Uint8Array(this.response);
-								let i = uInt8Array.length;
-								const binaryString = new Array(i);
-								while (i--)
-								{
-									binaryString[i] = String.fromCharCode(uInt8Array[i]);
-								}
-								const data = binaryString.join('');
-
-								const base64 = window.btoa(data);*!/
-
-								originalIconUrlBase64 = "data:image/png;base64,"+base64;
-								prepareIcon(originalIconUrlBase64);
-
-								console.log(response.body);
-							})
-							.catch(console.error);*/
-
-						/*const img = document.createElement('img');
-						document.body.appendChild(img);
-						img.crossOrigin="anonymous";
-						img.src = url;
-
-						img.onload = () => {
-							try {
-								const canvas = document.createElement('canvas');
-								canvas.width = ICON_DIMENSION;
-								canvas.height = ICON_DIMENSION;
-								const ctx = canvas.getContext('2d');
-								ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-								originalIconUrlBase64 = canvas.toDataURL();
-								resolve();
-								prepareIcon(originalIconUrlBase64);
-							} catch (e) {
-								reject(e);
-							}
-						};
-
-						img.onerror = (error) => {
-							reject(error);
-							extractIconBase64([chrome.runtime.getURL('img/new_page.ico')], retries-1);
-						};*/
-						//document.body.appendChild(img);
-					/*} catch (e) {
-						reject(e);
-						extractIconBase64(chrome.runtime.getURL('img/new_page.ico'), retries-1);
-					}
-				});*/
-				/*break;
-			}*/
-		//})();
+		chrome.runtime.sendMessage({ method: '[TS:fetchFavicon]'/*, url: normalizeUrl(url)*/ })
+			.then(dataUrl => {
+				if (dataUrl == null)
+					return;
+				originalIconUrlBase64 = dataUrl;
+				prepareIcon(originalIconUrlBase64);
+			})
+			.catch((e) => {
+				console.error(e);
+				extractIconBase64(chrome.runtime.getURL('img/new_page.ico'), 1);
+			});
 	}
 
 	function prepareIcon(iconUrlBase64) {
@@ -623,7 +410,7 @@ async function getTabId() {
 	function injectFaviconUrl(proccesedIcon) {
 		//currentFaviconUrl = proccesedIcon;
 
-		if(links.length === 0){
+		if (links.length === 0) {
 			insertFaviconDomElement();
 		}
 
@@ -694,7 +481,7 @@ async function getTabId() {
 
 		ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
-		if(percent) {
+		if (percent) {
 			ctx.beginPath();
 			ctx.moveTo(0, 62);
 			ctx.lineTo(Math.round(64 * percent / 100), 62);

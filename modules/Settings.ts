@@ -63,6 +63,7 @@ class Settings {
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
 	ignoreSuspendGroupedTabs: boolean;
+	ignoreSuspendSplitViewTabs: boolean;
 	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
 	suspendOnCtrlClick: boolean;
@@ -112,6 +113,7 @@ const DEFAULT_SETTINGS: Settings = {
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
 	ignoreSuspendGroupedTabs: false,
+	ignoreSuspendSplitViewTabs: true, // Prevent black screen in Split View tabs (Chrome 145+)
 	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,
 	suspendOnCtrlClick: false,

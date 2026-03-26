@@ -350,8 +350,58 @@ function isTabMarkedForUnsuspend(tabIdStr, sessionIdStr, options?) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function discardTab(tabId) {
+async function discardTab(tabId) {
+	// CRITICAL: Never discard tabs in ACTIVE Split View (Chrome 145+)
+	// Discarding a Split View tab causes unrecoverable black screen
+	// Protection applies ONLY to currently active Split Views
+	// This check runs ALWAYS, independent of ignoreSuspendSplitViewTabs setting
+	try {
+		const tab = await chrome.tabs.get(tabId);
+
+		const SPLIT_VIEW_ID_NONE = -1;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const splitViewIdNone = (chrome.tabs as any).SPLIT_VIEW_ID_NONE ?? SPLIT_VIEW_ID_NONE;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const splitViewId = (tab as any).splitViewId;
+
+		// If tab is in Split View, check if Split View is currently active
+		if (splitViewId !== undefined && splitViewId !== splitViewIdNone) {
+			try {
+				// Query all tabs in the same Split View (same window + same splitViewId)
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const tabsInSplitView = await chrome.tabs.query({
+					windowId: tab.windowId,
+					// @ts-ignore - splitViewId is Chrome 145+ API
+					splitViewId: splitViewId
+				} as any);
+
+				// Check if at least one tab in this Split View is active
+				const hasActiveTab = tabsInSplitView.some(t => t.active === true);
+
+				// Only protect if Split View is currently active
+				if (hasActiveTab) {
+					console.log(`[discardTab] Skipping discard for ACTIVE Split View tab ${tabId} (splitViewId: ${splitViewId})`);
+					return;
+				}
+			} catch (e) {
+				// Fallback: if query fails (old Chrome), allow discard
+				console.warn('[discardTab] Split View query failed:', e);
+			}
+		}
+	} catch (e) {
+		// Tab not found or error - skip discard
+		console.warn(`[discardTab] Cannot get tab ${tabId}, skipping discard:`, e);
+		return;
+	}
+
+	// Safe to discard - not in active Split View
 	chrome.tabs.discard(tabId, function() {
 		hasLastError();
 	});
+}
+
+// Export to global scope
+// @ts-ignore
+if (typeof global !== "undefined") {
+	(global as any).discardTab = discardTab;
 }
