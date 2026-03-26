@@ -795,6 +795,41 @@ class TabManager {
 		if (tab.groupId !== -1 && await settings.get('ignoreSuspendGroupedTabs'))
 			return true;
 
+		// Split View Tab (Chrome 145+)
+		// Prevent discard of tabs in ACTIVE Split View - they become black screen and unrecoverable
+		// Protection only applies to Split Views that are currently active (user is viewing them)
+		if (await settings.get('ignoreSuspendSplitViewTabs')) {
+			const SPLIT_VIEW_ID_NONE = -1; // Fallback for older Chrome versions
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const splitViewIdNone = (chrome.tabs as any).SPLIT_VIEW_ID_NONE ?? SPLIT_VIEW_ID_NONE;
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const splitViewId = (tab as any).splitViewId;
+
+			// If tab is in Split View, check if the Split View is currently active
+			if (splitViewId !== undefined && splitViewId !== splitViewIdNone) {
+				try {
+					// Query all tabs in the same Split View (same window + same splitViewId)
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const tabsInSplitView = await chrome.tabs.query({
+						windowId: tab.windowId,
+						// @ts-ignore - splitViewId is Chrome 145+ API
+						splitViewId: splitViewId
+					} as any);
+
+					// Check if at least one tab in this Split View is active
+					const hasActiveTab = tabsInSplitView.some(t => t.active === true);
+
+					// Only protect if Split View is currently active
+					if (hasActiveTab) {
+						return true; // Active Split View - protect from suspend
+					}
+				} catch (e) {
+					// Fallback: if query fails (old Chrome), allow suspension
+					console.warn('[isTabException] Split View query failed:', e);
+				}
+			}
+		}
+
 		//Tab Ignore List
 		// eslint-disable-next-line no-undef
 		if (ignoreList.isTabInIgnoreTabList(tab.id))
