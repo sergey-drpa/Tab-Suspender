@@ -454,5 +454,10 @@
 	{
 	"message":"关闭",
 	"description":"Close button"
+	},
+	"settingDescAutoCloseMax":
+	{
+	"message":"Tab Suspender 为减少内存占用而尝试保持打开的最大标签页数量。（如果打开的标签页数量超过所选数量，Tab Suspender 将开始平滑关闭最不常用的标签页，直到打开的标签页数量降至所选数量。）如果在所选期间内标签页至少被激活一次（点击了该标签页且它变为可见），则该标签页的计时重新开始。",
+	"description":"Settings page: auto-close max tabs description"
 	}
 	}

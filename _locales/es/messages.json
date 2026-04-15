@@ -460,5 +460,10 @@
   {
     "message": "Cerrar",
     "description": "Close button"
+  },
+  "settingDescAutoCloseMax":
+  {
+    "message": "La cantidad máxima de pestañas que Tab Suspender intentará mantener abiertas para reducir la memoria. (Si el número de pestañas abiertas supera la cantidad seleccionada, Tab Suspender comenzará a cerrar gradualmente las pestañas más inactivas hasta que el número de pestañas abiertas disminuya a la cantidad seleccionada.) Si durante el período seleccionado la pestaña fue activada al menos una vez (se hizo clic en ella y se volvió visible), el período para esta pestaña comienza a calcularse de nuevo.",
+    "description": "Settings page: auto-close max tabs description"
   }
 }

@@ -118,7 +118,7 @@
             "description": "Unsuspend Current Window"
         },
         "unsuspend-current-tab": {
-            "description": "Unsuspend Currnet Tab"
+            "description": "Unsuspend Current Tab"
         },
 		"unsuspend-all-tabs": {
 			"description": "Unsuspend All Tabs"
