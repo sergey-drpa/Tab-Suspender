@@ -49,6 +49,10 @@ class TabObserver {
 		});*/
 
 		if (!stateOnly) {
+			// Guard: never suspend when auto-suspension is disabled, even if ticker is running
+			if (!await settings.get('active'))
+				return;
+
 			this.tickCount += TabObserver.tickSize;
 
 			if (pauseTics > 0) {

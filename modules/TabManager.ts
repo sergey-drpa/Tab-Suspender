@@ -119,7 +119,14 @@ class TabManager {
 
 				for (const propertyName in loadedITabInfos) {
 					if (loadedITabInfos.hasOwnProperty(propertyName)) {
-						self.tabInfos[propertyName] = TabInfo.fromObject(loadedITabInfos[propertyName]);
+						const tabInfo = TabInfo.fromObject(loadedITabInfos[propertyName]);
+						// Reset inactivity timer on service-worker restart so tabs that were
+						// near the suspension threshold don't get suspended immediately after
+						// the browser is reopened (fixes "suspending after just a few minutes").
+						if (!tabInfo.parked) {
+							tabInfo.time = 0;
+						}
+						self.tabInfos[propertyName] = tabInfo;
 					}
 				}
 				console.log(`tabInfos loaded`);
@@ -579,14 +586,12 @@ class TabManager {
 			chrome.tabs.reload(tab.id, ).catch(console.error)
 		} else {
 			if (tab.status == 'loading') {
-				settings.get('reloadTabOnRestore')
-					.then(reloadTabOnRestore => {
-						if (reloadTabOnRestore == true)
-							chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
-						else {
-							markForUnsuspend(tab);
-						}
-					}).catch(console.error);
+				// park.html is still loading — navigate directly to the original URL.
+				// Sending a RestoreMessage is unreliable here because the page script may
+				// not have registered its onMessage listener yet.
+				// The reloadTabOnRestore preference only matters once park.html is fully loaded.
+				markForUnsuspend(tab);
+				chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
 			} else {
 				// Get originRefId if tab was replaced (Chrome changes tab ID on discard/restore)
 				const tabInfo = this.getTabInfoById(tab.id);

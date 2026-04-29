@@ -312,28 +312,34 @@ class BGMessageListener {
 				})();*/
 				return true; // For async sendResponse()
 			} else if (request.method === '[AutomaticTabCleaner:updateTimeout]') {
-				if (request.isTabSuspenderActive != null)
-					settings.set('active', request.isTabSuspenderActive).catch(console.error);
-				else if (request.timeout != null && typeof request.timeout == 'number')
-					settings.set('timeout', request.timeout).catch(console.error);
-				else if (request.isCloseTabsOn != null)
-					settings.set('isCloseTabsOn', request.isCloseTabsOn).catch(console.error);
-				else if (request.closeTimeout != null && typeof request.closeTimeout == 'number')
-					settings.set('closeTimeout', request.closeTimeout).catch(console.error);
-				else if (request.limitOfOpenedTabs != null && typeof request.limitOfOpenedTabs == 'number')
-					settings.set('limitOfOpenedTabs', request.limitOfOpenedTabs).catch(console.error);
-				else if (request.sendErrors != null)
-					settings.set('sendErrors', request.sendErrors).catch(console.error);
-				else if (request.popup_showWindowSessionByDefault != null)
-					settings.set('popup_showWindowSessionByDefault', request.popup_showWindowSessionByDefault).catch(console.error);
-				else if (request.restoreButtonView != null)
-					settings.set('restoreButtonView', request.restoreButtonView).catch(console.error);
-				else if (request.parkBgColor != null)
-					settings.set('parkBgColor', request.parkBgColor).catch(console.error);
+				void (async () => {
+					try {
+						if (request.isTabSuspenderActive != null)
+							await settings.set('active', request.isTabSuspenderActive);
+						else if (request.timeout != null && typeof request.timeout == 'number')
+							await settings.set('timeout', request.timeout);
+						else if (request.isCloseTabsOn != null)
+							await settings.set('isCloseTabsOn', request.isCloseTabsOn);
+						else if (request.closeTimeout != null && typeof request.closeTimeout == 'number')
+							await settings.set('closeTimeout', request.closeTimeout);
+						else if (request.limitOfOpenedTabs != null && typeof request.limitOfOpenedTabs == 'number')
+							await settings.set('limitOfOpenedTabs', request.limitOfOpenedTabs);
+						else if (request.sendErrors != null)
+							await settings.set('sendErrors', request.sendErrors);
+						else if (request.popup_showWindowSessionByDefault != null)
+							await settings.set('popup_showWindowSessionByDefault', request.popup_showWindowSessionByDefault);
+						else if (request.restoreButtonView != null)
+							await settings.set('restoreButtonView', request.restoreButtonView);
+						else if (request.parkBgColor != null)
+							await settings.set('parkBgColor', request.parkBgColor);
 
-				SettingsPageController.reloadSettings().then(()=>{
-					sendResponse({ successful: true });
-				}).catch(console.error);
+						await SettingsPageController.reloadSettings();
+						sendResponse({ successful: true });
+					} catch (e) {
+						console.error(e);
+						sendResponse({ successful: false });
+					}
+				})();
 
 				return true;
 			} else if (request.method === '[AutomaticTabCleaner:uriExceptionCheck]') {
