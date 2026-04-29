@@ -94,7 +94,7 @@ class SettingsStoreClient {
 
             await chrome.storage.local.set({
                 [SettingsStoreClient.genName(name, this.namespace)]: value
-            }).catch(console.error);
+            }); // errors propagate to caller — silent swallow would hide quota/disk failures
 
             if(!skipSync) {
                 await this.setSync(name, value).catch(console.error);
@@ -151,8 +151,14 @@ class SettingsStore extends SettingsStoreClient {
         this.onStorageInitialized = new Promise(resolve => {
 
             // Retrieve data from Sync
-            chrome.storage.sync.get(null as string).then(async (items) => {
-                // Pass any observed errors down the promise chain.
+            // Bug fix: if sync.get() fails (network error, quota) we must still
+            // resolve so the extension can start — fall back to an empty sync object.
+            chrome.storage.sync.get(null as string)
+                .catch((err) => {
+                    console.error('[SettingsStore] sync.get() failed, continuing without sync data:', err);
+                    return {} as Record<string, any>;
+                })
+                .then(async (items) => {
                 /* TODO: Implement sync from sync server
                 if (!chrome.runtime.lastError) {
                     console.log('Retrieve Sync changes and cache locally....');
@@ -181,7 +187,7 @@ class SettingsStore extends SettingsStoreClient {
 
                     await this.initOrMigrateSettings(offscreenDocumentProvider, default_settings);
 
-                    void this.cleanLocalStorageFormData();
+                    this.cleanLocalStorageFormData().catch(console.error);
 
                     this.calculateDisplayBasedDefaultSettings();
                 } else {
@@ -202,7 +208,12 @@ class SettingsStore extends SettingsStoreClient {
                 });
 
                 resolve();
-            }).catch(console.error);
+            }).catch((err) => {
+                // If initialization itself throws (e.g. storage write failure),
+                // still resolve so the extension starts in a degraded state.
+                console.error('[SettingsStore] storage initialization failed:', err);
+                resolve();
+            });
 
         });
     }
@@ -255,7 +266,25 @@ class SettingsStore extends SettingsStoreClient {
                 if (storedValue == undefined ||
                   typeof storedValue != GET_SETTINGS_TYPE(key)
                 ) {
-                    await this.set(key, default_settings[key], true);
+                    // Before resetting to default, try chrome.storage.sync as a fallback.
+                    // This recovers user preferences when local storage is corrupted
+                    // (disk full, LevelDB crash, Chrome profile repair, etc.).
+                    // setSync() already mirrors every write to sync, so sync holds
+                    // the last-known good value.
+                    let recovered = false;
+                    try {
+                        const syncResult = await chrome.storage.sync.get([key]);
+                        const syncValue  = syncResult[key];
+                        if (syncValue !== undefined && typeof syncValue === GET_SETTINGS_TYPE(key)) {
+                            await this.set(key, syncValue, true); // restore from sync, skip re-syncing
+                            recovered = true;
+                        }
+                    } catch (e) {
+                        console.warn('[SettingsStore] sync fallback failed for key:', key, e);
+                    }
+                    if (!recovered) {
+                        await this.set(key, default_settings[key], true);
+                    }
                 }
                 /* NO NEED DEFAULTS IN SYNC
 								((localKey) => {
@@ -299,8 +328,12 @@ class SettingsStore extends SettingsStoreClient {
 
     private async cleanLocalStorageFormData() {
         if (!await this.get('localStorageFormDataCleaned')) {
-            await this.offscreenDocumentProvider.cleanupFormDatas();
-            await this.set('localStorageFormDataCleaned', true);
+            try {
+                await this.offscreenDocumentProvider.cleanupFormDatas();
+                await this.set('localStorageFormDataCleaned', true);
+            } catch (e) {
+                console.error('[SettingsStore] cleanLocalStorageFormData failed:', e);
+            }
         }
     }
 
