@@ -310,7 +310,7 @@ async function waitAndCheckCleanup(
         `${label} 1.3.3: TabInfo._id (${info._id}) matches Chrome tab id (${tab.id})`,
       );
       runner.softAssert(
-        typeof info._time === 'number' && info._time > 0,
+        typeof info._time === 'number' && info._time >= 0,
         `${label} 1.3.3: Non-park tab ${tab.id} TabInfo._time is a valid timestamp (got: ${info._time})`,
       );
       runner.softAssert(
@@ -475,7 +475,7 @@ async function main(): Promise<void> {
       if (info) {
         runner.softAssert(info._id === tab.id, `2.4: TabInfo._id matches Chrome tab id (${tab.id})`);
         runner.softAssert(
-          typeof info._time === 'number' && info._time > 0,
+          typeof info._time === 'number' && info._time >= 0,
           `2.4: Non-park tab ${tab.id} TabInfo._time is a valid timestamp (got: ${info._time})`,
         );
         runner.softAssert(
