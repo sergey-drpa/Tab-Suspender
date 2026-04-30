@@ -580,18 +580,22 @@ class TabManager {
 		});
 	}
 
-	unsuspendTab(tab: chrome.tabs.Tab) {
+	async unsuspendTab(tab: chrome.tabs.Tab) {
 		if (tab.discarded == true) {
 			markForUnsuspend(tab);
 			chrome.tabs.reload(tab.id, ).catch(console.error)
 		} else {
 			if (tab.status == 'loading') {
-				// park.html is still loading — navigate directly to the original URL.
-				// Sending a RestoreMessage is unreliable here because the page script may
-				// not have registered its onMessage listener yet.
-				// The reloadTabOnRestore preference only matters once park.html is fully loaded.
-				markForUnsuspend(tab);
-				chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
+				// park.html is still loading — honour reloadTabOnRestore:
+				// true  → navigate directly to avoid a race with the not-yet-ready page script
+				// false → write the marker; park.ts reads it via parkData.isTabMarkedForUnsuspend
+				//         and calls historyFallback() (window.history.go(-1)), preserving bfcache
+				const reloadTabOnRestore = await settings.get('reloadTabOnRestore');
+				if (reloadTabOnRestore === true) {
+					chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
+				} else {
+					markForUnsuspend(tab);
+				}
 			} else {
 				// Get originRefId if tab was replaced (Chrome changes tab ID on discard/restore)
 				const tabInfo = this.getTabInfoById(tab.id);
