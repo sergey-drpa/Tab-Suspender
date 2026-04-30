@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test:stress": "node stress.test.js",
-    "test:suspend-discard": "npx tsx suspend-discard.test.ts"
+    "test:suspend-discard": "npx tsx suspend-discard.test.ts",
+    "test:corrupt-storage": "npx tsx corrupt-storage.test.ts"
   },
   "dependencies": {
     "puppeteer": "^24.15.0"

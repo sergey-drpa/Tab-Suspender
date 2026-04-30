@@ -72,3 +72,7 @@ jobs:
           sleep 1
           DISPLAY=:99 npx tsx suspend-discard.test.ts
         working-directory: test/puppeteer
+
+      - name: Run corrupt-storage regression test
+        run: DISPLAY=:99 npx tsx corrupt-storage.test.ts
+        working-directory: test/puppeteer
