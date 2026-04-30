@@ -1,0 +1,21 @@
+{
+  "name": "tab-suspender-stress-tests",
+  "version": "1.0.0",
+  "description": "Puppeteer stress & integration tests for Tab Suspender Chrome extension",
+  "type": "module",
+  "scripts": {
+    "test:stress": "node stress.test.js",
+    "test:suspend-discard": "npx tsx suspend-discard.test.ts"
+  },
+  "dependencies": {
+    "puppeteer": "^24.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
