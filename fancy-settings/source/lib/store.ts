@@ -225,30 +225,49 @@ class SettingsStore extends SettingsStoreClient {
 
         // Migration from old V2 Manifest settings...
         if (!await this.get('localStorageMigrated')) {
-            const oldSettings = await offscreenDocumentProvider.extractOldSettings(Object.keys(default_settings));
+            // Before running V2 migration check sync storage. If the flag is
+            // already there, local storage was simply corrupted — the migration
+            // already ran in a previous session. Restore the local flag and skip
+            // re-migration so old V2 localStorage values cannot overwrite the
+            // user's current settings stored in sync.
+            let skipV2Migration = false;
+            try {
+                const syncResult = await chrome.storage.sync.get(['localStorageMigrated']);
+                if (syncResult['localStorageMigrated']) {
+                    await this.set('localStorageMigrated', true, true); // restore to local only
+                    skipV2Migration = true;
+                    console.log('[SettingsStore] V2 migration already done (found in sync), skipping re-migration');
+                }
+            } catch (e) {
+                console.warn('[SettingsStore] Could not check sync for localStorageMigrated:', e);
+            }
 
-            if (oldSettings['active'] != undefined) {
-                console.log(`Need to migrate Old Settings...`);
+            if (!skipV2Migration) {
+                const oldSettings = await offscreenDocumentProvider.extractOldSettings(Object.keys(default_settings));
 
-                console.log(`Old Settings: `, oldSettings);
+                if (oldSettings['active'] != undefined) {
+                    console.log(`Need to migrate Old Settings...`);
 
-                for (const key in oldSettings) {
-                    if (oldSettings.hasOwnProperty(key)) {
-                        const currentValue = await this.get(key);
-                        if (currentValue == undefined) {
-                            const value = self.checkTypeAndCast(key, oldSettings[key]);
-                            if (value == null ||
-                              typeof value != GET_SETTINGS_TYPE(key)
-                            )
-                                await this.set(key, default_settings[key], true);
-                            else
-                                await this.set(key, value, true);
+                    console.log(`Old Settings: `, oldSettings);
+
+                    for (const key in oldSettings) {
+                        if (oldSettings.hasOwnProperty(key)) {
+                            const currentValue = await this.get(key);
+                            if (currentValue == undefined) {
+                                const value = self.checkTypeAndCast(key, oldSettings[key]);
+                                if (value == null ||
+                                  typeof value != GET_SETTINGS_TYPE(key)
+                                )
+                                    await this.set(key, default_settings[key], true);
+                                else
+                                    await this.set(key, value, true);
+                            }
                         }
                     }
-                }
 
-                await this.set('localStorageMigrated', true);
-                await LocalStore.set(LocalStoreKeys.INSTALLED, true);
+                    await this.set('localStorageMigrated', true);
+                    await LocalStore.set(LocalStoreKeys.INSTALLED, true);
+                }
             }
         }
 

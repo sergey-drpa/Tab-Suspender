@@ -28,6 +28,20 @@
  *   Phase B – local + sync both cleared:
  *     Extension must fall back to DEFAULT_SETTINGS.timeout = 1800s.
  *     Must NOT reset to 0 or a tiny value (the reported bug).
+ *
+ *   Phase C – V2 migration re-run after local corruption (root-cause bug):
+ *     Root cause: initOrMigrateSettings() stores "localStorageMigrated" flag
+ *     ONLY in chrome.storage.local (skipSync=true). When local is corrupted,
+ *     the flag is lost, and the V2 migration from offscreen localStorage runs
+ *     AGAIN. If the old V2 localStorage has timeout="30" the migration writes
+ *     timeout=30 to local with skipSync=true, then the DEFAULT_SETTINGS loop
+ *     sees a valid number (30) and skips the sync fallback — so the user's
+ *     correct value in sync is never restored.
+ *
+ *     This test plants timeout="30" in the offscreen document's localStorage
+ *     (simulating old V2 data), clears chrome.storage.local, and restarts.
+ *     Before the fix: timeout=30 (FAIL — dangerous).
+ *     After the fix:  timeout >= MIN_SAFE_TIMEOUT_S (PASS).
  */
 
 import path from 'path';
@@ -77,6 +91,47 @@ async function clearLocalStorage(browser: BrowserArg): Promise<void> {
 async function clearSyncStorage(browser: BrowserArg): Promise<void> {
   await evalInSW(browser, 'chrome.storage.sync.clear()');
   await sleep(300);
+}
+
+// ─── Offscreen document helper ────────────────────────────────────────────────
+
+// Wait until the offscreen document target appears (the extension creates it
+// asynchronously during initialization).
+async function waitForOffscreenDoc(
+  browser: Awaited<ReturnType<typeof launchBrowser>>,
+  maxWaitMs = 15000,
+): Promise<Awaited<ReturnType<typeof browser.targets>>[number]> {
+  const deadline = Date.now() + maxWaitMs;
+  while (Date.now() < deadline) {
+    const target = browser.targets().find(t => t.url().includes('offscreenDocument.html'));
+    if (target) return target;
+    await sleep(1000);
+  }
+  throw new Error('Offscreen document target not found within timeout');
+}
+
+// Write key=value pairs into the offscreen document's localStorage.
+// This simulates old V2 extension data that the migration reads on startup.
+async function setOffscreenLocalStorage(
+  browser: Awaited<ReturnType<typeof launchBrowser>>,
+  items: Record<string, string>,
+): Promise<void> {
+  const target = await waitForOffscreenDoc(browser);
+  const session = await target.createCDPSession();
+  try {
+    const entries = Object.entries(items)
+      .map(([k, v]) => `localStorage.setItem(${JSON.stringify(k)}, ${JSON.stringify(v)})`)
+      .join('; ');
+    const { exceptionDetails } = await session.send('Runtime.evaluate', {
+      expression: entries,
+      returnByValue: true,
+    });
+    if (exceptionDetails) {
+      throw new Error(`Offscreen CDP error: ${exceptionDetails.text ?? exceptionDetails.exception?.description}`);
+    }
+  } finally {
+    await session.detach();
+  }
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -264,6 +319,83 @@ async function main(): Promise<void> {
     await browserB.close();
   } catch (e) {
     await browserB.close().catch(() => {});
+    throw e;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  PHASE C — V2 migration re-runs after local corruption (root-cause bug)
+  // ═══════════════════════════════════════════════════════════════════════════
+  log('\n══════════════════════════════════════════════════════');
+  log('  PHASE C  V2 migration re-run bug');
+  log('  Plant timeout="30" in offscreen localStorage, clear local, restart');
+  log('  BEFORE fix: timeout=30 (dangerous). AFTER fix: timeout>=60 (safe).');
+  log('══════════════════════════════════════════════════════');
+
+  const browserC0 = await launchBrowser(SESSION_DIR, true);
+  try {
+    await getExtensionId(browserC0);
+    await sleep(4000); // wait for extension + offscreen document to fully initialize
+
+    // Simulate: the first V2 migration already ran successfully in a previous
+    // session and wrote localStorageMigrated=true to chrome.storage.sync.
+    // This is the state every V2→V3 user is in after their first startup.
+    log('  Simulating completed V2 migration: setting localStorageMigrated=true in sync...');
+    await evalInSW(browserC0, `chrome.storage.sync.set({ localStorageMigrated: true })`);
+    await sleep(300);
+
+    // Plant fake old-V2 data in the offscreen document's localStorage.
+    // The key prefix matches what offscreenDocument.ts reads:
+    //   `store.tabSuspenderSettings.<key>`
+    // "active" must be present so the migration body actually executes.
+    log('  Planting fake V2 data in offscreen localStorage...');
+    await setOffscreenLocalStorage(browserC0, {
+      'store.tabSuspenderSettings.timeout': '30',
+      'store.tabSuspenderSettings.active':  'true',
+    });
+    log('  Offscreen localStorage: timeout="30", active="true" written');
+
+    // Clear chrome.storage.local — simulates local storage corruption.
+    // localStorageMigrated disappears from local, but sync still has it = true.
+    log('  Clearing chrome.storage.local (simulates corruption)...');
+    await clearLocalStorage(browserC0);
+    log('  Local storage cleared. Sync still has localStorageMigrated=true.');
+
+    await browserC0.close();
+    await sleep(1000);
+  } catch (e) {
+    await browserC0.close().catch(() => {});
+    throw e;
+  }
+
+  const browserC = await launchBrowser(SESSION_DIR, true);
+  log('Browser restarted for Phase C check');
+  try {
+    await sleep(10000); // let extension initialize and run initOrMigrateSettings
+
+    await getExtensionId(browserC);
+
+    const settingsC = await getAllRelevantSettings(browserC);
+    log(`  Settings after V2 re-migration: ${JSON.stringify(settingsC)}`);
+    const timeoutC = settingsC['timeout'] as number;
+
+    log(`  V2 re-migration result: timeout=${timeoutC}s ${timeoutC === 30 ? '✗ BUG: migration re-ran!' : '✓ migration skipped (fix in place)'}`);
+
+    // Core regression guard: timeout must be safe.
+    // FAILS before the fix (timeout=30 < 60), PASSES after the fix.
+    runner.assert(
+      typeof timeoutC === 'number' && timeoutC >= MIN_SAFE_TIMEOUT_S,
+      `Phase-C: timeout safe after V2 re-migration — got ${timeoutC}s, need ≥${MIN_SAFE_TIMEOUT_S}s`,
+    );
+
+    log(`\n  Verdict: timeout=${timeoutC}s — ${
+      timeoutC === 30                 ? '✗ BUG: V2 migration re-ran and corrupted timeout!' :
+      timeoutC >= MIN_SAFE_TIMEOUT_S  ? '✓ safe (fix is in place)' :
+                                        '✗ DANGEROUS — unexpected small value!'
+    }`);
+
+    await browserC.close();
+  } catch (e) {
+    await browserC.close().catch(() => {});
     throw e;
   }
 
