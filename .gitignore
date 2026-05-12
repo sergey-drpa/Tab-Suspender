@@ -14,3 +14,4 @@ build_dir/
 # Puppeteer stress test artifacts
 test/puppeteer/.test-session*
 test/puppeteer/.test-state.json
+/test/puppeteer/test-session/

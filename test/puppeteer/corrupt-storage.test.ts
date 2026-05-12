@@ -52,7 +52,7 @@ import { getExtensionId, evalInSW, queryChromeTabs } from './base/ExtensionHelpe
 import { createTestRunner } from './base/AssertHelper.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SESSION_DIR = path.join(__dirname, '.test-session-corrupt');
+const SESSION_DIR = path.join(__dirname, 'test-session', '.test-session-corrupt');
 const TARGET_URL = 'https://yandex.com/';
 
 const USER_TIMEOUT_S     = 60;       // 1 minute — what the "user" sets in the test

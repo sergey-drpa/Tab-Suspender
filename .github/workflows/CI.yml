@@ -37,7 +37,7 @@ jobs:
 
   puppeteer-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -75,4 +75,64 @@ jobs:
 
       - name: Run corrupt-storage regression test
         run: DISPLAY=:99 npx tsx corrupt-storage.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run basic suspend/restore test
+        run: DISPLAY=:99 npx tsx basic-suspend-restore.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run auto-restore tab test
+        run: DISPLAY=:99 npx tsx auto-restore-tab.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run restore modes test
+        run: DISPLAY=:99 npx tsx restore-modes.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run form data restore test
+        run: DISPLAY=:99 npx tsx form-data-restore.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run protected URLs test
+        run: DISPLAY=:99 npx tsx protected-urls.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run whitelist/ignore test
+        run: DISPLAY=:99 npx tsx whitelist-ignore.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run favicon loss test
+        run: DISPLAY=:99 npx tsx favicon-loss.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run favicon navigation stress test
+        run: DISPLAY=:99 npx tsx favicon-nav-stress.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run screenshot settings test
+        run: DISPLAY=:99 npx tsx screenshot-settings.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run discard tab ID change test
+        run: DISPLAY=:99 npx tsx discard-tab-id-change.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run unfocused tab discard test
+        run: DISPLAY=:99 npx tsx unfocused-tab-discard.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run start discarded test
+        run: DISPLAY=:99 npx tsx start-discarded.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run bulk tab operations test
+        run: DISPLAY=:99 npx tsx bulk-tab-operations.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run adaptive timeout test
+        run: DISPLAY=:99 npx tsx adaptive-timeout.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run pinned tab protection test
+        run: DISPLAY=:99 npx tsx pinned-tab-protection.test.ts
         working-directory: test/puppeteer

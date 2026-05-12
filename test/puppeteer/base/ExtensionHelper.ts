@@ -1,4 +1,4 @@
-import type { Browser } from 'puppeteer';
+import type { Browser, Page } from 'puppeteer';
 import type { ChromeTab, TabInfosMap } from './types.js';
 import { sleep } from './BrowserHelper.js';
 
@@ -171,4 +171,107 @@ export async function getParkPages(browser: Browser, extensionId: string) {
   const prefix = parkUrlPrefix(extensionId);
   const pages = await browser.pages();
   return pages.filter(p => p.url().startsWith(prefix));
+}
+
+// ─── Settings helpers ─────────────────────────────────────────────────────────
+
+export async function getSetting(browser: Browser, key: string): Promise<unknown> {
+  return evalInSW(browser, `settings.get(${JSON.stringify(key)})`);
+}
+
+export async function setSetting(browser: Browser, key: string, value: unknown): Promise<void> {
+  await evalInSW(browser, `settings.set(${JSON.stringify(key)}, ${JSON.stringify(value)})`);
+  await sleep(400);
+}
+
+// ─── Tab restore helpers ──────────────────────────────────────────────────────
+
+export async function unsuspendTabById(browser: Browser, tabId: number): Promise<void> {
+  await evalInSW(browser, `(async () => {
+    const tab = await chrome.tabs.get(${tabId}).catch(() => null);
+    if (tab) tabManager.unsuspendTab(tab);
+  })()`);
+}
+
+// Poll until the tab's URL no longer contains the park page prefix.
+// Returns the restored URL.
+export async function waitForTabToRestore(
+  browser: Browser,
+  tabId: number,
+  timeoutMs = 25000,
+): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const json = await evalInSW<string>(browser, `(async () => {
+      const tab = await chrome.tabs.get(${tabId}).catch(() => null);
+      return JSON.stringify(tab ? { url: tab.url, discarded: tab.discarded } : null);
+    })()`);
+    if (json) {
+      const tab = JSON.parse(json);
+      if (tab && tab.url && !tab.url.includes('park.html')) return tab.url as string;
+    }
+    await sleep(500);
+  }
+  throw new Error(`Tab ${tabId} did not leave park page within ${timeoutMs}ms`);
+}
+
+// Poll until ANY chrome tab whose URL currently includes `urlPart` (case-sensitive).
+// Returns the matching ChromeTab.
+export async function waitForAnyTabWithUrl(
+  browser: Browser,
+  urlPart: string,
+  timeoutMs = 25000,
+): Promise<ChromeTab> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const tabs = await queryChromeTabs(browser);
+    const found = tabs.find(t => t.url && t.url.includes(urlPart));
+    if (found) return found;
+    await sleep(500);
+  }
+  throw new Error(`No tab with URL containing "${urlPart}" found within ${timeoutMs}ms`);
+}
+
+// Wait until a tab with the given ID is no longer on park.html and return its URL.
+// Falls back to searching by any park.html tab if tabId is not found (handles ID reassignment).
+export async function waitForAnyTabToLeaveParked(
+  browser: Browser,
+  extensionId: string,
+  expectedOriginalUrlPart: string,
+  timeoutMs = 25000,
+): Promise<string> {
+  const prefix = parkUrlPrefix(extensionId);
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const tabs = await queryChromeTabs(browser);
+    const found = tabs.find(t => t.url && t.url.includes(expectedOriginalUrlPart) && !t.url.startsWith(prefix));
+    if (found) return found.url;
+    await sleep(500);
+  }
+  throw new Error(`No tab navigated to "${expectedOriginalUrlPart}" within ${timeoutMs}ms`);
+}
+
+// Poll until the SW's async init() has assigned whiteList, ignoreList, and tabManager.
+// These are top-level `let` variables populated asynchronously; calling them too early
+// returns undefined.
+export async function waitForExtensionInit(browser: Browser, timeoutMs = 20000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const type = await evalInSW<string>(browser, 'typeof whiteList').catch(() => 'undefined');
+    if (type === 'object') return;
+    await sleep(500);
+  }
+  throw new Error('Extension SW did not fully initialize (whiteList still undefined) within timeout');
+}
+
+// Wraps evalInSW so a failed eval returns null instead of throwing.
+export async function safeEvalInSW<T = unknown>(
+  browser: Browser,
+  expr: string,
+): Promise<T | null> {
+  try {
+    return await evalInSW<T>(browser, expr);
+  } catch (_e) {
+    return null;
+  }
 }

@@ -52,7 +52,7 @@ import { createTestRunner, type TestRunner } from './base/AssertHelper.js';
 import type { ChromeTab } from './base/types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SESSION_DIR = path.join(__dirname, '.test-session-sd');
+const SESSION_DIR = path.join(__dirname, 'test-session', '.test-session-sd');
 const TARGET_URL = 'https://yandex.com/';
 
 // ─── Page helpers ─────────────────────────────────────────────────────────────

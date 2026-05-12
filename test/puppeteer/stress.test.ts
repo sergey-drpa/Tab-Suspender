@@ -27,7 +27,7 @@ import {
 import { createTestRunner } from './base/AssertHelper.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SESSION_DIR = path.join(__dirname, '.test-session');
+const SESSION_DIR = path.join(__dirname, 'test-session', '.test-session');
 const STATE_FILE = path.join(__dirname, '.test-state.json');
 
 const CONFIG = {
