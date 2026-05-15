@@ -331,6 +331,9 @@ function start() {
 		// Wait for session restore, then process tabs
 		await SessionRestoreDetector.waitForGroupRestore({ parkUrl });
 
+		// Ensure settings init is complete before reading (guards against slow storage on startup)
+		await settings.getOnStorageInitialized();
+
 		const startNormalTabsDiscarted = await settings.get('startNormalTabsDiscarted');
 		/* Discard tabs */
 		chrome.tabs.query({ active: false/*, discarded: false*/ }, async function(tabs) {

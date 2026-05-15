@@ -67,10 +67,13 @@ describe('BGMessageListener Export/Import Integration', () => {
             set: jest.fn().mockResolvedValue(undefined),
             remove: jest.fn().mockResolvedValue(undefined),
             clear: jest.fn().mockResolvedValue(undefined)
+        },
+        onChanged: {
+            addListener: jest.fn()
         }
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // Reset storage data before each test
         mockStorageData = {};
 
@@ -92,6 +95,10 @@ describe('BGMessageListener Export/Import Integration', () => {
             (global as any).DEFAULT_SETTINGS,
             mockOffscreenProvider
         );
+
+        // Wait for async init (DEFAULT_SETTINGS written to storage) before each test
+        // to eliminate the race between initOrMigrateSettings and test set() calls.
+        await globalSettings.getOnStorageInitialized();
 
         // Verify importWithClear method is available
         if (typeof globalSettings.importWithClear !== 'function') {
