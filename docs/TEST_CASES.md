@@ -49,8 +49,8 @@
 | 3.3 | Таб из whitelist не приостанавливается | P0 | Unit | ✅ | `WhiteList.test.ts` |
 | 3.4 | Добавление URL из контекстного меню → сохранение в настройках | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase A |
 | 3.5 | Удаление паттерна → таб снова становится кандидатом на приостановку | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase B |
-| 3.6 | Пустой паттерн пропускается без ошибок | P2 | Unit | ❌ | |
-| 3.7 | Некорректный regex — caught, не падает extension | P2 | Unit | ❌ | |
+| 3.6 | Пустой паттерн пропускается без ошибок | P2 | Unit | ✅ | `WhiteList.test.ts` |
+| 3.7 | Некорректный regex — caught, не падает extension | P2 | Unit | ✅ | `WhiteList.test.ts` |
 | 3.8 | chrome:// и extension:// URL никогда не приостанавливаются | P0 | E2E | ✅ | `protected-urls.test.ts` |
 | 3.9 | "Игнорировать таб" (per-session) — таб не приостанавливается до рестарта | P2 | E2E | ✅ | `whitelist-ignore.test.ts` Phase C |
 
@@ -234,9 +234,9 @@
 |-----------|-------|-----------|------------|--------------|
 | P0 (критично) | 13 | 13 | 0 | 0 |
 | P1 (высокий) | 47 | 38 | 0 | 9 |
-| P2 (средний) | 40 | 17 | 1 | 22 |
+| P2 (средний) | 40 | 19 | 1 | 20 |
 | P3 (низкий) | 3 | 0 | 0 | 3 |
-| **Итого** | **103** | **68 (66%)** | **1 (1%)** | **34 (33%)** |
+| **Итого** | **103** | **70 (68%)** | **1 (1%)** | **32 (31%)** |
 
 ---
 
@@ -269,7 +269,7 @@
 |------|---------------------|--------|
 | `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10 | ✅ |
 | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
-| `WhiteList.test.ts` | 3.1, 3.2, 3.3 | ✅ |
+| `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |
 | `SettingsStore.Resilience.test.ts` | 11.3 | ✅ |
