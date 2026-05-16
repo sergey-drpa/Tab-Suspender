@@ -1,32 +1,52 @@
 ---
 name: E2E Puppeteer test suite (Tab Suspender)
-description: Status and key lessons from building the full Puppeteer E2E test suite
+description: Status and key lessons from building the full Puppeteer E2E test suite + Jest unit tests
 type: project
 originSessionId: ac08b630-b6e4-4ce5-a1f7-3ee65c2f0dd0
 ---
-Full E2E test suite implemented in `test/puppeteer/`. Coverage: 68/103 cases (66%) per TEST_CASES.md.
+Full test suite: 89/103 cases (86%) covered per TEST_CASES.md (as of 2026-05-16).
 
-**Key files:**
-- `base/ExtensionHelper.ts` — shared helpers: `evalInSW`, `waitForExtensionInit`, `getSetting`/`setSetting`, `suspendTabById`, `waitForParkPages`, `getParkPages`, etc.
-- `docs/TEST_CASES.md` — full test case catalog with ✅/⚠️/❌ status
-
-**18 test files:**
+**18 Puppeteer E2E test files (test/puppeteer/):**
 basic-suspend-restore, auto-restore-tab, restore-modes, form-data-restore, protected-urls, whitelist-ignore, favicon-loss, favicon-nav-stress, screenshot-settings, discard-tab-id-change, unfocused-tab-discard, corrupt-storage, start-discarded, bulk-tab-operations, adaptive-timeout, pinned-tab-protection, hover-restore, url-param-preserve
 
-**Session dirs:** All `.test-session-*` dirs live under `test/puppeteer/test-session/` (migrated from top-level `test/puppeteer/`).
+**Key Jest unit test files added this project (test/modules/):**
+- `TabObserver.Battery.test.ts` — 7.1, 7.2, 7.3, 7.4 (battery-aware suspension)
+- `TabObserver.AutoClose.test.ts` — 8.1, 8.2, 8.3, 8.5 (auto-close with rank formula)
+- `TabObserver.Discard.test.ts` — 9.1, 9.2 (discard after suspend)
+- `TabObserver.FaviconRetry.test.ts` — 4.9 (favicon retry up to 2 times)
+- `TabObserver.ActiveTabAudible.test.ts` — 5.3, 5.4 (audible tab protection + resume)
+- `TabObserver.SettingsChange.test.ts` — 11.4 (settings change applied immediately)
+- `WhiteList.test.ts` — extended with 3.6, 3.7 (empty/invalid patterns)
+- `TabCapture.test.ts` — extended with 14.2, 14.3, 14.4 (error handling edge cases)
+- `CtrlClickSuspend.test.ts` — extended with 10.3/4.10 (no screenshot on ctrl+click)
 
-**Why:** Needed to validate all extension features that can't be covered by Jest unit tests.
+**Session dirs:** All `.test-session-*` dirs live under `test/puppeteer/test-session/`
 
-**How to apply:** When adding new features, check TEST_CASES.md for relevant test cases. Most common pattern: `waitForExtensionInit(browser)` must be called before any `getSetting`/`setSetting` calls — SW `let` variables (whiteList, ignoreList, tabManager) are assigned asynchronously.
+**Critical gotchas (Puppeteer E2E):**
+- `parkTab()` bypasses whitelist — only `parkTabs()` calls `isExceptionTab()`
+- `openUnfocusedTabDiscarded` only triggers if tab has `favIconUrl` set during `status='loading'`
+- `screenshot-settings.test.ts` must check `#screen` element specifically
+- **Timer-based auto-suspend gotcha**: Chrome opens wizard_background.html tab — close it before setting low timeout
+- **Tab ID after parkTab**: same tab ID is preserved (no new tab created)
+- **Adaptive timeout test**: Use exact URL match (not `.includes()`) to avoid park.html query param collision
+- **Pinned tab protection**: With `timeout=20 > tickSize=10`, pinned resets `_time=0` each tick — wait 35s (3+ ticks)
+- **Hover restore**: DOM id is `resoteImg` (typo in source). `waitForFunction(() => !!el?.onmouseover)` needed. Use `dispatchEvent` not `page.hover()`
+- **`unsuspendTabById` timing**: Add `await sleep(600)` after `waitForParkPages` to let park.html register its message listener
 
-**Critical gotchas discovered:**
-- `parkTab()` bypasses whitelist — only `parkTabs()` calls `isExceptionTab()`; tests must use `parkTabs()` to verify whitelist protection
-- `openUnfocusedTabDiscarded` only triggers if tab has `favIconUrl` set during `status='loading'` — need a local HTTP server with streaming response + inline favicon
-- `screenshot-settings.test.ts` must check `#screen` element specifically (park.html has other `data:image` icons for UI)
-- `start-discarded.test.ts` auto-discard condition in park.ts has a bug (tab.active===false after active:true query is always false) — test verifies the settings path and `[AutomaticTabCleaner:DiscardTab]` handler instead
-- **Timer-based auto-suspend gotcha** (`basic-suspend-restore.test.ts`): Chrome always opens a `wizard_background.html` extension tab on fresh browser launch. That tab accumulates inactivity time before the test starts. When `timeout=10` is set, the wizard tab is suspended BEFORE the example.com tab on the first tick. Fix: close all non-park extension tabs before setting the low timeout, then poll specifically for the target tab to become park.html (not just any park page). Pattern: `chrome.tabs.remove(wizardTabId)` + targeted poll loop.
-- **Tab ID after parkTab**: `parkTab()` called from the timer navigates the same tab in-place to park.html (via `chrome.tabs.update(tab.id, {url})`), so `parkedTabId === originalTabId`. No new tab is created when a screenshot already exists.
-- **Adaptive timeout test** (`adaptive-timeout.test.ts`, test 1.8): Must use exact URL match `t.url === TARGET_URL` (not `.includes('example.com')`) — park.html encodes the original URL as a query param so `.includes()` matches the wrong tab. Also reset `_parkedCount=0` and `_time=0` alongside `_swch_cnt`/`_active_time` via `evalInSW` before each phase. Return `{ page, blank, tabId }` from `openAndSetup()` and close both after each phase to prevent tab ID reuse.
-- **Pinned tab protection** (`pinned-tab-protection.test.ts`, tests 5.1/5.2): With `timeout=20 > tickSize=10`, `pinned=true` resets `tabInfo._time=0` at end of each tick — threshold never reached. Test waits 35s (3+ ticks). `pinned=false` removes protection; tab accumulates normally and gets suspended.
-- **Hover restore** (`hover-restore.test.ts`, test 2.6): The restore icon DOM id is `resoteImg` (intentional typo in park.ts — NOT `restoreImg`). Use `getParkPages(browser, extensionId)` to get the puppeteer Page. `waitForSelector('#resoteImg', {visible:true})` fires at DOMContentLoaded, but the `onmouseover` handler is wired up LATER inside `applyRestoreButtonView()` (called from `drawContent()` after screenPromise settles, up to 2.5s). Must wait with `waitForFunction(() => !!document.getElementById('resoteImg')?.onmouseover)`. Puppeteer's `page.hover()` doesn't reliably fire `onmouseover` on extension pages — use `page.evaluate(() => el.dispatchEvent(new MouseEvent('mouseover', {bubbles:true})))` instead. After `goBack()` runs, the evaluate call throws "Execution context was destroyed" — catch and ignore it.
-- **`unsuspendTabById` requires park page to be ready**: `unsuspendTabById` sends a `chrome.runtime.sendMessage` that the park page must have already registered a listener for. Add `await sleep(600)` after `waitForParkPages` before calling `unsuspendTabById`, otherwise the message is sent before `chrome.runtime.onMessage.addListener` runs in park.html and the restore never happens.
+**Critical gotchas (Jest unit tests):**
+- `flushPromises(30)`: AutoClose tests need 30 sequential `await Promise.resolve()` due to deep `isExceptionTab()` → `settings.get()` chains
+- `jest.advanceTimersByTime(3000)` NOT `runAllTimers` for favicon retry (avoids infinite setInterval)
+- Mock leak: `mockReturnValue()` persists across tests — use `afterEach` to restore, or `mockReturnValueOnce()`
+- `isCharging` and `batteryLevel` are `let` globals in background.ts — set via `(global as any).isCharging` before each test
+- Battery read in TabObserver is TODO-v3 commented out — battery state only comes via BGMessageListener from offscreen document
+
+**Bugs found in core logic:**
+1. `TabObserver.ts` ~line 158: `if (oneTabClosed) break;` — unreachable dead code
+2. `TabObserver.ts`: `tabInfo.discarded = tab.discarded` resets flag every tick (potential re-trigger race)
+3. `TabObserver.ts`: Typo "Disacrd failed" in error message
+4. `TabCapture.ts:51`: `reject()` called with no argument when active tab changes — rejection reason is undefined, hard to debug
+5. `PageStateRestoreController.ts:21`: `setInterval(this.cleanup, 60000)` — `this` binding lost in callback; cleanup silently fails every 60s (should use arrow function or `.bind(this)`)
+
+**Why:** Needed to validate all extension features that can't be covered by manual testing alone.
+
+**How to apply:** When adding new features, check TEST_CASES.md for relevant test cases. Most common pattern: `waitForExtensionInit(browser)` must be called before any `getSetting`/`setSetting` calls. For unit tests, set battery globals before requiring TabObserver; for mock state, prefer `afterEach` restore over `beforeEach` reset for non-reassigned mock properties.

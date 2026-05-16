@@ -68,8 +68,8 @@
 | 4.6 | `screenshotsEnabled=false` → park.html показывает только заголовок и иконку | P2 | E2E | ✅ | `screenshot-settings.test.ts` Phase B |
 | 4.7 | Скриншот сжат (gzip) и хранится в IndexedDB | P2 | Unit | ⚠️ | `ScreenshotController.test.ts` |
 | 4.8 | Таймаут захвата скриншота — приостановка всё равно происходит без него | P1 | Unit | ✅ | `ParkPageScreenshotTimeout.test.ts` |
-| 4.9 | Повторная попытка захвата иконки (до 2 раз с 100мс) при пустом favIconUrl | P2 | Unit | ❌ | |
-| 4.10 | Скриншот не захватывается при Ctrl+Click приостановке | P2 | Unit | ❌ | |
+| 4.9 | Повторная попытка захвата иконки (до 2 раз с 100мс) при пустом favIconUrl | P2 | Unit | ✅ | `TabObserver.FaviconRetry.test.ts` |
+| 4.10 | Скриншот не захватывается при Ctrl+Click приостановке | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
 | 4.11 | Качество скриншота 10% vs 100% — разница в размере хранилища | P3 | Unit | ❌ | |
 
 ---
@@ -81,7 +81,7 @@
 | 5.1 | Pinned таб при `pinned=true` → НЕ приостанавливается | P0 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase A |
 | 5.2 | Pinned таб при `pinned=false` → приостанавливается по таймауту | P1 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase B |
 | 5.3 | Audible таб при `ignoreAudible=true` → счётчик не накапливается | P1 | Unit | ✅ | `ActiveTabAudible.test.ts` |
-| 5.4 | Таб перестал воспроизводить звук → счётчик возобновляется | P1 | Unit | ❌ | |
+| 5.4 | Таб перестал воспроизводить звук → счётчик возобновляется | P1 | Unit | ✅ | `TabObserver.ActiveTabAudible.test.ts` |
 | 5.5 | Сгруппированный таб при `ignoreSuspendGroupedTabs=true` → НЕ приостанавливается | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
 | 5.6 | Приостановка группы табов по команде "Suspend Tab Group" | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
 | 5.7 | Восстановление группы табов с задержкой 1 с между каждым | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
@@ -105,10 +105,10 @@
 
 | # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
 |---|-----------|-----------|-----|--------|------------|
-| 7.1 | `autoSuspendOnlyOnBatteryOnly=true`, заряжается → приостановки нет | P1 | Unit | ❌ | |
-| 7.2 | `autoSuspendOnlyOnBatteryOnly=true`, от батареи → приостановка работает | P1 | Unit | ❌ | |
-| 7.3 | Уровень батареи выше порога → приостановки нет | P2 | Unit | ❌ | |
-| 7.4 | Уровень батареи ниже порога → приостановка работает | P2 | Unit | ❌ | |
+| 7.1 | `autoSuspendOnlyOnBatteryOnly=true`, заряжается → приостановки нет | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+| 7.2 | `autoSuspendOnlyOnBatteryOnly=true`, от батареи → приостановка работает | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+| 7.3 | Уровень батареи выше порога → приостановки нет | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+| 7.4 | Уровень батареи ниже порога → приостановка работает | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
 | 7.5 | Battery API недоступен → функция корректно отключается | P3 | Unit | ❌ | |
 
 ---
@@ -117,11 +117,11 @@
 
 | # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
 |---|-----------|-----------|-----|--------|------------|
-| 8.1 | Общее кол-во табов > лимита → самый "бесполезный" (min rank) закрывается | P1 | Unit | ❌ | |
-| 8.2 | Сгруппированный таб при `ignoreCloseGroupedTabs=true` → не закрывается | P2 | Unit | ❌ | |
-| 8.3 | Ранг рассчитывается правильно (формула: `active_time² × (swch+1) - time×k`) | P2 | Unit | ❌ | |
+| 8.1 | Общее кол-во табов > лимита → самый "бесполезный" (min rank) закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+| 8.2 | Сгруппированный таб при `ignoreCloseGroupedTabs=true` → не закрывается | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+| 8.3 | Ранг рассчитывается правильно (формула: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 | 8.4 | Закрытый таб попадает в closeHistory (до 300 записей) | P2 | Unit | ❌ | |
-| 8.5 | Общее кол-во табов ≤ лимита → ни один таб не закрывается | P1 | Unit | ❌ | |
+| 8.5 | Общее кол-во табов ≤ лимита → ни один таб не закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 
 ---
 
@@ -129,8 +129,8 @@
 
 | # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
 |---|-----------|-----------|-----|--------|------------|
-| 9.1 | `discardTabAfterSuspendWithTimeout=true` → приостановленный таб auto-discard через timeout×factor | P1 | Unit | ❌ | |
-| 9.2 | Таб помечен на восстановление → discard не происходит | P1 | Unit | ❌ | |
+| 9.1 | `discardTabAfterSuspendWithTimeout=true` → приостановленный таб auto-discard через timeout×factor | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
+| 9.2 | Таб помечен на восстановление → discard не происходит | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 | 9.3 | `openUnfocusedTabDiscarded=true` → новый фоновый таб сразу дискардится | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
 | 9.4 | Уже discarded таб при активации — корректная навигация на park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
 
@@ -142,7 +142,7 @@
 |---|-----------|-----------|-----|--------|------------|
 | 10.1 | `suspendOnCtrlClick=true`, Ctrl+Click на ссылку → новый таб сразу приостанавливается | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
 | 10.2 | Флаг `nextTabShouldBeSuspended` сбрасывается через 3 с, если таб не открылся | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
-| 10.3 | Приостановка без скриншота при Ctrl+Click | P2 | Unit | ❌ | |
+| 10.3 | Приостановка без скриншота при Ctrl+Click | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
 
 ---
 
@@ -153,7 +153,7 @@
 | 11.1 | Экспорт настроек в JSON → корректный формат | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
 | 11.2 | Импорт настроек из JSON → все поля применяются | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
 | 11.3 | SettingsStore устойчив к повреждению chrome.storage | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
-| 11.4 | Изменение таймаута → TabObserver немедленно применяет новое значение | P1 | Unit | ❌ | |
+| 11.4 | Изменение таймаута → TabObserver немедленно применяет новое значение | P1 | Unit | ✅ | `TabObserver.SettingsChange.test.ts` |
 | 11.5 | Валидация цвета фона: правильный hex / неправильный hex | P2 | Unit | ❌ | |
 | 11.6 | Сброс настроек до дефолтных значений | P2 | Unit | ❌ | |
 | 11.7 | Экспорт/импорт roundtrip без потери данных | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
@@ -190,9 +190,9 @@
 | # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
 |---|-----------|-----------|-----|--------|------------|
 | 14.1 | Захват выполняется при активации таба (`status === 'complete'`) | P1 | Unit | ✅ | `TabCapture.test.ts` |
-| 14.2 | Ошибка квоты MAX_CAPTURE_CALLS → retry до 3 раз | P2 | Unit | ❌ | |
-| 14.3 | chrome:// страница → ошибка поймана, приостановка не ломается | P2 | Unit | ❌ | |
-| 14.4 | Таб закрыт во время захвата → нет unhandled exception | P2 | Unit | ❌ | |
+| 14.2 | Ошибка квоты MAX_CAPTURE_CALLS → graceful rejection, нет краша | P2 | Unit | ✅ | `TabCapture.test.ts` |
+| 14.3 | chrome:// страница → ошибка поймана, приостановка не ломается | P2 | Unit | ✅ | `TabCapture.test.ts` |
+| 14.4 | Таб закрыт во время захвата → нет unhandled exception | P2 | Unit | ✅ | `TabCapture.test.ts` |
 
 ---
 
@@ -233,10 +233,10 @@
 | Приоритет | Всего | Покрыто ✅ | Частично ⚠️ | Не покрыто ❌ |
 |-----------|-------|-----------|------------|--------------|
 | P0 (критично) | 13 | 13 | 0 | 0 |
-| P1 (высокий) | 47 | 38 | 0 | 9 |
-| P2 (средний) | 40 | 19 | 1 | 20 |
+| P1 (высокий) | 47 | 46 | 0 | 1 |
+| P2 (средний) | 40 | 30 | 1 | 9 |
 | P3 (низкий) | 3 | 0 | 0 | 3 |
-| **Итого** | **103** | **70 (68%)** | **1 (1%)** | **32 (31%)** |
+| **Итого** | **103** | **89 (86%)** | **1 (1%)** | **13 (13%)** |
 
 ---
 
@@ -267,8 +267,16 @@
 
 | Файл | Покрывает тест-кейсы | Статус |
 |------|---------------------|--------|
+| `CtrlClickSuspend.test.ts` | 10.1, 10.2, 10.3, 4.10 | ✅ |
+| `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4 | ✅ |
 | `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10 | ✅ |
+| `TabObserver.Battery.test.ts` | 7.1, 7.2, 7.3, 7.4 | ✅ |
 | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
+| `TabObserver.ActiveTabAudible.test.ts` | 5.3, 5.4 | ✅ |
+| `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5 | ✅ |
+| `TabObserver.Discard.test.ts` | 9.1, 9.2 | ✅ |
+| `TabObserver.FaviconRetry.test.ts` | 4.9 | ✅ |
+| `TabObserver.SettingsChange.test.ts` | 11.4 | ✅ |
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |

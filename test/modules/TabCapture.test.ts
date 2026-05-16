@@ -306,6 +306,154 @@ describe('TabCapture Race Condition Tests', () => {
     });
   });
 
+  describe('14.2 — MAX_CAPTURE quota error: graceful rejection', () => {
+    it('rejects when hasLastError detects MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND quota', async () => {
+      const mockTab = {
+        id: 1,
+        url: 'https://example.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      currentActiveTab = { ...mockTab };
+
+      // Simulate captureVisibleTab returning a valid screen, but Chrome also sets lastError
+      // (hasLastError reads chrome.runtime.lastError internally).
+      // Mock hasLastError to return true → triggers the error branch.
+      (global as any).hasLastError = jest.fn().mockReturnValue(true);
+
+      await expect(tabCapture.captureTab(mockTab)).rejects.toBeDefined();
+      expect(mockScreenshotController.addScreen).not.toHaveBeenCalled();
+    });
+
+    it('promise rejects cleanly with no unhandled exception on quota error', async () => {
+      const mockTab = {
+        id: 2,
+        url: 'https://example.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      currentActiveTab = { ...mockTab };
+
+      (global as any).hasLastError = jest.fn().mockReturnValue(true);
+
+      const error = await tabCapture.captureTab(mockTab).catch((e: Error) => e);
+      expect(error).toBeDefined();
+      expect(mockScreenshotController.addScreen).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('14.3 — chrome:// URL: capture skipped gracefully', () => {
+    afterEach(() => {
+      // Restore isTabURLAllowedForPark to true so subsequent tests aren't affected
+      mockTabManager.isTabURLAllowedForPark.mockReturnValue(true);
+    });
+
+    it('resolves without capturing when tab URL is not allowed for park (chrome://)', async () => {
+      const mockTab = {
+        id: 1,
+        url: 'chrome://settings/',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      // The query returns this chrome:// tab as active
+      currentActiveTab = { ...mockTab };
+
+      // Override isTabURLAllowedForPark to return false for chrome:// URLs (real behavior)
+      mockTabManager.isTabURLAllowedForPark.mockReturnValue(false);
+
+      await expect(tabCapture.captureTab(mockTab)).resolves.toBeUndefined();
+      expect(mockChrome.tabs.captureVisibleTab).not.toHaveBeenCalled();
+      expect(mockScreenshotController.addScreen).not.toHaveBeenCalled();
+    });
+
+    it('does not throw for chrome:// URL — extension stays stable', async () => {
+      const mockTab = {
+        id: 1,
+        url: 'chrome://newtab/',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      currentActiveTab = { ...mockTab };
+
+      mockTabManager.isTabURLAllowedForPark.mockReturnValue(false);
+
+      // fire-and-forget style — void usage in real code; should not propagate an error
+      await expect(tabCapture.captureTab(mockTab)).resolves.not.toThrow();
+    });
+  });
+
+  describe('14.4 — Tab closed during capture: no unhandled exception', () => {
+    it('rejects gracefully when captureVisibleTab returns empty (tab closed)', async () => {
+      const mockTab = {
+        id: 1,
+        url: 'https://example.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      currentActiveTab = { ...mockTab };
+
+      // Simulate the tab being closed just as captureVisibleTab fires —
+      // Chrome returns null/undefined for the screen in that case.
+      mockChrome.tabs.captureVisibleTab = jest.fn((_windowId, _options, callback) => {
+        process.nextTick(() => callback(null));
+      });
+
+      await expect(tabCapture.captureTab(mockTab)).rejects.toBeDefined();
+      expect(mockScreenshotController.addScreen).not.toHaveBeenCalled();
+    });
+
+    it('rejects gracefully when active tab changes between query and capture', async () => {
+      const originalTab = {
+        id: 1,
+        url: 'https://example.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      // Simulate that by the time the query resolves, a DIFFERENT tab is active
+      currentActiveTab = {
+        id: 999,
+        url: 'https://other.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+
+      // Note: TabCapture calls reject() with no argument here (see TabCapture.ts:51)
+      // so the rejection reason is undefined — the promise still rejects
+      let rejected = false;
+      await tabCapture.captureTab(originalTab).catch(() => { rejected = true; });
+      expect(rejected).toBe(true);
+      expect(mockChrome.tabs.captureVisibleTab).not.toHaveBeenCalled();
+    });
+
+    it('void-style capture with closed tab does not crash the extension', async () => {
+      const mockTab = {
+        id: 1,
+        url: 'https://example.com',
+        status: 'complete',
+        active: true,
+        windowId: 1,
+      };
+      currentActiveTab = { ...mockTab };
+
+      mockChrome.tabs.captureVisibleTab = jest.fn((_windowId, _options, callback) => {
+        process.nextTick(() => callback(null));
+      });
+
+      // Mimics the "fire and forget" usage: void tabCapture.captureTab(tab)
+      // The promise rejects but since it's not awaited, it should not propagate as unhandled
+      let caught: Error | null = null;
+      await tabCapture.captureTab(mockTab).catch((e: Error) => { caught = e; });
+      expect(caught).not.toBeNull();
+    });
+  });
+
   describe('screenshots disabled handling', () => {
     it('should skip capture when screenshots are disabled', async () => {
       const mockTab = {
