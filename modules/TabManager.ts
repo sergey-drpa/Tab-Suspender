@@ -119,7 +119,14 @@ class TabManager {
 
 				for (const propertyName in loadedITabInfos) {
 					if (loadedITabInfos.hasOwnProperty(propertyName)) {
-						self.tabInfos[propertyName] = TabInfo.fromObject(loadedITabInfos[propertyName]);
+						const tabInfo = TabInfo.fromObject(loadedITabInfos[propertyName]);
+						// Reset inactivity timer on service-worker restart so tabs that were
+						// near the suspension threshold don't get suspended immediately after
+						// the browser is reopened (fixes "suspending after just a few minutes").
+						if (!tabInfo.parked) {
+							tabInfo.time = 0;
+						}
+						self.tabInfos[propertyName] = tabInfo;
 					}
 				}
 				console.log(`tabInfos loaded`);
@@ -573,20 +580,22 @@ class TabManager {
 		});
 	}
 
-	unsuspendTab(tab: chrome.tabs.Tab) {
+	async unsuspendTab(tab: chrome.tabs.Tab) {
 		if (tab.discarded == true) {
 			markForUnsuspend(tab);
 			chrome.tabs.reload(tab.id, ).catch(console.error)
 		} else {
 			if (tab.status == 'loading') {
-				settings.get('reloadTabOnRestore')
-					.then(reloadTabOnRestore => {
-						if (reloadTabOnRestore == true)
-							chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
-						else {
-							markForUnsuspend(tab);
-						}
-					}).catch(console.error);
+				// park.html is still loading — honour reloadTabOnRestore:
+				// true  → navigate directly to avoid a race with the not-yet-ready page script
+				// false → write the marker; park.ts reads it via parkData.isTabMarkedForUnsuspend
+				//         and calls historyFallback() (window.history.go(-1)), preserving bfcache
+				const reloadTabOnRestore = await settings.get('reloadTabOnRestore');
+				if (reloadTabOnRestore === true) {
+					chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
+				} else {
+					markForUnsuspend(tab);
+				}
 			} else {
 				// Get originRefId if tab was replaced (Chrome changes tab ID on discard/restore)
 				const tabInfo = this.getTabInfoById(tab.id);

@@ -462,5 +462,10 @@
   {
     "message": "Close",
     "description": "Close button"
+  },
+  "settingDescAutoCloseMax":
+  {
+    "message": "The max. amount of tabs that Tab Suspender will try to keep opened to reduce memory. (if opened tabs count exceeds the selected amount - Tab Suspender will start smoothly close most unused tabs, until the number of opened tabs decreases to the selected amount). If during selected period the tab was activated at least once (was clicked on the tab and it became visible), then the period for this tab starts calculating anew.",
+    "description": "Settings page: auto-close max tabs description"
   }
 }

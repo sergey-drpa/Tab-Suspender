@@ -31,6 +31,127 @@ const mockSettingsStore = {
   create: jest.fn()
 };
 
+// ══════════════════════════════════════════════════════════════════════════
+// 3.6 — Empty pattern is silently skipped without errors
+// ══════════════════════════════════════════════════════════════════════════
+describe('3.6 — Empty / wildcard-only patterns are skipped without errors', () => {
+  let WhiteList: any;
+  let whiteList: any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+    mockSettingsStore.get.mockImplementation((key) => {
+      if (key === 'exceptionPatternsV2') return Promise.resolve('');
+      return Promise.resolve(null);
+    });
+    const mod = require('../../modules/WhiteList');
+    WhiteList = mod.WhiteList;
+    (global as any).whiteList = null;
+  });
+
+  it('addPattern("") does not throw and does not add an entry', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    await expect(whiteList.addPattern('')).resolves.not.toThrow();
+    expect(whiteList.patternList.length).toBe(0);
+  });
+
+  it('addPattern("*") does not throw and does not add a wildcard-all entry', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    await expect(whiteList.addPattern('*')).resolves.not.toThrow();
+    expect(whiteList.patternList.length).toBe(0);
+  });
+
+  it('isURIException with an empty patternList returns false without throwing', () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    expect(() => whiteList.isURIException('https://example.com')).not.toThrow();
+    expect(whiteList.isURIException('https://example.com')).toBe(false);
+  });
+
+  it('constructor with comma/space-only pattern string produces empty patternList', async () => {
+    mockSettingsStore.get.mockImplementation((key) => {
+      if (key === 'exceptionPatternsV2') return Promise.resolve(',  , \n ,,');
+      return Promise.resolve(null);
+    });
+    whiteList = new WhiteList(mockSettingsStore);
+    await Promise.resolve(); // flush the constructor's settings.get().then()
+    expect(whiteList.patternList.length).toBe(0);
+  });
+
+  it('mixed empty and valid patterns: only valid patterns are loaded from settings', async () => {
+    mockSettingsStore.get.mockImplementation((key) => {
+      if (key === 'exceptionPatternsV2') return Promise.resolve(',example.com*,,google.com*,');
+      return Promise.resolve(null);
+    });
+    whiteList = new WhiteList(mockSettingsStore);
+    await Promise.resolve();
+    expect(whiteList.patternList.length).toBe(2);
+    expect(whiteList.isURIException('https://example.com/page')).toBe(true);
+    expect(whiteList.isURIException('https://google.com/search')).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// 3.7 — Invalid regex pattern is caught and extension does not crash
+// ══════════════════════════════════════════════════════════════════════════
+describe('3.7 — Invalid regex patterns are caught without crashing the extension', () => {
+  let WhiteList: any;
+  let whiteList: any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+    mockSettingsStore.get.mockImplementation((key) => {
+      if (key === 'exceptionPatternsV2') return Promise.resolve('');
+      return Promise.resolve(null);
+    });
+    const mod = require('../../modules/WhiteList');
+    WhiteList = mod.WhiteList;
+    (global as any).whiteList = null;
+  });
+
+  it('addPattern with unclosed group "(unclosed" does not throw', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    await expect(whiteList.addPattern('(unclosed')).resolves.not.toThrow();
+    expect(whiteList.patternList.length).toBe(0);
+  });
+
+  it('invalid regex pattern is silently dropped and patternList stays empty', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    // "(unclosed" → becomes "^(unclosed$" which is an invalid regex (unterminated group)
+    await whiteList.addPattern('(unclosed');
+    expect(whiteList.patternList.length).toBe(0);
+  });
+
+  it('isURIException does not throw after a rejected invalid pattern', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    await whiteList.addPattern('(unclosed');
+    expect(() => whiteList.isURIException('https://example.com')).not.toThrow();
+    expect(whiteList.isURIException('https://example.com')).toBe(false);
+  });
+
+  it('valid pattern still works correctly after an invalid pattern is rejected', async () => {
+    whiteList = new WhiteList(mockSettingsStore);
+    await whiteList.addPattern('(unclosed');     // dropped
+    await whiteList.addPattern('example.com*');  // valid
+    expect(whiteList.patternList.length).toBe(1);
+    expect(whiteList.isURIException('https://example.com/page')).toBe(true);
+    expect(whiteList.isURIException('https://other.com')).toBe(false);
+  });
+
+  it('constructor loading settings with an invalid regex pattern does not throw', async () => {
+    mockSettingsStore.get.mockImplementation((key) => {
+      if (key === 'exceptionPatternsV2') return Promise.resolve('(unclosed,example.com*');
+      return Promise.resolve(null);
+    });
+    expect(() => { whiteList = new WhiteList(mockSettingsStore); }).not.toThrow();
+    await Promise.resolve();
+    // Only the valid pattern survives
+    expect(whiteList.patternList.length).toBe(1);
+    expect(whiteList.patternList[0].pattern).toBe('example.com*');
+  });
+});
+
 describe('Issue #36: Whitelist patterns with https:// prefix do not work', () => {
   let WhiteList: any;
   let whiteList: any;

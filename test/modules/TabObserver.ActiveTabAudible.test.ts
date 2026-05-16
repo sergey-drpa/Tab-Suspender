@@ -783,3 +783,216 @@ describe('TabObserver - Active Tab with Audible Bug', () => {
     expect(tabInfo.time).toBe(0);
   });
 });
+
+// ─── Helpers (mirrors AutoSuspension.test.ts pattern) ────────────────────────
+
+function makeTab54(overrides: Partial<any> = {}): any {
+  return {
+    id: 10,
+    url: 'https://example.com',
+    title: 'Test Tab',
+    active: false,
+    audible: false,
+    status: 'complete',
+    windowId: 1,
+    index: 0,
+    pinned: false,
+    groupId: -1,
+    discarded: false,
+    favIconUrl: 'https://example.com/favicon.ico',
+    highlighted: false,
+    incognito: false,
+    selected: true,
+    autoDiscardable: true,
+    ...overrides,
+  };
+}
+
+/**
+ * 5.4 — Tab stopped playing audio: time counter resumes
+ *
+ * Key implementation in TabObserver.ts tick():
+ *   if (ignoreAudible && TabManager.isAudible(tab))  { tabInfo.time = 0; }
+ *   if (!tab.active && !(ignoreAudible && TabManager.isAudible(tab))) { tabInfo.time += tickSize; }
+ *
+ * While audible with ignoreAudible=true: time is reset to 0 each tick, never accumulates.
+ * Once tab.audible becomes false: time starts growing from 0 (the last reset value).
+ */
+describe('5.4 — Tab stopped playing audio: time counter resumes', () => {
+  let tabManager54: any;
+  let tabObserver54: any;
+  let TabObserverClass54: any;
+  let TabManagerClass54: any;
+
+  // Per-test settings overrides — tests write to this object
+  let settingsOverrides54: Record<string, any> = {};
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+
+    settingsOverrides54 = {};
+    mockIgnoreAudible = true; // default: protect audible tabs
+
+    (global as any).parkTab = jest.fn().mockResolvedValue(undefined);
+    (global as any).pauseTics = 0;
+    (global as any).pauseTicsStartedFrom = 0;
+    (global as any).getScreenCache = null;
+
+    ((global as any).Date.now as jest.Mock).mockReturnValue(1640995200000);
+
+    // Override settings.get to honour settingsOverrides54
+    (global as any).settings = {
+      get: jest.fn((key: string) => {
+        const defaults: Record<string, any> = {
+          active: true,
+          timeout: 30,            // 30 s → 3 ticks of 10 s each to reach threshold
+          pinned: false,
+          isCloseTabsOn: false,
+          ignoreAudible: mockIgnoreAudible,
+          animateTabIconSuspendTimeout: false,
+          autoSuspendOnlyOnBatteryOnly: false,
+          discardTabAfterSuspendWithTimeout: false,
+          discardTimeoutFactor: 0.05,
+          enableSuspendOnlyIfBattLvlLessValue: false,
+          battLvlLessValue: 50,
+          adaptiveSuspendTimeout: false,
+          ignoreCloseGroupedTabs: false,
+          ignoreSuspendGroupedTabs: false,
+          autoRestoreTab: true,
+        };
+        const value = key in settingsOverrides54 ? settingsOverrides54[key]
+                    : key in defaults             ? defaults[key]
+                    : false;
+        return Promise.resolve(value);
+      }),
+    };
+
+    const { TabInfo } = require('../../modules/model/TabInfo');
+    (global as any).TabInfo = TabInfo;
+
+    const { TabManager } = require('../../modules/TabManager');
+    (global as any).TabManager = TabManagerClass54 = TabManager;
+
+    require('../../modules/TabObserver');
+    TabObserverClass54 = (global as any).TabObserver;
+    tabManager54 = new TabManagerClass54();
+  });
+
+  /** Run n ticks, flushing the fire-and-forget callback chain each time */
+  async function runTicks54(n: number) {
+    for (let i = 0; i < n; i++) {
+      await tabObserver54.tick(false);
+      await Promise.resolve();
+      await Promise.resolve();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  it('time stays 0 while tab is audible with ignoreAudible=true', async () => {
+    // ignoreAudible=true (default) + tab.audible=true → each tick resets time to 0
+    // and the accumulation branch is skipped → time never grows
+    mockIgnoreAudible = true;
+    const tab = makeTab54({ audible: true, active: false });
+
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [tab] }])
+    );
+
+    tabObserver54 = new TabObserverClass54(tabManager54);
+    await runTicks54(5); // 5 × 10 s = 50 s — well beyond a 30 s timeout
+
+    const tabInfo = tabManager54.getTabInfoById(tab.id);
+    expect(tabInfo?.time).toBe(0);
+    expect((global as any).parkTab).not.toHaveBeenCalled();
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  it('time starts accumulating from 0 when tab stops being audible', async () => {
+    // Phase 1: 2 ticks while audible → time stays 0
+    // Phase 2: tab.audible = false → time accumulates from 0
+    mockIgnoreAudible = true;
+    let currentTab = makeTab54({ audible: true, active: false });
+
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [currentTab] }])
+    );
+
+    tabObserver54 = new TabObserverClass54(tabManager54);
+
+    // Run 2 ticks while audible — time must stay 0
+    await runTicks54(2);
+    const tabInfoDuringAudio = tabManager54.getTabInfoById(currentTab.id);
+    expect(tabInfoDuringAudio?.time).toBe(0);
+
+    // Tab stops playing audio
+    currentTab = { ...currentTab, audible: false };
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [currentTab] }])
+    );
+
+    // Run 3 more ticks → time = 3 × 10 s = 30 s
+    await runTicks54(3);
+    const tabInfoAfterAudio = tabManager54.getTabInfoById(currentTab.id);
+    expect(tabInfoAfterAudio?.time).toBe(30);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  it('tab reaches suspension threshold after becoming non-audible', async () => {
+    // timeout = 30 s (3 ticks).
+    // While audible: time stays 0, no suspension.
+    // After audible stops: time accumulates; on tick 4 (time = 40 ≥ 30) → parkTab called.
+    mockIgnoreAudible = true;
+    let currentTab = makeTab54({ audible: true, active: false });
+
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [currentTab] }])
+    );
+
+    tabObserver54 = new TabObserverClass54(tabManager54);
+
+    // 2 ticks while audible — no suspension, time = 0
+    await runTicks54(2);
+    expect((global as any).parkTab).not.toHaveBeenCalled();
+
+    // Tab stops playing audio
+    currentTab = { ...currentTab, audible: false };
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [currentTab] }])
+    );
+
+    // 4 more ticks: time goes 10 → 20 → 30 → 40; first suspension on tick where time ≥ 30
+    await runTicks54(4);
+
+    expect((global as any).parkTab).toHaveBeenCalledWith(
+      expect.objectContaining({ id: currentTab.id }),
+      currentTab.id,
+    );
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  it('with ignoreAudible=false, audible tab accumulates time normally', async () => {
+    // When ignoreAudible is disabled, audible status is irrelevant to time accumulation.
+    // An inactive tab accumulates time regardless of tab.audible.
+    mockIgnoreAudible = false;
+    const tab = makeTab54({ audible: true, active: false });
+
+    (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) =>
+      cb([{ id: 1, focused: true, tabs: [tab] }])
+    );
+
+    tabObserver54 = new TabObserverClass54(tabManager54);
+
+    // 2 ticks → time = 2 × 10 s = 20 s (below 30 s threshold, no suspension yet)
+    await runTicks54(2);
+    const tabInfo = tabManager54.getTabInfoById(tab.id);
+    expect(tabInfo?.time).toBeGreaterThan(0);
+
+    // 2 more ticks → time = 40 s ≥ 30 s → suspended despite tab.audible=true
+    await runTicks54(2);
+    expect((global as any).parkTab).toHaveBeenCalledWith(
+      expect.objectContaining({ id: tab.id }),
+      tab.id,
+    );
+  });
+});

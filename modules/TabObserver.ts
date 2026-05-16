@@ -49,6 +49,10 @@ class TabObserver {
 		});*/
 
 		if (!stateOnly) {
+			// Guard: never suspend when auto-suspension is disabled, even if ticker is running
+			if (!await settings.get('active'))
+				return;
+
 			this.tickCount += TabObserver.tickSize;
 
 			if (pauseTics > 0) {
@@ -231,7 +235,11 @@ class TabObserver {
 												if (!autoSuspendOnlyOnBatteryOnly || autoSuspendOnlyOnBatteryOnly && !isCharging) {
 													if (enableSuspendOnlyIfBattLvlLessValue == false || enableSuspendOnlyIfBattLvlLessValue == true && batteryLevel < battLvlLessValue / 100 && !isCharging) {
 														if (!stateOnly) {
-															await parkTab(tab, tabId);
+															try {
+																await parkTab(tab, tabId);
+															} catch (e) {
+																console.error("[TabObserver] parkTab failed (tab may have been closed):", tabId, e);
+															}
 															tabInfo.parkTrys++;
 														}
 														oneTabParked = true;

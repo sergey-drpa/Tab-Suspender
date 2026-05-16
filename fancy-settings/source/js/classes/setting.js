@@ -7,6 +7,14 @@
     var settings,
         Bundle;
 
+    // Resolves __MSG_key__ placeholders using chrome.i18n (same mechanism as manifest.json)
+    function resolveText(text) {
+        if (typeof text !== 'string') return text;
+        return text.replace(/__MSG_(\w+)__/g, function (match, key) {
+            return chrome.i18n.getMessage(key) || match;
+        });
+    }
+
     let DOMContentLoaded;
     document.addEventListener('DOMContentLoaded', function() {
         if (DOMContentLoaded) return;
@@ -107,7 +115,7 @@
 
         "setupDOM": function () {
             if (this.params.text !== undefined) {
-                this.element.set("html", this.params.text);
+                this.element.set("html", resolveText(this.params.text));
             }
 
             this.element.inject(this.container);
@@ -160,7 +168,7 @@
             }
 
             if (this.params.text !== undefined) {
-                this.element.set("value", this.params.text);
+                this.element.set("value", resolveText(this.params.text));
                 this.params.searchString += this.params.text + "•";
             }
 
@@ -228,7 +236,7 @@
             }
 
             if (this.params.text !== undefined) {
-                this.element.set("placeholder", this.params.text);
+                this.element.set("placeholder", resolveText(this.params.text));
                 this.params.searchString += this.params.text + "•";
             }
 
@@ -351,7 +359,7 @@
             }
 
             if (this.params.text !== undefined) {
-                this.element.set("placeholder", this.params.text);
+                this.element.set("placeholder", resolveText(this.params.text));
                 this.params.searchString += this.params.text + "•";
             }
 
@@ -455,7 +463,7 @@
             }
 
             if (this.params.text !== undefined) {
-                this.element.set("placeholder", this.params.text);
+                this.element.set("placeholder", resolveText(this.params.text));
                 this.params.searchString += this.params.text + "•";
             }
 

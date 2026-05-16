@@ -5,6 +5,10 @@ module.exports = {
 	"roots": [
 		"<rootDir>/test"
 	],
+	testPathIgnorePatterns: [
+		"/node_modules/",
+		"<rootDir>/test/puppeteer/",
+	],
 	setupFilesAfterEnv: [
 		// External Libraries
 		"<rootDir>/test/lib/Chrome.ts",

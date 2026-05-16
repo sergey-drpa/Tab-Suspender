@@ -1,0 +1,17 @@
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
+
+# Node
+node_modules/
+
+# Build output
+build_dir/
+
+# IDE
+.idea/
+
+# Puppeteer stress test artifacts
+test/puppeteer/.test-session*
+test/puppeteer/.test-state.json
+/test/puppeteer/test-session/

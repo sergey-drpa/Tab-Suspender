@@ -279,7 +279,7 @@ this.manifest = {
 			'group': 'Close tabs automatically',
 			'name': 'timeout-description',
 			'type': 'description',
-			'text': 'The max. amount of tabs that Tab Suspender will try to keep opened to reduce memory. (if opened tabs count exceeds the selected amount - Tab Suspender will start smoothly close most unused tabs, until the number of opened tabs decreases to the selected amount)'
+			'text': '__MSG_settingDescAutoCloseMax__'
 		},
 		{
 			'tab': 'Auto-close Tabs',
