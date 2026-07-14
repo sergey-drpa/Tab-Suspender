@@ -176,6 +176,7 @@ class TabObserver {
 							const tab = windows[i].tabs[j];
 							const tabId = tab.id;
 							const tabInfo: TabInfo = self.tabManager.getTabInfoOrCreate(tab);
+							const isTabCurrentlyViewed = tab.active && windows[i].focused !== false;
 
 							try {
 								if (debugTabsInfo)
@@ -205,7 +206,7 @@ class TabObserver {
 									// Only accumulate suspension time for INACTIVE tabs
 									// Active tabs should not accumulate time (handled by line 350 reset)
 									// Audible tabs should not accumulate time even if inactive
-									if (!tab.active && !(ignoreAudible && TabManager.isAudible(tab))) {
+									if (!isTabCurrentlyViewed && !(ignoreAudible && TabManager.isAudible(tab))) {
 										tabInfo.time += TabObserver.tickSize;
 									}
 
@@ -227,7 +228,7 @@ class TabObserver {
 
 									if (!adaptiveSuspendTimeout && tabInfo.time >= timeoutSettings
 										|| adaptiveSuspendTimeout && tabInfo.time >= calculatedTabTimeFrame) {
-										if (!tab.active &&
+										if (!isTabCurrentlyViewed &&
 											tab.status === 'complete' &&
 											TabManager.isTabURLAllowedForPark(tab) &&
 											tabInfo.parkTrys <= 2) {
@@ -253,7 +254,7 @@ class TabObserver {
 									} else {
 										if (!stateOnly)
 											if (animateTabIconSuspendTimeout &&
-												!tab.active &&
+												!isTabCurrentlyViewed &&
 												tabInfo.time > 0 &&
 												!await self.tabManager.isExceptionTab(tab) &&
 												TabManager.isTabURLAllowedForPark(tab) &&
@@ -294,7 +295,7 @@ class TabObserver {
 									}
 
 									if (!tabInfo.discarded && discardTabAfterSuspendWithTimeout)
-										if (!tab.active) {
+										if (!isTabCurrentlyViewed) {
 											if (tabInfo.suspended_time >= timeoutSettings * discardTimeoutFactor) {
 												// eslint-disable-next-line no-undef
 												if (!isTabMarkedForUnsuspend(parseUrlParam(tab.url, 'tabId'), parseUrlParam(tab.url, 'sessionId'))) {
@@ -352,7 +353,7 @@ class TabObserver {
 								/*																			*/
 								/* !!!!!!! LOOKS LIKE DEAD CODE !!!!!!! */
 								/*																			*/
-								if (tab.active) {
+								if (isTabCurrentlyViewed) {
 									if (tabInfo != null) {
 										tabInfo.time = 0;
 										tabInfo.active_time += TabObserver.tickSize * (TabManager.isAudible(tab) ? 1.5 : 1);

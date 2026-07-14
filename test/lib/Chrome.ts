@@ -66,7 +66,10 @@ const mockWindows = {
       tabs: [mockTab]
     };
     callback([mockWindow]);
-  })
+  }),
+  onFocusChanged: {
+    addListener: jest.fn()
+  }
 };
 
 const mockRuntime = {
