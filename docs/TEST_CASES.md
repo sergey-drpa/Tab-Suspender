@@ -87,6 +87,10 @@
 | 5.7 | Restore tab group with 1 s delay between tabs | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
 | 5.8 | Restore only the current tab in a group (not the whole group) | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
 | 5.9 | Tab group fix on browser session restore | P2 | Unit | ✅ | `GroupRestoreFix.test.ts` |
+| 5.10 | Collapsed grouped tabs stay parked after browser restart | P2 | E2E | ✅ | `tab-group-session-restore.test.ts` + collapsed, autoRestore, race variants; fixed `TabManager.loadTabInfos()` to preserve live reconstructed `parked`/`parkedUrl` against stale persisted snapshot |
+| 5.11 | Grouped parked tab with `TabInfo.parkedUrl=null` after double ID replacement — restore does not navigate to blank/new-tab | P0 | E2E | ✅ | `tab-group-blank-endstate-regression.test.ts`; Issue #4 fix: `BGMessageListener.buildParkPageData` recovers `parkedUrl` from the live `park.html?url=` query when the persisted `TabInfo.parkedUrl` is null/blank; `TabManager.onTabReplaceDetected` preserves `TabInfo` class instance (replaces `structuredClone` with `TabInfo.fromObject`), repairs stale `parkedUrl` from the live park.html URL, and `unsuspendTab`/`park.ts goBack()` validate restore URL via `isInvalidRestoreUrl` with fallbacks |
+| 5.12 | After session restore, clicking/hovering restore on a grouped parked tab with broken `TabInfo.parkedUrl=null` navigates to the ORIGINAL url — not back to `park.html`, not to `about:blank` | P0 | E2E | ✅ | `tab-group-blank-url-revert.test.ts`; Issue #4 fix: `park.ts goBack()` only uses `historyFallback` (`history.go(-1)`) when `restoredFromStorage === false` — post-restart bfcache is gone so `history.go(-1)` lands on `about:blank`; the `restoredFromStorage` flag on `TabInfo` (set in `loadTabInfos`) signals this. `BGMessageListener.buildParkPageData` forwards `restoredFromStorage` and recovers `parkedUrl` from the live `park.html?url=` query when persisted `TabInfo.parkedUrl` is null. |
+| 5.13 | After browser restart, grouped parked tabs whose URL was replaced with `about:blank` by Chrome session restore (BEFORE the service worker started) are recovered to `park.html?url=ORIGINAL_URL` | P0 | E2E | ✅ | `tab-group-restart-blank-recovery.test.ts`; Issue #4 fix: `TabManager.recoverBlankParkedTabsOnStartup()` runs after `loadTabInfos()` — scans all live tabs, walks the `newRefId` chain from each persisted `parked=true` TabInfo to find the live tab, and reverts any blank grouped parked tab back to `park.html?tabId=...&url=ORIGINAL_URL`. This catches the URL replacement that the `tabs.onUpdated` listener missed (because it happened before the SW started). The test does a REAL browser restart with `--restore-last-session`, then simulates the Chrome URL replacement and verifies the recovery function reverts it. |
 
 ---
 
@@ -234,9 +238,9 @@
 |----------|-------|-----------|-----------|---------------|
 | P0 (critical) | 13 | 13 | 0 | 0 |
 | P1 (high) | 47 | 46 | 0 | 1 |
-| P2 (medium) | 40 | 37 | 1 | 2 |
+| P2 (medium) | 41 | 38 | 1 | 2 |
 | P3 (low) | 3 | 3 | 0 | 0 |
-| **Total** | **103** | **99 (96%)** | **1 (1%)** | **3 (3%)** |
+| **Total** | **104** | **100 (96%)** | **1 (1%)** | **3 (3%)** |
 
 Remaining ❌ cases cannot be covered for the following reasons:
 - **11.5, 15.3** — logic lives inside `background.ts` which cannot be safely `require()`d in unit tests due to immediate side effects at load time (`chrome.runtime.getURL`, `new OffscreenDocumentProvider()`, etc.)
@@ -269,6 +273,10 @@ Remaining ❌ cases cannot be covered for the following reasons:
 | `url-param-preserve.test.ts` | 2.9 | ✅ |
 | `service-worker-alive.test.ts` | 16.2 | ✅ |
 | `extension-icon.test.ts` | 17.5 | ✅ |
+| `tab-group-session-restore.test.ts` | 5.10 | ✅ |
+| `tab-group-session-restore-collapsed.test.ts` | 5.10 (collapsed groups variant) | ✅ |
+| `tab-group-session-restore-autorestore.test.ts` | 5.10 (autoRestoreTab/reloadTabOnRestore variant) | ✅ |
+| `tab-group-session-restore-race.test.ts` | 5.10 (activation race probe) | ✅ |
 
 ## Jest unit tests (files)
 

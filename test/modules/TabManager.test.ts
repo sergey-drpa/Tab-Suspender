@@ -1049,4 +1049,595 @@ describe('TabManager', () => {
       (global as any).settings.get.mockResolvedValue(true);
     });
   });
+
+  // ─── Issue #4 — parkedUrl fallback and TabInfo preservation ──────────────
+  describe('Issue #4 — parkedUrl fallback and TabInfo preservation', () => {
+    describe('TabManager.isInvalidRestoreUrl', () => {
+      it('treats null/undefined/empty as invalid', () => {
+        expect(TabManager.isInvalidRestoreUrl(null)).toBe(true);
+        expect(TabManager.isInvalidRestoreUrl(undefined)).toBe(true);
+        expect(TabManager.isInvalidRestoreUrl('')).toBe(true);
+      });
+
+      it('treats about:blank / about:newtab / chrome://newtab/ as invalid', () => {
+        expect(TabManager.isInvalidRestoreUrl('about:blank')).toBe(true);
+        expect(TabManager.isInvalidRestoreUrl('about:newtab')).toBe(true);
+        expect(TabManager.isInvalidRestoreUrl('chrome://newtab/')).toBe(true);
+      });
+
+      it('treats real URLs as valid', () => {
+        expect(TabManager.isInvalidRestoreUrl('https://example.com')).toBe(false);
+        expect(TabManager.isInvalidRestoreUrl('http://example.com/page?id=1')).toBe(false);
+        expect(TabManager.isInvalidRestoreUrl('https://example.com/?group=1&tab=1')).toBe(false);
+      });
+    });
+
+    describe('onTabReplaceDetected — preserves TabInfo class on intermediate entry', () => {
+      it('keeps toObject() on the closed intermediate entry (regression: structuredClone stripped it)', () => {
+        const originTab: chrome.tabs.Tab = {
+          id: 1, windowId: 1, index: 0, url: 'https://example.com',
+          title: 'Example', favIconUrl: 'https://example.com/favicon.ico',
+          active: true, pinned: false, discarded: false, autoDiscardable: true,
+          audible: false, groupId: -1, status: 'complete',
+          highlighted: false, incognito: false, selected: true
+        };
+        tabManager.createNewTabInfo(originTab);
+
+        // Park.html URL whose tabId param differs from removedTabId -> intermediate branch.
+        const parkTabUrl = `${(global as any).parkUrl}?tabId=999&url=${encodeURIComponent('https://example.com')}`;
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...originTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+
+        const replaced = tabManager.onTabReplaceDetected(2, 1);
+
+        expect(replaced).toBeDefined();
+        expect(replaced.id).toBe(2);
+
+        // The intermediate entry under removedTabId=1 must still be a TabInfo
+        // class instance with a working toObject() method. structuredClone used
+        // to turn it into a plain object and strip toObject(), which caused
+        // BGMessageListener to throw.
+        const intermediate = tabManager.getTabInfoById(1);
+        expect(intermediate).toBeDefined();
+        expect(typeof intermediate.toObject).toBe('function');
+        expect(intermediate.toObject()).toBeInstanceOf(Object);
+        expect(intermediate.oldRefId).toBe(999);
+      });
+    });
+
+    describe('onTabReplaceDetected — repairs stale parkedUrl from park.html URL', () => {
+      it('overwrites null parkedUrl with the url= param from the live park.html URL', () => {
+        const originalTab: chrome.tabs.Tab = {
+          id: 1, windowId: 1, index: 0, url: 'https://example.com',
+          title: 'Example', active: true, pinned: false, discarded: false,
+          autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+          highlighted: false, incognito: false, selected: true
+        };
+        const tabInfo = tabManager.createNewTabInfo(originalTab);
+        // Simulate the broken post-restore state: parkedUrl lost.
+        tabInfo.parkedUrl = null;
+
+        // Origin tabId param matches removedTabId -> origin branch (not intermediate).
+        const parkTabUrl = `${(global as any).parkUrl}?tabId=1&url=${encodeURIComponent('https://example.com/page?x=1')}`;
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...originalTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+
+        const replaced = tabManager.onTabReplaceDetected(2, 1);
+
+        expect(replaced.parkedUrl).toBe('https://example.com/page?x=1');
+      });
+
+      it('does not overwrite a valid parkedUrl', () => {
+        const originalTab: chrome.tabs.Tab = {
+          id: 1, windowId: 1, index: 0, url: 'https://example.com/real',
+          title: 'Example', active: true, pinned: false, discarded: false,
+          autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+          highlighted: false, incognito: false, selected: true
+        };
+        const tabInfo = tabManager.createNewTabInfo(originalTab);
+        tabInfo.parkedUrl = 'https://example.com/real';
+
+        const parkTabUrl = `${(global as any).parkUrl}?tabId=1&url=${encodeURIComponent('https://example.com/different')}`;
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...originalTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+
+        const replaced = tabManager.onTabReplaceDetected(2, 1);
+
+        expect(replaced.parkedUrl).toBe('https://example.com/real');
+      });
+    });
+
+    describe('getTabInfoOrCreate — repairs stale parkedUrl before replace chain', () => {
+      it('repairs null parkedUrl on the existing old-id entry from the live park.html url= param', () => {
+        const oldTabId = 1;
+        const originalUrl = 'https://example.com/page?keep=1';
+        const parkTabUrl = `${(global as any).parkUrl}?tabId=${oldTabId}&url=${encodeURIComponent(originalUrl)}`;
+
+        // Pre-populate tabInfos[oldTabId] with null parkedUrl (broken state).
+        const staleInfo = new TabInfo({ id: oldTabId, url: originalUrl } as chrome.tabs.Tab);
+        staleInfo.parkedUrl = null;
+        tabManager.tabInfos[oldTabId] = staleInfo;
+
+        // Live tab has a new id but the park.html URL still references oldTabId.
+        const liveTab: chrome.tabs.Tab = {
+          id: 2, windowId: 1, index: 0, url: parkTabUrl,
+          title: 'Example', active: true, pinned: false, discarded: false,
+          autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+          highlighted: false, incognito: false, selected: true
+        };
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...liveTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+
+        const result = tabManager.getTabInfoOrCreate(liveTab);
+
+        // The old-id entry should have its parkedUrl repaired from the park.html URL.
+        const repaired = tabManager.getTabInfoById(oldTabId);
+        expect(repaired.parkedUrl).toBe(originalUrl);
+        expect(result.id).toBe(2);
+      });
+    });
+
+    describe('unsuspendTab — validates restore URL via resolveValidRestoreUrl fallbacks', () => {
+      const makeParkTab = (url: string, tabId = 1): chrome.tabs.Tab => ({
+        id: tabId, windowId: 1, index: 0,
+        url: `${(global as any).parkUrl}?tabId=${tabId}&url=${encodeURIComponent(url)}`,
+        title: 'Parked', active: true, pinned: false, discarded: false,
+        autoDiscardable: true, audible: false, groupId: -1, status: 'loading',
+        highlighted: false, incognito: false, selected: true
+      });
+
+      beforeEach(() => {
+        // reloadTabOnRestore=true forces the resolveValidRestoreUrl path.
+        (global as any).settings.get.mockImplementation((key: string) => {
+          if (key === 'reloadTabOnRestore') return Promise.resolve(true);
+          return Promise.resolve(false);
+        });
+      });
+
+      afterEach(() => {
+        (global as any).settings.get.mockResolvedValue(false);
+      });
+
+      it('uses the url= query param when valid', async () => {
+        const tab = makeParkTab('https://example.com/page');
+        tabManager.createNewTabInfo(tab);
+
+        await tabManager.unsuspendTab(tab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/page' });
+      });
+
+      it('falls back to tabInfo.parkedUrl when url= is blank', async () => {
+        const tab = makeParkTab('about:blank');
+        const info = tabManager.createNewTabInfo(tab);
+        info.parkedUrl = 'https://example.com/parked-fallback';
+
+        await tabManager.unsuspendTab(tab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/parked-fallback' });
+      });
+
+      it('falls back to tabInfo.lstCapUrl when url= and parkedUrl are both invalid', async () => {
+        const tab = makeParkTab('about:blank');
+        const info = tabManager.createNewTabInfo(tab);
+        info.parkedUrl = null;
+        info.lstCapUrl = 'https://example.com/lstCap-fallback';
+
+        await tabManager.unsuspendTab(tab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/lstCap-fallback' });
+      });
+
+      it('aborts navigation (no chrome.tabs.update) when no valid URL is available', async () => {
+        const tab = makeParkTab('about:blank');
+        const info = tabManager.createNewTabInfo(tab);
+        info.parkedUrl = null;
+        info.lstCapUrl = '';
+
+        (chrome.tabs.update as jest.Mock).mockClear();
+
+        await tabManager.unsuspendTab(tab);
+
+        expect(chrome.tabs.update).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('onUpdated — reverts parked tab when Chrome replaces URL with about:blank', () => {
+      const onUpdatedListener = () => (chrome.tabs.onUpdated.addListener as jest.Mock).mock.calls[0][0];
+
+      const makeParkedTabInfo = (tabId: number, parkedUrl: string): any => {
+        const info = new TabInfo({ id: tabId, url: parkedUrl } as chrome.tabs.Tab);
+        info.parked = true;
+        info.parkedUrl = parkedUrl;
+        tabManager.tabInfos[tabId] = info;
+        return info;
+      };
+
+      afterEach(() => {
+        (chrome.tabs.update as jest.Mock).mockClear();
+      });
+
+      it('reverts to park.html with original URL when changeInfo.url is about:blank', () => {
+        const tabId = 42;
+        const originalUrl = 'https://example.com/original?page=1';
+        makeParkedTabInfo(tabId, originalUrl);
+
+        const blankTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'about:blank',
+          title: 'Example', active: false, pinned: false, discarded: true,
+          autoDiscardable: true, audible: false, groupId: 1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'about:blank' }, blankTab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledTimes(1);
+        const [calledTabId, updateObj] = (chrome.tabs.update as jest.Mock).mock.calls[0];
+        expect(calledTabId).toBe(tabId);
+        expect(updateObj.url.startsWith((global as any).parkUrl)).toBe(true);
+        expect(updateObj.url).toContain(`tabId=${tabId}`);
+        expect(updateObj.url).toContain(`url=${encodeURIComponent(originalUrl)}`);
+      });
+
+      it('reverts when changeInfo.url is chrome://newtab/', () => {
+        const tabId = 43;
+        makeParkedTabInfo(tabId, 'https://example.com/page');
+
+        const newtabTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'chrome://newtab/',
+          title: 'New Tab', active: false, pinned: false, discarded: true,
+          autoDiscardable: true, audible: false, groupId: 1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'chrome://newtab/' }, newtabTab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledTimes(1);
+        const [, updateObj] = (chrome.tabs.update as jest.Mock).mock.calls[0];
+        expect(updateObj.url).toContain(`url=${encodeURIComponent('https://example.com/page')}`);
+      });
+
+      it('falls back to lstCapUrl when parkedUrl is null', () => {
+        const tabId = 44;
+        const info = makeParkedTabInfo(tabId, 'https://example.com/initial');
+        info.parkedUrl = null;
+        info.lstCapUrl = 'https://example.com/lstCap';
+
+        const blankTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'about:blank',
+          title: '', active: false, pinned: false, discarded: true,
+          autoDiscardable: true, audible: false, groupId: 1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'about:blank' }, blankTab);
+
+        expect(chrome.tabs.update).toHaveBeenCalledTimes(1);
+        const [, updateObj] = (chrome.tabs.update as jest.Mock).mock.calls[0];
+        expect(updateObj.url).toContain(`url=${encodeURIComponent('https://example.com/lstCap')}`);
+      });
+
+      it('does NOT revert when tab is not parked', () => {
+        const tabId = 45;
+        // Create a non-parked tabInfo (parked=false)
+        const info = new TabInfo({ id: tabId, url: 'https://example.com' } as chrome.tabs.Tab);
+        tabManager.tabInfos[tabId] = info;
+
+        const blankTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'about:blank',
+          title: '', active: false, pinned: false, discarded: true,
+          autoDiscardable: true, audible: false, groupId: -1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'about:blank' }, blankTab);
+
+        expect(chrome.tabs.update).not.toHaveBeenCalled();
+      });
+
+      it('does NOT revert when no valid URL is recoverable', () => {
+        const tabId = 46;
+        const info = makeParkedTabInfo(tabId, 'https://example.com/initial');
+        info.parkedUrl = null;
+        info.lstCapUrl = '';
+
+        const blankTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'about:blank',
+          title: '', active: false, pinned: false, discarded: true,
+          autoDiscardable: true, audible: false, groupId: 1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'about:blank' }, blankTab);
+
+        expect(chrome.tabs.update).not.toHaveBeenCalled();
+      });
+
+      it('DOES revert when tab is not discarded (Issue #4 — blank grouped parked tab activated by user)', () => {
+        const tabId = 48;
+        makeParkedTabInfo(tabId, 'https://example.com/parked');
+
+        // After Chrome session restore, a grouped parked tab's URL is replaced
+        // with about:blank BEFORE the service worker starts. When the user
+        // later activates that blank tab, Chrome fires onUpdated WITHOUT a
+        // changeInfo.url entry (the URL did not change — it was already blank)
+        // and tab.discarded=false. The revert MUST fire via the tab.url check
+        // so the user sees park.html instead of a blank tab. goBack() then uses
+        // window.location.replace(originalUrl) (restoredFromStorage path) so we
+        // do NOT loop back to about:blank.
+        const blankTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'about:blank',
+          title: '', active: true, pinned: false, discarded: false,
+          autoDiscardable: true, audible: false, groupId: 1, status: 'loading',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { status: 'loading' }, blankTab);
+
+        const calls = (chrome.tabs.update as jest.Mock).mock.calls;
+        const parkUrlCall = calls.find(([id, obj]: [number, { url?: string }]) =>
+          obj?.url?.startsWith((global as any).parkUrl));
+        expect(parkUrlCall).toBeDefined();
+        expect(parkUrlCall?.[1]?.url).toContain('url=' + encodeURIComponent('https://example.com/parked'));
+      });
+
+      it('does NOT revert when changeInfo.url is a normal URL (no false positive)', () => {
+        const tabId = 47;
+        makeParkedTabInfo(tabId, 'https://example.com/parked');
+
+        const newUrlTab: chrome.tabs.Tab = {
+          id: tabId, windowId: 1, index: 0, url: 'https://other.com',
+          title: 'Other', active: true, pinned: false, discarded: false,
+          autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+          highlighted: false, incognito: false, selected: true
+        };
+
+        onUpdatedListener()(tabId, { url: 'https://other.com' }, newUrlTab);
+
+        // chrome.tabs.update may be called by other code paths (e.g. captureTab),
+        // but never with a park.html URL for this case.
+        const calls = (chrome.tabs.update as jest.Mock).mock.calls;
+        const parkUrlCall = calls.find(([id, obj]: [number, { url?: string }]) =>
+          obj?.url?.startsWith((global as any).parkUrl));
+        expect(parkUrlCall).toBeUndefined();
+      });
+    });
+
+    describe('onUpdated — deliberate user navigation is not hijacked (code review fix #3/#4)', () => {
+      const onUpdatedListener = () => (chrome.tabs.onUpdated.addListener as jest.Mock).mock.calls[0][0];
+
+      const makeParkedTabInfo = (tabId: number, parkedUrl: string): any => {
+        const info = new TabInfo({ id: tabId, url: parkedUrl } as chrome.tabs.Tab);
+        info.parked = true;
+        info.parkedUrl = parkedUrl;
+        tabManager.tabInfos[tabId] = info;
+        return info;
+      };
+
+      const makeTab = (tabId: number, overrides: Partial<chrome.tabs.Tab> = {}): chrome.tabs.Tab => ({
+        id: tabId, windowId: 1, index: 0, url: 'about:blank', title: '',
+        active: false, pinned: false, discarded: false, autoDiscardable: true,
+        audible: false, groupId: 1, status: 'loading', highlighted: false,
+        incognito: false, selected: true, ...overrides,
+      } as chrome.tabs.Tab);
+
+      afterEach(() => {
+        (chrome.tabs.update as jest.Mock).mockClear();
+      });
+
+      it('does NOT revert when the user navigates a non-discarded parked tab to about:blank — parked state is cleared instead', () => {
+        const tabId = 51;
+        const info = makeParkedTabInfo(tabId, 'https://example.com/parked');
+
+        // changeInfo.url IS set → this is a live URL transition (user typed
+        // about:blank or a redirect), not Chrome's pre-SW-start replacement.
+        onUpdatedListener()(tabId, { url: 'about:blank' }, makeTab(tabId, { discarded: false }));
+
+        const calls = (chrome.tabs.update as jest.Mock).mock.calls;
+        const parkUrlCall = calls.find(([, obj]: [number, { url?: string }]) =>
+          obj?.url?.startsWith((global as any).parkUrl));
+        expect(parkUrlCall).toBeUndefined();
+        // The normal clearing logic owns the state transition from here.
+        expect(info.parked).toBe(false);
+        expect(info.parkedUrl).toBe(null);
+      });
+
+      it('does NOT revert when the user navigates a non-discarded parked tab to chrome://newtab/', () => {
+        const tabId = 54;
+        makeParkedTabInfo(tabId, 'https://example.com/parked');
+
+        onUpdatedListener()(tabId, { url: 'chrome://newtab/' },
+          makeTab(tabId, { url: 'chrome://newtab/', discarded: false }));
+
+        const calls = (chrome.tabs.update as jest.Mock).mock.calls;
+        const parkUrlCall = calls.find(([, obj]: [number, { url?: string }]) =>
+          obj?.url?.startsWith((global as any).parkUrl));
+        expect(parkUrlCall).toBeUndefined();
+      });
+
+      it('does not throw when tab.url is null/undefined (grouped parked tab, no URL-change event)', () => {
+        const tabId = 53;
+        makeParkedTabInfo(tabId, 'https://example.com/parked');
+
+        // Tab.url is optional in the chrome API; the listener must survive it.
+        expect(() =>
+          onUpdatedListener()(tabId, { status: 'loading' }, makeTab(tabId, { url: undefined }))
+        ).not.toThrow();
+
+        const calls = (chrome.tabs.update as jest.Mock).mock.calls;
+        const parkUrlCall = calls.find(([, obj]: [number, { url?: string }]) =>
+          obj?.url?.startsWith((global as any).parkUrl));
+        expect(parkUrlCall).toBeUndefined();
+      });
+    });
+
+    describe('recoverBlankParkedTabsOnStartup — live tab matching (code review fixes #1/#2)', () => {
+      const runRecovery = () => (tabManager as any).recoverBlankParkedTabsOnStartup();
+
+      /** Seed persisted tabInfos for one window: `winId` with `tabCount` entries (index 0..tabCount-1). */
+      const seedWindow = (winId: number, tabCount: number,
+                          parked: Array<{ idx: number; url: string; closed?: boolean }>) => {
+        for (let i = 0; i < tabCount; i++) {
+          const id = winId * 1000 + i;
+          const info = new TabInfo({
+            id, windowId: winId, index: i, url: `https://site.com/${i}`,
+          } as unknown as chrome.tabs.Tab);
+          tabManager.tabInfos[id] = info;
+        }
+        for (const p of parked) {
+          const info = tabManager.tabInfos[winId * 1000 + p.idx];
+          info.parked = true;
+          info.parkedUrl = p.url;
+          if (p.closed) info.closed = { at: 1, tsSessionId: 1 };
+        }
+      };
+
+      /** Build live tabs for one window: `windowId` with `count` tabs (index 0..count-1). */
+      const liveWindowTabs = (windowId: number, count: number,
+                              overrides: { [index: number]: Partial<chrome.tabs.Tab> } = {}): chrome.tabs.Tab[] => {
+        const tabs: chrome.tabs.Tab[] = [];
+        for (let i = 0; i < count; i++) {
+          tabs.push({
+            id: windowId * 10000 + i, windowId, index: i, url: `https://live.com/${i}`,
+            title: 'Live', active: i === 0, pinned: false, discarded: false,
+            autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+            highlighted: false, incognito: false, selected: false,
+            ...overrides[i],
+          } as chrome.tabs.Tab);
+        }
+        return tabs;
+      };
+
+      const parkUrlCalls = () =>
+        (chrome.tabs.update as jest.Mock).mock.calls
+          .filter(([, obj]: [number, { url?: string }]) => obj?.url?.startsWith((global as any).parkUrl));
+
+      afterEach(() => {
+        (chrome.tabs.update as jest.Mock).mockClear();
+        (chrome.tabs.query as jest.Mock).mockClear();
+      });
+
+      it('matches in-session by exact windowId + index (same browser session, SW cold start)', async () => {
+        seedWindow(50, 3, [{ idx: 1, url: 'https://example.com/target' }]);
+        (chrome.tabs.query as jest.Mock).mockResolvedValue(
+          liveWindowTabs(50, 3, { 1: { url: 'about:blank', groupId: 5 } }));
+
+        await runRecovery();
+
+        const calls = parkUrlCalls();
+        expect(calls).toHaveLength(1);
+        const [calledTabId, updateObj] = calls[0];
+        expect(calledTabId).toBe(50 * 10000 + 1);
+        expect(updateObj.url).toContain(`url=${encodeURIComponent('https://example.com/target')}`);
+      });
+
+      it('matches across a browser restart: windowId/tabId changed, but tab-count fingerprint + index identify the window', async () => {
+        // Persisted state from the PREVIOUS session: window 50, 6 tabs, tab at
+        // index 3 parked. Its newRefId chain points at previous-session IDs.
+        seedWindow(50, 6, [{ idx: 3, url: 'https://example.com/target' }]);
+
+        // Live state after restart: NEW window 77 with the same 6 tabs; the
+        // parked tab at index 3 is now a blank grouped tab with a NEW id.
+        (chrome.tabs.query as jest.Mock).mockResolvedValue(
+          liveWindowTabs(77, 6, { 3: { url: 'about:blank', groupId: 5 } }));
+
+        await runRecovery();
+
+        const calls = parkUrlCalls();
+        expect(calls).toHaveLength(1);
+        const [calledTabId, updateObj] = calls[0];
+        expect(calledTabId).toBe(77 * 10000 + 3);
+        expect(updateObj.url).toContain(`tabId=${77 * 10000 + 3}`);
+        expect(updateObj.url).toContain(`url=${encodeURIComponent('https://example.com/target')}`);
+      });
+
+      it('skips closed parked entries even when the position matches (no hijacking of unrelated tabs)', async () => {
+        seedWindow(50, 3, [{ idx: 1, url: 'https://example.com/dead', closed: true }]);
+        (chrome.tabs.query as jest.Mock).mockResolvedValue(
+          liveWindowTabs(50, 3, { 1: { url: 'about:blank', groupId: 5 } }));
+
+        await runRecovery();
+
+        expect(parkUrlCalls()).toHaveLength(0);
+      });
+
+      it('does not match when two live windows share the same tab count (ambiguous window pairing)', async () => {
+        seedWindow(50, 6, [{ idx: 3, url: 'https://example.com/target' }]);
+        (chrome.tabs.query as jest.Mock).mockResolvedValue([
+          ...liveWindowTabs(77, 6, { 3: { url: 'about:blank', groupId: 5 } }),
+          ...liveWindowTabs(88, 6, { 3: { url: 'about:blank', groupId: 6 } }),
+        ]);
+
+        await runRecovery();
+
+        // Recovering the WRONG tab is worse than recovering nothing.
+        expect(parkUrlCalls()).toHaveLength(0);
+      });
+
+      it('does not match when no live window has the persisted tab count', async () => {
+        seedWindow(50, 6, [{ idx: 3, url: 'https://example.com/target' }]);
+        (chrome.tabs.query as jest.Mock).mockResolvedValue(
+          liveWindowTabs(77, 7, { 3: { url: 'about:blank', groupId: 5 } }));
+
+        await runRecovery();
+
+        expect(parkUrlCalls()).toHaveLength(0);
+      });
+
+      it('does not touch blank tabs that are not grouped', async () => {
+        seedWindow(50, 3, [{ idx: 1, url: 'https://example.com/target' }]);
+        (chrome.tabs.query as jest.Mock).mockResolvedValue(
+          liveWindowTabs(50, 3, { 1: { url: 'about:blank', groupId: -1 } }));
+
+        await runRecovery();
+
+        expect(parkUrlCalls()).toHaveLength(0);
+      });
+    });
+
+    describe('onTabReplaceDetected — closed intermediate keeps its own identity (code review fix #7)', () => {
+      const originTab: chrome.tabs.Tab = {
+        id: 1, windowId: 1, index: 0, url: 'https://example.com',
+        title: 'Example', active: true, pinned: false, discarded: false,
+        autoDiscardable: true, audible: false, groupId: -1, status: 'complete',
+        highlighted: false, incognito: false, selected: true
+      };
+
+      it('closed intermediate entry keeps id=removedTabId (not the live id) while preserving the chain', () => {
+        tabManager.createNewTabInfo(originTab);
+        tabManager.tabInfos[1].parked = true;
+        tabManager.tabInfos[1].parkedUrl = 'https://example.com';
+
+        const parkTabUrl = `${(global as any).parkUrl}?tabId=1&url=${encodeURIComponent('https://example.com')}`;
+
+        // First replace: live id 2, tabId param (1) === removedTabId → origin branch.
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...originTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+        tabManager.onTabReplaceDetected(2, 1);
+
+        // Second replace: live id 3, tab still shows tabId=1 → intermediate
+        // branch for removedTabId=2 (1 !== 2).
+        (chrome.tabs.get as jest.Mock).mockImplementationOnce((tabId: number, cb: (t: chrome.tabs.Tab) => void) => {
+          cb({ ...originTab, id: tabId, url: parkTabUrl } as chrome.tabs.Tab);
+        });
+        tabManager.onTabReplaceDetected(3, 2);
+
+        const intermediate = tabManager.getTabInfoById(2);
+        expect(typeof intermediate.toObject).toBe('function');
+        // Own identity, not the live tab's id.
+        expect(intermediate.id).toBe(2);
+        // Chain links preserved: origin 1 → intermediate 2 → live 3.
+        expect(intermediate.oldRefId).toBe(1);
+        expect(intermediate.newRefId).toBe(3);
+        expect(intermediate.closed).toBeDefined();
+        // The live entry is intact.
+        expect(tabManager.getTabInfoById(3).id).toBe(3);
+      });
+    });
+  });
 });
