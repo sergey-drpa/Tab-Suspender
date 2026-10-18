@@ -117,6 +117,20 @@ async function main(): Promise<void> {
     // ══════════════════════════════════════════════════════════════════════════
     runner.section('Phase C — Activate park tab → auto-restore fires');
 
+    // Wait for the park page to finish loading before activating. Activating
+    // while the page is still in status='loading' routes unsuspendTab through
+    // the markForUnsuspend branch, which races against park.ts's one-shot
+    // parkData request (park.ts requests it exactly once at script start) —
+    // on slow CI runners the request usually wins and the auto-restore is
+    // lost. With the page fully loaded, unsuspendTab sends RestoreMessage
+    // and park.ts restores deterministically.
+    for (let i = 0; i < 40; i++) {
+      const t = (await queryChromeTabs(browser)).find(x => x.id === parkTabId);
+      if (t && t.status === 'complete') break;
+      await sleep(250);
+    }
+    log('  park page ready (waited for status=complete)');
+
     // bringToFront() triggers Chrome's tab activation event
     await parkPage.bringToFront();
     log('  park.html brought to front (activation event fired)');
