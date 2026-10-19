@@ -120,6 +120,10 @@ class TabManager {
 				for (const propertyName in loadedITabInfos) {
 					if (loadedITabInfos.hasOwnProperty(propertyName)) {
 						const tabInfo = TabInfo.fromObject(loadedITabInfos[propertyName]);
+						// Mark as restored from storage so park.ts can skip the
+						// bfcache-based history.go(-1) restore path (bfcache is gone
+						// after restart, so history.go(-1) lands on about:blank).
+						tabInfo.restoredFromStorage = true;
 						// Reset inactivity timer on service-worker restart so tabs that were
 						// near the suspension threshold don't get suspended immediately after
 						// the browser is reopened (fixes "suspending after just a few minutes").
@@ -130,8 +134,193 @@ class TabManager {
 					}
 				}
 				console.log(`tabInfos loaded`);
+				// Issue #4: propagate restoredFromStorage through the newRefId chain.
+				// If getTabInfoOrCreate ran BEFORE loadTabInfos completed (race condition),
+				// it created a fresh TabInfo for the live tab ID with restoredFromStorage=false.
+				// The persisted TabInfo (under the old ID) now has restoredFromStorage=true.
+				// Walk the chain and propagate the flag so park.ts goBack() uses
+				// window.location.replace(originalUrl) instead of history.go(-1) (which
+				// lands on about:blank after restart because bfcache is gone).
+				self.propagateRestoredFromStorage();
+				// Issue #4: Chrome session restore replaces parked grouped tabs'
+				// URLs with about:blank BEFORE the service worker starts, so the
+				// tabs.onUpdated listener (registered below) misses those events.
+				// Scan all live tabs and revert any blank grouped parked tabs back
+				// to park.html?url=ORIGINAL_URL using the persisted TabInfo chain.
+				self.recoverBlankParkedTabsOnStartup().catch((e) => {
+					console.error('[Issue #4 startup] recovery failed:', e);
+				});
 			}
 		}).catch(console.error);
+	}
+
+	/**
+	 * Issue #4: After loadTabInfos, propagate restoredFromStorage from
+	 * persisted entries to live entries created by getTabInfoOrCreate before
+	 * loadTabInfos finished (race condition).
+	 *
+	 * When getTabInfoOrCreate runs first, it creates a fresh TabInfo for the
+	 * live tab ID with restoredFromStorage=false. onTabReplaceDetected copies
+	 * that fresh entry to the live ID and sets oldRefId. Later, loadTabInfos
+	 * overwrites the old ID with the persisted entry (restoredFromStorage=true),
+	 * but the live ID still points to the fresh entry. We walk the oldRefId
+	 * chain backward from each fresh entry to find a persisted entry and copy
+	 * restoredFromStorage (and parkedUrl if missing) to the live entry.
+	 */
+	private propagateRestoredFromStorage(): void {
+		for (const idStr in this.tabInfos) {
+			if (!this.tabInfos.hasOwnProperty(idStr)) continue;
+			const liveInfo = this.tabInfos[idStr];
+			if (liveInfo == null || liveInfo.restoredFromStorage === true) continue;
+
+			// Walk backward via oldRefId to find a persisted entry.
+			let cursor = liveInfo;
+			let safety = 0;
+			while (cursor != null && cursor.oldRefId != null && safety < 16) {
+				const prevInfo = this.tabInfos[cursor.oldRefId];
+				if (prevInfo == null) break;
+				if (prevInfo.restoredFromStorage === true) {
+					liveInfo.restoredFromStorage = true;
+					// Also repair parkedUrl if the live entry lost it.
+					if (TabManager.isInvalidRestoreUrl(liveInfo.parkedUrl) && !TabManager.isInvalidRestoreUrl(prevInfo.parkedUrl)) {
+						liveInfo.parkedUrl = prevInfo.parkedUrl;
+					}
+					console.log(`[Issue #4] Propagated restoredFromStorage to tab ${idStr} (from origin ${cursor.oldRefId})`);
+					break;
+				}
+				cursor = prevInfo;
+				safety++;
+			}
+		}
+	}
+
+	private async recoverBlankParkedTabsOnStartup(): Promise<void> {
+		const tabs = await chrome.tabs.query({}).catch(() => [] as chrome.tabs.Tab[]);
+		if (tabs.length === 0) return;
+		const liveTabsById = new Map<number, chrome.tabs.Tab>();
+		for (const t of tabs) liveTabsById.set(t.id, t);
+
+		// Build a list of blank grouped live tabs (candidates for recovery).
+		// These are tabs where Chrome session restore replaced park.html with
+		// about:blank BEFORE the service worker started.
+		const blankGroupedTabs = tabs.filter(t =>
+			t.groupId != null && t.groupId > 0 && TabManager.isInvalidRestoreUrl(t.url));
+		if (blankGroupedTabs.length === 0) return;
+
+		// Live window sizes, used to pair persisted windows with live windows
+		// when Chrome has reassigned window/tab IDs across a browser restart.
+		const liveWindowTabCounts = new Map<number, number>();
+		for (const t of tabs)
+			liveWindowTabCounts.set(t.windowId, (liveWindowTabCounts.get(t.windowId) ?? 0) + 1);
+
+		// Persisted window sizes (non-closed entries only).
+		const persistedWindowTabCounts = new Map<number, number>();
+		for (const idStr in this.tabInfos) {
+			if (!this.tabInfos.hasOwnProperty(idStr)) continue;
+			const info = this.tabInfos[idStr];
+			if (info == null || info.closed != null || info.winId == null) continue;
+			persistedWindowTabCounts.set(info.winId, (persistedWindowTabCounts.get(info.winId) ?? 0) + 1);
+		}
+
+		// Cached window pairing: persisted winId → matched live windowId, or
+		// null when the pairing is ambiguous.
+		const windowPairCache = new Map<number, number | null>();
+
+		// Track which blank grouped tabs we've already matched to avoid
+		// assigning the same persisted TabInfo to multiple live tabs.
+		const matchedLiveIds = new Set<number>();
+
+		/**
+		 * Match a persisted (winId, idx) position to a live blank grouped tab.
+		 * In-session SW cold starts: windowId is still valid, so the match is
+		 * exact. After a browser restart Chrome reassigns window IDs, so the
+		 * persisted window is paired with the unique live window of the same
+		 * tab count first. Ambiguous pairing → no match: recovering the wrong
+		 * tab is worse than recovering nothing.
+		 */
+		const matchByPosition = (winId: number, idx: number): chrome.tabs.Tab | null => {
+			let candidateWinId = winId;
+			if (!liveWindowTabCounts.has(winId)) {
+				if (!windowPairCache.has(winId)) {
+					const persistedCount = persistedWindowTabCounts.get(winId) ?? 0;
+					const candidates: number[] = [];
+					if (persistedCount > 0) {
+						for (const [liveWinId, count] of liveWindowTabCounts) {
+							if (count === persistedCount) candidates.push(liveWinId);
+						}
+					}
+					windowPairCache.set(winId, candidates.length === 1 ? candidates[0] : null);
+				}
+				candidateWinId = windowPairCache.get(winId) ?? -1;
+				if (candidateWinId === -1) return null;
+			}
+			return blankGroupedTabs.find(t =>
+				!matchedLiveIds.has(t.id) &&
+				t.windowId === candidateWinId &&
+				t.index === idx) ?? null;
+		};
+
+		for (const idStr in this.tabInfos) {
+			if (!this.tabInfos.hasOwnProperty(idStr)) continue;
+			const originInfo = this.tabInfos[idStr];
+			if (originInfo == null || originInfo.parked !== true) continue;
+			// Closed entries describe tabs that no longer exist — they must
+			// never claim a live blank tab (e.g. a new tab the user opened in
+			// a group at the same position).
+			if (originInfo.closed != null) continue;
+			const recoveredUrl = !TabManager.isInvalidRestoreUrl(originInfo.parkedUrl)
+				? originInfo.parkedUrl
+				: (!TabManager.isInvalidRestoreUrl(originInfo.lstCapUrl) ? originInfo.lstCapUrl : null);
+			if (recoveredUrl == null) continue;
+
+			// Strategy 1: Walk the newRefId chain forward to find the live tab.
+			let liveId = parseInt(idStr);
+			let cursor = originInfo;
+			let safety = 0;
+			while (cursor?.newRefId != null && safety < 16) {
+				liveId = cursor.newRefId;
+				cursor = this.tabInfos[liveId];
+				safety++;
+			}
+			let liveTab = liveTabsById.get(liveId);
+
+			// Strategy 2: If the chain didn't lead to a live blank grouped tab
+			// (stale newRefId after restart, or SW woke mid-session), match by
+			// persisted window + tab position.
+			if (liveTab == null || matchedLiveIds.has(liveTab.id) || liveTab.groupId == null || liveTab.groupId <= 0 || !TabManager.isInvalidRestoreUrl(liveTab.url)) {
+				liveTab = matchByPosition(originInfo.winId, originInfo.idx);
+			}
+
+			if (liveTab == null) continue;
+			if (matchedLiveIds.has(liveTab.id)) continue;
+			if (!TabManager.isInvalidRestoreUrl(liveTab.url)) continue;
+
+			matchedLiveIds.add(liveTab.id);
+
+			// Set up the TabInfo for the live tab so onUpdated revert and
+			// park.ts goBack() can find it.
+			const liveTabInfo = this.tabInfos[liveTab.id];
+			if (liveTabInfo != null) {
+				liveTabInfo.parked = true;
+				if (TabManager.isInvalidRestoreUrl(liveTabInfo.parkedUrl)) {
+					liveTabInfo.parkedUrl = recoveredUrl;
+				}
+			} else {
+				const newInfo = new TabInfo(liveTab);
+				newInfo.parked = true;
+				newInfo.parkedUrl = recoveredUrl;
+				newInfo.oldRefId = parseInt(idStr);
+				this.tabInfos[liveTab.id] = newInfo;
+			}
+
+			console.warn(`[Issue #4 startup] Recovering blank grouped tab ${liveTab.id} (origin ${idStr}) → park.html (url=${recoveredUrl})`);
+			const parkTabUrl = parkUrl +
+				'?tabId=' + encodeURIComponent(liveTab.id) +
+				'&url=' + encodeURIComponent(recoveredUrl) +
+				'&title=' + encodeURIComponent(liveTab.title || '') +
+				'&sessionId=' + encodeURIComponent(TSSessionId);
+			chrome.tabs.update(liveTab.id, { url: parkTabUrl }).catch(console.error);
+		}
 	}
 
 	private readonly TAB_INFOS_KEY = 'tabInfos';
@@ -204,6 +393,57 @@ class TabManager {
 			const tabInfo = self.getTabInfoOrCreate(tab);
 
 			this.historyOpenerController.onTabUpdate(_tabId, changeInfo);
+
+			// Issue #4: Chrome session restore may replace the URL of a parked
+			// tab with about:blank / about:newtab / chrome://newtab/ when the
+			// extension URL is blocked during placeholder reconstruction. When
+			// the user later activates that blank tab, Chrome fires onUpdated and
+			// we revert it back to park.html so the user can unsuspend it.
+			//
+			// This also catches the case where park.ts goBack() navigates via
+			// history.go(-1) and briefly lands on about:blank — but since goBack()
+			// now uses window.location.replace(originalUrl) after restart, that
+			// path no longer lands on blank, so this revert won't re-trigger and
+			// trap the user back on park.html.
+			//
+			// Issue #4: Chrome session restore may replace the parked tab's URL
+			// with about:blank BEFORE the service worker starts. In that case,
+			// changeInfo.url is NOT set when the user later activates the blank
+			// tab (the URL didn't change — it was already blank). So we also
+			// check tab.url (the current URL) when the tab is grouped (the
+			// Chrome bug only affects grouped tabs) and the URL is blank.
+			//
+			// A live URL transition (changeInfo.url set) on a NON-discarded tab
+			// is a deliberate user/page navigation (typed about:blank, a login
+			// redirect, etc.) — reverting it would bounce the user back to
+			// park.html. Chrome's session-restore race NEVER fires changeInfo.url
+			// (the URL was replaced before the SW started), so the revert only
+			// runs for: (a) Chrome-side replacements of DISCARDED parked tabs
+			// (never user-driven), and (b) events that carry no URL change at
+			// all while the current URL is blank — the activation signature of
+			// a tab Chrome blanked before the SW started.
+			const blankUrlChanged = changeInfo.url != null && TabManager.isInvalidRestoreUrl(changeInfo.url)
+				&& tab.discarded === true;
+			const blankUrlOnGroupedTab = changeInfo.url == null
+				&& tab.groupId != null && tab.groupId > 0
+				&& tab.url != null
+				&& TabManager.isInvalidRestoreUrl(tab.url)
+				&& !tab.url.startsWith(parkUrl);
+			if ((blankUrlChanged || blankUrlOnGroupedTab) && tabInfo.parked === true) {
+				const recoveredUrl = !TabManager.isInvalidRestoreUrl(tabInfo.parkedUrl)
+					? tabInfo.parkedUrl
+					: (!TabManager.isInvalidRestoreUrl(tabInfo.lstCapUrl) ? tabInfo.lstCapUrl : null);
+				if (recoveredUrl != null) {
+					console.warn(`[Issue #4] Parked tab ${tab.id} URL is blank (changeInfo.url=${changeInfo.url ?? 'null'}, tab.url=${tab.url}) — reverting to park.html (original=${recoveredUrl})`);
+					const parkTabUrl = parkUrl +
+						'?tabId=' + encodeURIComponent(tab.id) +
+						'&url=' + encodeURIComponent(recoveredUrl) +
+						'&title=' + encodeURIComponent(tab.title || '') +
+						'&sessionId=' + encodeURIComponent(TSSessionId);
+					chrome.tabs.update(tab.id, { url: parkTabUrl }).catch(console.error);
+					return;
+				}
+			}
 
 			if (trace)
 				console.trace(`Tab[${tab.id}] updated: `, changeInfo, tab);
@@ -303,9 +543,11 @@ class TabManager {
 								tabInfo.markedForLoadSuspended = false;
 								tabInfo.originalUrlBeforeSuspend = null;
 
-								chrome.tabs.update(updatedTab.id, { url: url }).then(() => {
-									self.markTabParked(updatedTab);
-								}).catch(console.error);
+								setTimeout(() => {
+									chrome.tabs.update(updatedTab.id, { url: url }).then(() => {
+										self.markTabParked(updatedTab);
+									}).catch(console.error);
+								}, 0);
 							} else {
 								// Favicon not ready yet, try again
 								setTimeout(pollForFavicon, POLL_INTERVAL_MS);
@@ -495,14 +737,37 @@ class TabManager {
 			if (tab == null)
 				return;
 			if (tab.url.indexOf(parkUrl) == 0) {
-				const originTabId = parseUrlParam(tab.url, 'tabId');
+				const originTabId = parseInt(parseUrlParam(tab.url, 'tabId'));
+				const parkOriginalUrl = parseUrlParam(tab.url, 'url');
 
-				if (originTabId == removedTabId.toString()) {
+				if (originTabId === removedTabId) {
 					this.tabInfos[addedTabId].originRefId = removedTabId;
 				} else {
-					this.tabInfos[removedTabId] = structuredClone(this.tabInfos[removedTabId]);
+					// Issue #4: preserve the closed intermediate entry as a real TabInfo
+					// instance so it keeps toObject() and other class behaviour.
+					const removedInfo = this.tabInfos[removedTabId];
+					if (removedInfo != null) {
+						if (typeof removedInfo.toObject === 'function') {
+							this.tabInfos[removedTabId] = TabInfo.fromObject(removedInfo.toObject());
+						} else {
+							this.tabInfos[removedTabId] = TabInfo.fromObject(removedInfo as unknown as ITabInfo);
+						}
+						// The live entry and the removed entry alias the same object at
+						// this point, so the copy was built from data whose _id was
+						// already overwritten with addedTabId. Restore the entry's own
+						// identity — it is looked up by key, but its serialized id must
+						// not claim to be the live tab.
+						this.tabInfos[removedTabId].id = removedTabId;
+						this.tabInfos[removedTabId].oldRefId = originTabId;
+					}
 					this.markTabClosed(removedTabId);
-					console.warn(`Tab Replaced: ${removedTabId} -> ${addedTabId} - Intermediate replace -> mark tab info can be removed for ${removedTabId}`);
+					console.warn(`Tab Replaced: ${removedTabId} -> ${addedTabId} - Intermediate replace -> closed ${removedTabId}, origin=${originTabId}`);
+				}
+
+				// Issue #4: repair stale parkedUrl from the live park.html URL.
+				if (TabManager.isInvalidRestoreUrl(this.tabInfos[addedTabId].parkedUrl) && !TabManager.isInvalidRestoreUrl(parkOriginalUrl)) {
+					console.warn(`Tab Replaced: ${removedTabId} -> ${addedTabId} - Repairing parkedUrl from park.html URL`);
+					this.tabInfos[addedTabId].parkedUrl = parkOriginalUrl;
 				}
 				//params.set('tabId', addedTabId.toString());
 				///// ******** Looks like it does not working!!!!!!!
@@ -592,7 +857,12 @@ class TabManager {
 				//         and calls historyFallback() (window.history.go(-1)), preserving bfcache
 				const reloadTabOnRestore = await settings.get('reloadTabOnRestore');
 				if (reloadTabOnRestore === true) {
-					chrome.tabs.update(tab.id, { 'url': parseUrlParam(tab.url, 'url') }).catch(console.error);
+					const restoreUrl = this.resolveValidRestoreUrl(tab.url, tab.id);
+					if (restoreUrl != null) {
+						chrome.tabs.update(tab.id, { 'url': restoreUrl }).catch(console.error);
+					} else {
+						console.error(`[unsuspendTab] No valid restore URL for tab ${tab.id}, aborting navigation`, tab.url);
+					}
 				} else {
 					markForUnsuspend(tab);
 				}
@@ -608,6 +878,21 @@ class TabManager {
 				}).catch(console.error);
 			}
 		}
+	}
+
+	private resolveValidRestoreUrl(parkUrlStr: string, tabId: number): string | null {
+		let targetUrl = parseUrlParam(parkUrlStr, 'url');
+		if (!TabManager.isInvalidRestoreUrl(targetUrl))
+			return targetUrl;
+
+		const tabInfo = this.getTabInfoById(tabId);
+		if (tabInfo != null) {
+			if (!TabManager.isInvalidRestoreUrl(tabInfo.parkedUrl))
+				return tabInfo.parkedUrl;
+			if (!TabManager.isInvalidRestoreUrl(tabInfo.lstCapUrl))
+				return tabInfo.lstCapUrl;
+		}
+		return null;
 	}
 
 	private markTabClosed(tabId: string | number) {
@@ -637,7 +922,7 @@ class TabManager {
 		let tabInfo = this.getTabInfoById(tab.id);
 
 		/* If Parked Tab (Usually after browser restart) */
-		if(tabInfo == null && tab.url.startsWith(parkUrl)) {
+		if(tabInfo == null && tab.url != null && tab.url.startsWith(parkUrl)) {
 			const removedTabId = parseInt(parseUrlParam(tab.url, 'tabId'));
 			const originalUrl = parseUrlParam(tab.url, 'url');
 			console.log(`Found parked[${removedTabId}] Tab[${tab.id}] without TabInfo, starting id replace..`);
@@ -647,6 +932,10 @@ class TabManager {
 				restoredTabInfo.parkedUrl = originalUrl;
 				restoredTabInfo.parked = true;
 				this.tabInfos[removedTabId] = restoredTabInfo;
+			} else if (TabManager.isInvalidRestoreUrl(this.tabInfos[removedTabId].parkedUrl) && !TabManager.isInvalidRestoreUrl(originalUrl)) {
+				// Issue #4: repair stale parkedUrl from the live park.html URL before the replace chain is built.
+				console.warn(`Repairing stale parkedUrl for parked[${removedTabId}] from park.html URL`);
+				this.tabInfos[removedTabId].parkedUrl = originalUrl;
 			}
 			tabInfo = this.onTabReplaceDetected(tab.id, removedTabId);
 		}
@@ -895,7 +1184,8 @@ class TabManager {
 	}
 
 	static isTabParked(tab: chrome.tabs.Tab) {
-		return tab.url.substring(0, tab.url.indexOf('?')) === parkUrl;
+		// tab.url is optional in the chrome API — a tab without a URL is never parked.
+		return tab.url != null && tab.url.substring(0, tab.url.indexOf('?')) === parkUrl;
 	};
 
 	static isAudible(tab: chrome.tabs.Tab) {
@@ -916,6 +1206,16 @@ class TabManager {
 		if (!results) return null;
 		if (!results[2]) return '';
 		return decodeURIComponent(results[2].replace(/\+/g, ' '));
+	}
+
+	static isInvalidRestoreUrl(url: string | null | undefined): boolean {
+		if (url == null || url === '')
+			return true;
+		const lower = url.toLowerCase();
+		return lower === 'about:blank'
+			|| lower === 'about:newtab'
+			|| lower === 'chrome://newtab/'
+			|| lower.startsWith('chrome://newtab');
 	}
 
 	static tabExist(windows: chrome.windows.Window[], tabId: number) {

@@ -1,13 +1,52 @@
-import type { Browser, Page } from 'puppeteer';
+import type { Browser, Page, CDPSession, Target } from 'puppeteer';
 import type { ChromeTab, TabInfosMap } from './types.js';
 import { sleep } from './BrowserHelper.js';
+
+// Remember which extension ID belongs to Tab Suspender per Browser instance.
+const tsExtensionIdMap = new WeakMap<Browser, string>();
+// Capture console events emitted by any service worker belonging to the extension.
+interface SWLogCollector {
+  lines: string[];
+  sessions: CDPSession[];
+  targets: Set<Target>;
+  onTargetCreated?: (target: Target) => void;
+}
+const swLogCollectors = new WeakMap<Browser, SWLogCollector>();
+
+function getSWTarget(browser: Browser) {
+  const knownId = tsExtensionIdMap.get(browser);
+  const targets = browser.targets().filter(
+    t => t.type() === 'service_worker' && t.url().includes('chrome-extension://')
+  );
+  if (knownId) {
+    return targets.find(t => t.url().includes(`chrome-extension://${knownId}/`)) ?? targets[0];
+  }
+  return targets[0];
+}
+
+function formatCDPConsoleEvent(target: Target, event: any): string {
+  const text = (event.args || [])
+    .map((a: any) => a.value != null ? String(a.value) : a.description != null ? a.description : '')
+    .join(' ');
+  return `[SW ${target.url()} ${event.type}] ${text}`;
+}
+
+async function attachSWTarget(browser: Browser, target: Target, collector: SWLogCollector): Promise<void> {
+  if (collector.targets.has(target)) return;
+  const session = await target.createCDPSession().catch(() => null);
+  if (!session) return;
+  await session.send('Runtime.enable').catch(() => {});
+  session.on('Runtime.consoleAPICalled', (event: any) => {
+    collector.lines.push(formatCDPConsoleEvent(target, event));
+  });
+  collector.sessions.push(session);
+  collector.targets.add(target);
+}
 
 // Evaluate a JS expression in the extension's service worker context via CDP.
 // The expression may be async (wrap it in an IIFE if needed).
 export async function evalInSW<T = unknown>(browser: Browser, expression: string): Promise<T> {
-  const target = browser.targets().find(
-    t => t.type() === 'service_worker' && t.url().includes('chrome-extension://')
-  );
+  const target = getSWTarget(browser);
   if (!target) throw new Error('Extension service worker target not found');
 
   const session = await target.createCDPSession();
@@ -26,16 +65,120 @@ export async function evalInSW<T = unknown>(browser: Browser, expression: string
   }
 }
 
+/**
+ * Attach a CDP console listener to every Tab-Suspender service worker target
+ * (including targets that appear later, e.g. after a session restore restart)
+ * and return a function that detaches all sessions and returns the collected
+ * lines. This should be called as early as possible after launching the browser
+ * so startup logs are captured.
+ */
+export async function installSWLogCapture(browser: Browser): Promise<() => string[]> {
+  const knownId = tsExtensionIdMap.get(browser);
+  let collector = swLogCollectors.get(browser);
+  if (!collector) {
+    collector = { lines: [], sessions: [], targets: new Set<Target>() };
+    swLogCollectors.set(browser, collector);
+    const onTargetCreated = (target: Target) => {
+      if (target.type() !== 'service_worker') return;
+      const url = target.url();
+      if (!url.includes('chrome-extension://')) return;
+      if (knownId && !url.includes(`chrome-extension://${knownId}/`)) return;
+      void attachSWTarget(browser, target, collector!);
+    };
+    collector.onTargetCreated = onTargetCreated;
+    browser.on('targetcreated', onTargetCreated);
+  }
+
+  for (const target of browser.targets()) {
+    if (target.type() !== 'service_worker') continue;
+    const url = target.url();
+    if (!url.includes('chrome-extension://')) continue;
+    if (knownId && !url.includes(`chrome-extension://${knownId}/`)) continue;
+    await attachSWTarget(browser, target, collector);
+  }
+
+  return async () => {
+    if (collector!.onTargetCreated) {
+      browser.off('targetcreated', collector!.onTargetCreated);
+      collector!.onTargetCreated = undefined;
+    }
+    for (const session of collector!.sessions) {
+      await session.detach().catch(() => {});
+    }
+    collector!.sessions = [];
+    const id = tsExtensionIdMap.get(browser);
+    if (!id) return collector!.lines;
+    return collector!.lines.filter(line => line.includes(`chrome-extension://${id}/`));
+  };
+}
+
+/**
+ * Legacy CDP-based console collector. Kept for compatibility but the target-aware
+ * capture is preferred because it catches startup logs across service worker
+ * restarts.
+ */
+export function startSWConsoleCollection(browser: Browser): { stop: () => Promise<string[]> } {
+  const lines: string[] = [];
+  const target = getSWTarget(browser);
+  if (!target) {
+    return { stop: async () => lines };
+  }
+
+  let session: CDPSession | null = null;
+  let detached = false;
+
+  const attach = async () => {
+    session = await target.createCDPSession();
+    await session.send('Runtime.enable');
+    session.on('Runtime.consoleAPICalled', (event: any) => {
+      const text = (event.args || [])
+        .map((a: any) => a.value != null ? String(a.value) : a.description != null ? a.description : '')
+        .join(' ');
+      lines.push(`[SW ${event.type}] ${text}`);
+    });
+  };
+
+  void attach().catch((e: Error) => lines.push(`[SW attach error] ${e.message}`));
+
+  return {
+    stop: async () => {
+      if (!detached && session) {
+        detached = true;
+        await session.detach().catch(() => {});
+      }
+      return lines;
+    },
+  };
+}
+
 export async function getExtensionId(browser: Browser, maxWaitMs = 20000): Promise<string> {
   const deadline = Date.now() + maxWaitMs;
   while (Date.now() < deadline) {
-    const target = browser.targets().find(
+    const targets = browser.targets().filter(
       t => t.type() === 'service_worker' && t.url().includes('chrome-extension://')
     );
-    if (target) return target.url().split('/')[2];
+    for (const target of targets) {
+      const candidateId = target.url().split('/')[2];
+      const session = await target.createCDPSession().catch(() => null);
+      if (!session) continue;
+      try {
+        const { result } = await session.send('Runtime.evaluate', {
+          expression: 'typeof whiteList',
+          returnByValue: true,
+        });
+        if (result.value === 'object') {
+          tsExtensionIdMap.set(browser, candidateId);
+          return candidateId;
+        }
+      } catch {
+        // ignore and try next target
+      } finally {
+        await session.detach().catch(() => {});
+      }
+    }
     await sleep(1000);
   }
-  throw new Error('Extension service worker not found within timeout');
+  throw new Error('Tab Suspender service worker not found within timeout');
 }
 
 export function parkUrlPrefix(extensionId: string): string {
@@ -171,6 +314,12 @@ export async function getParkPages(browser: Browser, extensionId: string) {
   const prefix = parkUrlPrefix(extensionId);
   const pages = await browser.pages();
   return pages.filter(p => p.url().startsWith(prefix));
+}
+
+export async function getParkPageByTabId(browser: Browser, extensionId: string, tabId: number | string): Promise<Page | null> {
+  const pages = await getParkPages(browser, extensionId);
+  const needle = `tabId=${tabId}`;
+  return pages.find(p => p.url().includes(needle)) ?? null;
 }
 
 // ─── Settings helpers ─────────────────────────────────────────────────────────

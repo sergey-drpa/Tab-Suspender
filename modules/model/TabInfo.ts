@@ -69,6 +69,7 @@ class TabInfo implements ITabInfo {
 	// Execution-time only fields (not serialized)
 	private _markedForLoadSuspended: boolean;
 	private _originalUrlBeforeSuspend: string;
+	private _restoredFromStorage: boolean;
 
 	constructor(tab: chrome.tabs.Tab) {
 		this._id = tab.id;
@@ -96,6 +97,7 @@ class TabInfo implements ITabInfo {
 		// Execution-time only fields
 		this._markedForLoadSuspended = false;
 		this._originalUrlBeforeSuspend = null;
+		this._restoredFromStorage = false;
 	}
 
 	toObject(): ITabInfo {
@@ -104,7 +106,7 @@ class TabInfo implements ITabInfo {
 		const object = {};
 
 		// Execution-time only fields that should NOT be serialized
-		const excludedFields = ['_markedForLoadSuspended', '_originalUrlBeforeSuspend'];
+		const excludedFields = ['_markedForLoadSuspended', '_originalUrlBeforeSuspend', '_restoredFromStorage'];
 
 		Object.getOwnPropertyNames(this).forEach(
 			function(propName: string) {
@@ -352,6 +354,14 @@ class TabInfo implements ITabInfo {
 
 	set originalUrlBeforeSuspend(value: string) {
 		this._originalUrlBeforeSuspend = value;
+	}
+
+	get restoredFromStorage(): boolean {
+		return this._restoredFromStorage;
+	}
+
+	set restoredFromStorage(value: boolean) {
+		this._restoredFromStorage = value;
 	}
 }
 

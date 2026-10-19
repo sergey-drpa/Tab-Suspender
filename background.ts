@@ -353,7 +353,11 @@ function start() {
 							if (tabs[i].discarded == false)
 								if (!await tabManager.isExceptionTab(tabs[i]))
 									try {
-										console.log('Discarding tab:', tabs[i].id, 'groupId:', tabs[i].groupId, 'url:', tabs[i].url);
+										if (tabs[i].groupId !== -1) {
+											console.log('[background.postRestore] Discarding grouped tab:', tabs[i].id, 'groupId:', tabs[i].groupId, 'url:', tabs[i].url);
+										} else {
+											console.log('Discarding tab:', tabs[i].id, 'groupId:', tabs[i].groupId, 'url:', tabs[i].url);
+										}
 										discardTab(tabs[i].id);
 									} catch (e) {
 										console.error('Discard error', e);

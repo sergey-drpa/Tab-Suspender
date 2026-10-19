@@ -32,6 +32,8 @@ let bgScreen = null; /* TEMPORARLY VARDON'T FORGGOT TO CLEAN AFTER DRAW! */
 let screenshotDevicePixelRatio;
 let isTabMarkedForUnsuspend = false;
 let parkedUrl;
+let restoredFromStorage = false;
+let isGrouped = false;
 let screenPromise;
 let faviconDrawed;
 let globalParkData: ParkPageDataBGResponse;
@@ -153,6 +155,8 @@ try {
 					console.log('Continue Check: ', Date.now());
 
 				parkedUrl = parkData.parkedUrl;
+				restoredFromStorage = parkData.restoredFromStorage === true;
+				isGrouped = parkData.isGrouped === true;
 
 				isTabMarkedForUnsuspend = parkData.isTabMarkedForUnsuspend;
 
@@ -212,6 +216,8 @@ try {
 					//applyRestoreButtonView(bgpage.getRestoreButtonView());
 					restoreEvent = parkData.restoreEvent;
 					reloadTabOnRestore = parkData.reloadTabOnRestore;
+					restoredFromStorage = parkData.restoredFromStorage === true;
+					isGrouped = parkData.isGrouped === true;
 
 					createTitleAndIcon(true);
 				}
@@ -682,9 +688,31 @@ function startEX() {
 	initNativeUrlAnimation();
 }
 
+function isInvalidRestoreUrl(url: string | null | undefined): boolean {
+	if (url == null || url === '')
+		return true;
+	const lower = url.toLowerCase();
+	return lower === 'about:blank'
+		|| lower === 'about:newtab'
+		|| lower === 'chrome://newtab/'
+		|| lower.startsWith('chrome://newtab');
+}
+
 function goBack(options?) {
 
 	targetUrl = searchParams.get('url');
+
+	// Issue #4: defensive fallback when the park.html URL lost its original URL.
+	if (isInvalidRestoreUrl(targetUrl)) {
+		targetUrl = globalParkData?.parkedUrl || null;
+	}
+	if (isInvalidRestoreUrl(targetUrl)) {
+		targetUrl = globalParkData?.tabInfo?.lstCapUrl || null;
+	}
+	if (isInvalidRestoreUrl(targetUrl)) {
+		console.error('[park.ts] No valid restore URL available, aborting navigation');
+		return;
+	}
 
 	chrome.runtime.sendMessage({
 		'method': '[AutomaticTabCleaner:TabUnsuspended]',
@@ -697,16 +725,32 @@ function goBack(options?) {
 		// This prevents race conditions but allows retry on failure
 		backProcessed = true;
 
-		if (reloadTabOnRestore === false &&
+		// Issue #4: Chrome has a bug where grouped parked tabs' URLs get
+		// replaced with about:blank on session restore. After restart, bfcache
+		// is GONE and Chrome reconstructs the tab history as
+		// [about:blank, ..., park.html], so history.go(-1) from park.html lands
+		// on about:blank — not the original URL. This caused a loop:
+		// goBack → about:blank → onUpdated revert → park.html → goBack → ...
+		//
+		// For GROUPED tabs (isGrouped === true), always navigate directly to
+		// the original URL via window.location.replace. For non-grouped tabs,
+		// keep the old historyFallback (history.go(-1)) behavior to preserve
+		// bfcache and the Back button history.
+		if (isGrouped) {
+			if (DEBUG)
+				console.log('Reload (grouped, history.length=' + window.history.length + ')');
+			window.location.replace(targetUrl);
+		} else if (reloadTabOnRestore === false &&
 			!isFromHistory() &&
-			parkedUrl != null
-			/* TODO: Rework this logic && window.history.length > 2 && !secondTime*/) {
+			parkedUrl != null &&
+			!restoredFromStorage &&
+			window.history.length > 2) {
 			if (DEBUG)
 				console.log('Back');
 			historyFallback(targetUrl);
 		} else {
 			if (DEBUG)
-				console.log('Reload');
+				console.log('Reload (history.length=' + window.history.length + ', restoredFromStorage=' + restoredFromStorage + ')');
 			window.location.replace(targetUrl);
 		}
 	}

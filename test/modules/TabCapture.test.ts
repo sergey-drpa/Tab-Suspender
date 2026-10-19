@@ -454,6 +454,76 @@ describe('TabCapture Race Condition Tests', () => {
     });
   });
 
+  describe('4.11 — Screenshot quality setting is passed to captureVisibleTab', () => {
+    it('passes quality=10 when screenshotQuality=10', async () => {
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(true);
+        if (key === 'screenshotQuality') return Promise.resolve(10);
+        return Promise.resolve(10);
+      });
+
+      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
+      currentActiveTab = { ...mockTab };
+
+      await tabCapture.captureTab(mockTab);
+
+      expect(mockChrome.tabs.captureVisibleTab).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ format: 'jpeg', quality: 10 }),
+        expect.any(Function),
+      );
+    });
+
+    it('passes quality=100 when screenshotQuality=100', async () => {
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(true);
+        if (key === 'screenshotQuality') return Promise.resolve(100);
+        return Promise.resolve(100);
+      });
+
+      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
+      currentActiveTab = { ...mockTab };
+
+      await tabCapture.captureTab(mockTab);
+
+      expect(mockChrome.tabs.captureVisibleTab).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ format: 'jpeg', quality: 100 }),
+        expect.any(Function),
+      );
+    });
+
+    it('quality 10 vs 100 produces different quality arguments', async () => {
+      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
+      currentActiveTab = { ...mockTab };
+
+      // Capture at quality 10
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(true);
+        if (key === 'screenshotQuality') return Promise.resolve(10);
+        return Promise.resolve(10);
+      });
+      await tabCapture.captureTab(mockTab);
+      const call10 = (mockChrome.tabs.captureVisibleTab as jest.Mock).mock.calls[0][1];
+
+      jest.clearAllMocks();
+      mockChrome.tabs.captureVisibleTab = jest.fn((_wid, _opts, cb) => process.nextTick(() => cb('data:image/jpeg;base64,/9j/')));
+
+      // Capture at quality 100
+      (global as any).settings.get.mockImplementation((key: string) => {
+        if (key === 'screenshotsEnabled') return Promise.resolve(true);
+        if (key === 'screenshotQuality') return Promise.resolve(100);
+        return Promise.resolve(100);
+      });
+      await tabCapture.captureTab(mockTab);
+      const call100 = (mockChrome.tabs.captureVisibleTab as jest.Mock).mock.calls[0][1];
+
+      expect(call10.quality).toBe(10);
+      expect(call100.quality).toBe(100);
+      expect(call10.quality).not.toBe(call100.quality);
+    });
+  });
+
   describe('screenshots disabled handling', () => {
     it('should skip capture when screenshots are disabled', async () => {
       const mockTab = {

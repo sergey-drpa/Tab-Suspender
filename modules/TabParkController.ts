@@ -13,6 +13,25 @@ interface RequestParkPageFromInject extends RequestMessageBase{
 
 const HISTORY_KEEP_LAST_N_ITEMS = 300;
 
+// Vivaldi detection — cached because the browser cannot change at runtime.
+// Vivaldi intentionally masks its UA to look like Chrome, so UA sniffing is unreliable.
+// The vivExtData property on chrome.windows.Window is Vivaldi-specific.
+// Returns null when the check fails transiently (e.g. the SW woke before any
+// window was focused): a failure is "unknown", not "not Vivaldi", and must
+// never be cached — a cached false would silently re-enable the discard path
+// that crashes Vivaldi (SIGTRAP via native hibernation conflict).
+let _isVivaldi: boolean | undefined;
+async function isVivaldiBrowser(): Promise<boolean | null> {
+	if (_isVivaldi !== undefined) return _isVivaldi;
+	try {
+		const win = await chrome.windows.getCurrent();
+		_isVivaldi = win != null && (win as any).vivExtData !== undefined;
+	} catch {
+		return null;
+	}
+	return _isVivaldi;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function parkTabs(requestTab?, windowId?) {
 	const callbackSingle = async function(window: chrome.windows.Window) {
@@ -72,8 +91,12 @@ function genYoutubeUrlWithTimeMark(url, videoTime) {
 
 // park idle tab if it is not parked yet
 async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
-	if (!TabManager.isTabURLAllowedForPark(tab))
+	console.log(`[parkTab] tabId=${tab.id} url=${tab.url} discarded=${tab.discarded} title=${tab.title}`);
+
+	if (!TabManager.isTabURLAllowedForPark(tab)) {
+		console.warn(`[parkTab] tabId=${tab.id} URL not allowed for park: ${tab.url}`);
 		return;
+	}
 
 	if (tab.discarded && (options == null || options.reloaded == false)) {
 		void chrome.tabs.reload(tabId).then(function() {
@@ -151,6 +174,8 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 						width = win.width - 20;
 					const height = win.height;
 
+					console.log(`[parkTab:parkByMessage] tabId=${closureTab.id} url=${closureTab.url}`);
+
 					chrome.tabs.sendMessage(closureTabId, <RequestParkPageFromInject>{
 							method: '[AutomaticTabCleaner:ParkPageFromInject]',
 							tabId: closureTab.id,
@@ -204,6 +229,8 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 						if (debug)
 							console.log('originalFaviconUrl: ', originalFaviconUrl);
 
+						console.log(`[parkTab:screenExists] tabId=${tab.id} groupId=${tab.groupId} tab.url=${tab.url} favIconUrl=${tab.favIconUrl}`);
+
 						let url = parkUrl;
 						url += '?tabId=' + encodeURIComponent(tabId);
 						url += '&title=' + encodeURIComponent(tab.title);
@@ -214,6 +241,10 @@ async function parkTab(tab: chrome.tabs.Tab, tabId: number, options?) {
 							url += '&icon=' + encodeURIComponent(originalFaviconUrl);
 						else if (tab.favIconUrl)
 							url += '&icon=' + encodeURIComponent(tab.favIconUrl);
+
+						if (tab.groupId !== -1) {
+							console.log(`[parkTab:screenExists] Final park URL for grouped tab ${tab.id} (group ${tab.groupId}): ${url.slice(0, 200)}`);
+						}
 
 						chrome.tabs.update(tab.id, { 'url': url }).catch(console.error);
 					});
@@ -394,6 +425,17 @@ async function discardTab(tabId) {
 		return;
 	}
 
+	// Block discard entirely on Vivaldi — its native hibernation conflicts with
+	// chrome.tabs.discard() and triggers SIGTRAP crashes. Also block when the
+	// Vivaldi check is temporarily unknown: skipping one discard round on plain
+	// Chrome is harmless (the next tick retries), while a wrong discard on
+	// Vivaldi crashes the browser.
+	const isVivaldi = await isVivaldiBrowser();
+	if (isVivaldi !== false) {
+		console.log(`[discardTab] ${isVivaldi === true ? 'Vivaldi detected' : 'Vivaldi check unknown'}: blocking discard for tab ${tabId}`);
+		return;
+	}
+
 	// Safe to discard - not in active Split View
 	chrome.tabs.discard(tabId, function() {
 		hasLastError();
@@ -404,4 +446,6 @@ async function discardTab(tabId) {
 // @ts-ignore
 if (typeof global !== "undefined") {
 	(global as any).discardTab = discardTab;
+	(global as any).closeTab = closeTab;
+	(global as any).parkTab = parkTab;
 }
