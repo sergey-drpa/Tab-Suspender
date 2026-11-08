@@ -6,7 +6,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
-    "inlineSources": true,
     "typeRoots": ["./node_modules/@types", "./test/typing"],
   },
   "include": [
