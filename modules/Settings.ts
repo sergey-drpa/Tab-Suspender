@@ -63,6 +63,7 @@ class Settings {
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
 	ignoreSuspendGroupedTabs: boolean;
+	suspendUnfocusedActiveTabs: boolean;
 	ignoreSuspendSplitViewTabs: boolean;
 	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
@@ -113,6 +114,10 @@ const DEFAULT_SETTINGS: Settings = {
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
 	ignoreSuspendGroupedTabs: false,
+	// Suspends the ACTIVE tab of unfocused windows (multi-window memory saver).
+	// Default false so existing installs keep the pre-PR behavior; fresh installs
+	// switch it on in background.ts (firstInstallation branch).
+	suspendUnfocusedActiveTabs: false,
 	ignoreSuspendSplitViewTabs: true, // Prevent black screen in Split View tabs (Chrome 145+)
 	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,

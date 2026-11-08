@@ -20,7 +20,8 @@
 | 1.8 | Адаптивный таймаут увеличивается с ростом частоты посещений | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
 | 1.9 | Приостановка идемпотентна — повторный вызов не ломает состояние | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
 | 1.10 | Таб закрыт во время процесса приостановки — ошибок не должно быть | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
-| 1.11 | Multi-window: активный таб не-сфокусированного окна копит время и приостанавливается по таймауту (PR #64) | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`, default OFF): активный таб нефокусного ВИДИМОГО окна защищён при OFF; при ON — копит время и саспендится по таймауту | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.12 | Minimized-окно: активный таб саспендится безусловно, независимо от настройки `suspendUnfocusedActiveTabs` | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 
 ---
 
@@ -272,7 +273,7 @@
 |------|---------------------|--------|
 | `CtrlClickSuspend.test.ts` | 10.1, 10.2, 10.3, 4.10 | ✅ |
 | `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4 | ✅ |
-| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10, 1.11 | ✅ |
+| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10, 1.11, 1.12 | ✅ |
 | `TabObserver.Battery.test.ts` | 7.1, 7.2, 7.3, 7.4 | ✅ |
 | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
 | `TabObserver.ActiveTabAudible.test.ts` | 5.3, 5.4 | ✅ |

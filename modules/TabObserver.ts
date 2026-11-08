@@ -79,6 +79,7 @@ class TabObserver {
 		const battLvlLessValue = await settings.get('battLvlLessValue');
 		const adaptiveSuspendTimeout = await settings.get('adaptiveSuspendTimeout');
 		const ignoreCloseGroupedTabs = await settings.get('ignoreCloseGroupedTabs');
+		const suspendUnfocusedActiveTabs = await settings.get('suspendUnfocusedActiveTabs');
 
 		if (batteryLevel < 0.0)
 			enableSuspendOnlyIfBattLvlLessValue = false;
@@ -180,7 +181,13 @@ class TabObserver {
 							const tab = windows[i].tabs[j];
 							const tabId = tab.id;
 							const tabInfo: TabInfo = self.tabManager.getTabInfoOrCreate(tab);
-							const isTabCurrentlyViewed = tab.active && windows[i].focused !== false;
+							// A minimized window's active tab can never be viewed — suspend unconditionally.
+							// A visible-but-unfocused window's active tab (e.g. browser on a second
+							// monitor while the user works in another app) is viewed unless the user
+							// opted into suspending background windows (default OFF for existing installs).
+							const isTabCurrentlyViewed = tab.active
+								&& windows[i].state !== 'minimized'
+								&& (windows[i].focused !== false || !suspendUnfocusedActiveTabs);
 
 							try {
 								if (debugTabsInfo)
