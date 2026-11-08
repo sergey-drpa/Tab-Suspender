@@ -137,13 +137,6 @@ describe('TabObserver — Auto-Suspension Rules', () => {
     tabManager = new TabManagerClass();
   });
 
-  /** Set the single tab visible to chrome.windows.getAll mock */
-  function setWindowTab(tab: chrome.tabs.Tab, focused = true, state?: string) {
-    const win: any = { id: 1, focused, tabs: [tab] };
-    if (state != null) win.state = state;
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) => cb([win]));
-  }
-
   async function runTicks(n: number, stateOnly = false) {
     for (let i = 0; i < n; i++) {
       await tabObserver.tick(stateOnly);
@@ -204,12 +197,18 @@ describe('TabObserver — Auto-Suspension Rules', () => {
   // ══════════════════════════════════════════════════════════════════════════
   describe('1.11 — Multi-window: unfocused-window suspension is opt-in; minimized is unconditional', () => {
 
+    /** makeTab(active) + setWindowTab + fresh observer — the shared 1.11 setup */
+    function setupActiveTab(focused: boolean, state?: string) {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, focused, state);
+      tabObserver = new TabObserverClass(tabManager);
+      return tab;
+    }
+
     describe('setting OFF (default): visible unfocused windows are protected', () => {
 
       it('does NOT suspend the active tab of an unfocused VISIBLE window', async () => {
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false, 'normal'); // second monitor / behind other apps
-        tabObserver = new TabObserverClass(tabManager);
+        setupActiveTab(false, 'normal'); // second monitor / behind other apps
 
         await runTicks(5); // 50 s > 30 s timeout
 
@@ -217,9 +216,7 @@ describe('TabObserver — Auto-Suspension Rules', () => {
       });
 
       it('does NOT accumulate time for the active tab of an unfocused visible window', async () => {
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false, 'normal');
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false, 'normal');
 
         await runTicks(4);
 
@@ -233,9 +230,7 @@ describe('TabObserver — Auto-Suspension Rules', () => {
       it('suspends the ACTIVE tab of an UNFOCUSED window after the timeout', async () => {
         settingsOverrides['suspendUnfocusedActiveTabs'] = true;
 
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false, 'normal');
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false, 'normal');
 
         await runTicks(4); // 40 s > 30 s timeout
 
@@ -248,9 +243,7 @@ describe('TabObserver — Auto-Suspension Rules', () => {
       it('accumulates time for the ACTIVE tab of an unfocused window', async () => {
         settingsOverrides['suspendUnfocusedActiveTabs'] = true;
 
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false);
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false);
 
         await runTicks(3); // 30 s
 
@@ -261,21 +254,36 @@ describe('TabObserver — Auto-Suspension Rules', () => {
       it('does NOT suspend the ACTIVE tab of a FOCUSED window even with the setting on', async () => {
         settingsOverrides['suspendUnfocusedActiveTabs'] = true;
 
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, true, 'normal');
-        tabObserver = new TabObserverClass(tabManager);
+        setupActiveTab(true, 'normal');
 
         await runTicks(4);
 
         expect((global as any).parkTab).not.toHaveBeenCalled();
       });
 
-      it('resets time when the window becomes focused again', async () => {
+      it('still accrues active_time for an active tab in an unfocused window (usage weight)', async () => {
+        // Pre-PR, every active tick accrued active_time regardless of focus —
+        // it feeds the close-rank (active_time² × (swch_cnt+1)); losing it would
+        // make the MOST-used tab the first auto-close candidate after it is
+        // backgrounded.
         settingsOverrides['suspendUnfocusedActiveTabs'] = true;
 
         const tab = makeTab({ active: true });
         setWindowTab(tab, false);
         tabObserver = new TabObserverClass(tabManager);
+
+        await runTicks(4); // 40 s
+
+        const info = tabManager.getTabInfoById(tab.id);
+        expect(info?.active_time).toBeGreaterThan(0);
+        // the feature itself stays intact: idle time still accumulates
+        expect(info?.time).toBe(40);
+      });
+
+      it('resets time when the window becomes focused again', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+        const tab = setupActiveTab(false);
 
         await runTicks(3); // time = 30
         expect(tabManager.getTabInfoById(tab.id)?.time).toBe(30);
@@ -291,9 +299,7 @@ describe('TabObserver — Auto-Suspension Rules', () => {
     describe('minimized windows: suspended unconditionally (even with setting OFF)', () => {
 
       it('suspends the active tab of a MINIMIZED window', async () => {
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false, 'minimized');
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false, 'minimized');
 
         await runTicks(4); // 40 s > 30 s timeout
 
@@ -304,9 +310,7 @@ describe('TabObserver — Auto-Suspension Rules', () => {
       });
 
       it('accumulates time for the active tab of a minimized window', async () => {
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false, 'minimized');
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false, 'minimized');
 
         await runTicks(3);
 

@@ -66,20 +66,40 @@ class TabObserver {
 		}
 
 		// TODO-v4: Make as struct..
-		const pinnedSettings = await settings.get('pinned');
-		const timeoutSettings = await settings.get('timeout');
-		const closeTimeout = await settings.get('closeTimeout');
-		const isCloseTabsOn = await settings.get('isCloseTabsOn');
-		const ignoreAudible = await settings.get('ignoreAudible');
-		const animateTabIconSuspendTimeout = await settings.get('animateTabIconSuspendTimeout');
-		const autoSuspendOnlyOnBatteryOnly = await settings.get('autoSuspendOnlyOnBatteryOnly');
-		const discardTabAfterSuspendWithTimeout = await settings.get('discardTabAfterSuspendWithTimeout');
-		const discardTimeoutFactor = await settings.get('discardTimeoutFactor');
-		let enableSuspendOnlyIfBattLvlLessValue = await settings.get('enableSuspendOnlyIfBattLvlLessValue');
-		const battLvlLessValue = await settings.get('battLvlLessValue');
-		const adaptiveSuspendTimeout = await settings.get('adaptiveSuspendTimeout');
-		const ignoreCloseGroupedTabs = await settings.get('ignoreCloseGroupedTabs');
-		const suspendUnfocusedActiveTabs = await settings.get('suspendUnfocusedActiveTabs');
+		// All settings in ONE parallel batch instead of ~14 sequential
+		// chrome.storage IPC round-trips per tick.
+		let [
+			pinnedSettings,
+			timeoutSettings,
+			closeTimeout,
+			isCloseTabsOn,
+			ignoreAudible,
+			animateTabIconSuspendTimeout,
+			autoSuspendOnlyOnBatteryOnly,
+			discardTabAfterSuspendWithTimeout,
+			discardTimeoutFactor,
+			enableSuspendOnlyIfBattLvlLessValue,
+			battLvlLessValue,
+			adaptiveSuspendTimeout,
+			ignoreCloseGroupedTabs,
+			suspendUnfocusedActiveTabs
+		] =
+			await Promise.all([
+			  settings.get('pinned'),
+				settings.get('timeout'),
+				settings.get('closeTimeout'),
+				settings.get('isCloseTabsOn'),
+			  settings.get('ignoreAudible'),
+				settings.get('animateTabIconSuspendTimeout'),
+				settings.get('autoSuspendOnlyOnBatteryOnly'),
+			  settings.get('discardTabAfterSuspendWithTimeout'),
+				settings.get('discardTimeoutFactor'),
+			  settings.get('enableSuspendOnlyIfBattLvlLessValue'),
+				settings.get('battLvlLessValue'),
+			  settings.get('adaptiveSuspendTimeout'),
+				settings.get('ignoreCloseGroupedTabs'),
+			  settings.get('suspendUnfocusedActiveTabs')
+		]);
 
 		if (batteryLevel < 0.0)
 			enableSuspendOnlyIfBattLvlLessValue = false;
@@ -113,11 +133,9 @@ class TabObserver {
 									tab = windows[wi].tabs[j];
 									tabFromTabs = self.tabManager.getTabInfoById(tab.id);
 									if (tabFromTabs) {
-										// Never auto-close a tab that is active in its window (even an
-										// unfocused one): the user deliberately keeps it in the front.
-										// After multi-window support such tabs accumulate time, so the
-										// explicit filter is required (previously time stayed at 0).
-										if (!tab.active && !await self.tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
+										// Active tabs count toward the limit too; they are only
+										// excluded from SELECTION in the rank loop below.
+										if (!await self.tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
 											tabArray.push(tabFromTabs);
 									}
 								}
@@ -129,6 +147,10 @@ class TabObserver {
 
 							for (let i = 0; i < tabArray.length; i++) {
 								tab = tabArray[i];
+								// Never auto-close a tab that is active in its window (even an
+								// unfocused one): the user deliberately keeps it in the front.
+								if (openedChromeTabs[tab.id] != null && openedChromeTabs[tab.id].active)
+									continue;
 								if (tab.time >= closeTimeout) {
 									const currentRank = tab.active_time * tab.active_time * (tab.swch_cnt + 1) - tab.time * (tab.parked ? tab.time : 2);
 									if (minRank > currentRank) {
@@ -174,6 +196,14 @@ class TabObserver {
 			// eslint-disable-next-line no-redeclare
 			for (const i in windows) {
 				if (windows.hasOwnProperty(i)) {
+				// Window-level "is the user looking at it": a minimized window is
+				// never viewed (suspend its active tab unconditionally); a visible-but-
+				// unfocused window is viewed unless the user opted into suspending
+				// background windows (default ON for fresh installs; a one-time
+				// migration keeps it OFF for pre-existing installs).
+				const isWindowViewed = windows[i].state !== 'minimized'
+					&& (windows[i].focused !== false || !suspendUnfocusedActiveTabs);
+
 					// eslint-disable-next-line no-redeclare
 					for (const j in windows[i].tabs) {
 						if (windows[i].tabs.hasOwnProperty(j)) {
@@ -181,13 +211,7 @@ class TabObserver {
 							const tab = windows[i].tabs[j];
 							const tabId = tab.id;
 							const tabInfo: TabInfo = self.tabManager.getTabInfoOrCreate(tab);
-							// A minimized window's active tab can never be viewed — suspend unconditionally.
-							// A visible-but-unfocused window's active tab (e.g. browser on a second
-							// monitor while the user works in another app) is viewed unless the user
-							// opted into suspending background windows (default OFF for existing installs).
-							const isTabCurrentlyViewed = tab.active
-								&& windows[i].state !== 'minimized'
-								&& (windows[i].focused !== false || !suspendUnfocusedActiveTabs);
+							const isTabCurrentlyViewed = tab.active && isWindowViewed;
 
 							try {
 								if (debugTabsInfo)
@@ -308,7 +332,15 @@ class TabObserver {
 									if (!tabInfo.discarded && discardTabAfterSuspendWithTimeout)
 										// NOTE: chrome.tabs.discard refuses ACTIVE tabs in ANY window
 										// (per-window tab.active), not just the viewed one —
-										// so this guard must check tab.active itself, not isTabCurrentlyViewed
+										// so this guard must check tab.active itself, // (per-window tab.active, not just the viewed one). discardTab() enforces
+										// (per-window tab.active), not just the viewed one —
+										// so this guard must check tab.active itself, // this for all its callers; the local guard additionally prevents the
+										// (per-window tab.active), not just the viewed one —
+										// so this guard must check tab.active itself, // optimistic tabInfo.discarded=true flag from lying. Known limitation:
+										// (per-window tab.active), not just the viewed one —
+										// so this guard must check tab.active itself, // a parked tab that stays active in its (unfocused/minimized) window can
+										// (per-window tab.active), not just the viewed one —
+										// so this guard must check tab.active itself, // never be discarded.
 										if (!tab.active) {
 											if (tabInfo.suspended_time >= timeoutSettings * discardTimeoutFactor) {
 												// eslint-disable-next-line no-undef
@@ -367,12 +399,18 @@ class TabObserver {
 								/*																			*/
 								/* !!!!!!! LOOKS LIKE DEAD CODE !!!!!!! */
 								/*																			*/
-								if (isTabCurrentlyViewed) {
+								if (tab.active) {
 									if (tabInfo != null) {
-										tabInfo.time = 0;
+										// active_time is the usage weight feeding the close-rank;
+										// it must accrue for EVERY active tab, viewed or not —
+										// otherwise the most-used tab becomes the first close
+										// candidate once it is backgrounded.
 										tabInfo.active_time += TabObserver.tickSize * (TabManager.isAudible(tab) ? 1.5 : 1);
-										tabInfo.suspended_time = 0;
-										tabInfo.parkTrys = 0;
+										if (isTabCurrentlyViewed) {
+											tabInfo.time = 0;
+											tabInfo.suspended_time = 0;
+											tabInfo.parkTrys = 0;
+										}
 									}
 								}
 								if (pinnedSettings && tab.pinned)

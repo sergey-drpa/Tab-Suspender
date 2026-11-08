@@ -4,10 +4,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "watch": "node -e \"const fs = require('fs'); fs.rmSync('./build_dir', { recursive: true, force: true }); fs.mkdirSync('./build_dir', { recursive: true });\" && copy-files-from-to && tsc-watch --build ./ --onSuccess \"copy-files-from-to --silent\"",
-    "build": "node -e \"const fs = require('fs'); fs.rmSync('./build_dir', { recursive: true, force: true }); fs.mkdirSync('./build_dir', { recursive: true });\" && copy-files-from-to --silent && tsc --build ./",
-    "build:debug": "node -e \"const fs = require('fs'); fs.rmSync('./build_dir', { recursive: true, force: true }); fs.mkdirSync('./build_dir', { recursive: true });\" && copy-files-from-to --silent && tsc --build ./tsconfig.debug.json",
+    "watch": "npm run clean:build_dir && copy-files-from-to && tsc-watch --build ./ --onSuccess \"copy-files-from-to --silent\"",
+    "build": "npm run clean:build_dir && copy-files-from-to --silent && tsc --build ./",
+    "build:debug": "npm run clean:build_dir && copy-files-from-to --silent && tsc --build ./tsconfig.debug.json",
     "copy-files-from-to": "copy-files-from-to",
+    "clean:build_dir": "node -e \"const fs = require('fs'); fs.rmSync('./build_dir', { recursive: true, force: true }); fs.mkdirSync('./build_dir', { recursive: true });\"",
     "test": "jest --runInBand --forceExit --verbose",
     "testCacheCreate": "jest --cache --runInBand --silent"
   },

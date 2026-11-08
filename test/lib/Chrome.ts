@@ -66,10 +66,7 @@ const mockWindows = {
       tabs: [mockTab]
     };
     callback([mockWindow]);
-  }),
-  onFocusChanged: {
-    addListener: jest.fn()
-  }
+  })
 };
 
 const mockRuntime = {
@@ -87,6 +84,17 @@ const mockScripting = {
   windows: mockWindows,
   runtime: mockRuntime,
   scripting: mockScripting
+};
+
+/**
+ * Shared helper for TabObserver suites: point the chrome.windows.getAll mock
+ * at a single window with the given focus/visibility state. Replaces the five
+ * per-file copies that had drifted into three different signatures.
+ */
+(global as any).setWindowTab = function (tab: chrome.tabs.Tab, focused = true, state?: string) {
+  const win: Record<string, unknown> = { id: 1, focused, tabs: [tab] };
+  if (state != null) win.state = state;
+  mockWindows.getAll = jest.fn((_options: unknown, callback: (w: unknown) => void) => callback([win]));
 };
 
 // Mock DOM APIs - use Node.js built-in TextEncoder/TextDecoder

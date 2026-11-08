@@ -20,7 +20,7 @@
 | 1.8 | Адаптивный таймаут увеличивается с ростом частоты посещений | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
 | 1.9 | Приостановка идемпотентна — повторный вызов не ломает состояние | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
 | 1.10 | Таб закрыт во время процесса приостановки — ошибок не должно быть | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
-| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`, default OFF): активный таб нефокусного ВИДИМОГО окна защищён при OFF; при ON — копит время и саспендится по таймауту | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`; дефолт ON для новых установок, миграция → OFF для существующих): при OFF активный таб нефокусного видимого окна защищён; при ON — копит время и саспендится; `active_time` начисляется всем активным табам | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 | 1.12 | Minimized-окно: активный таб саспендится безусловно, независимо от настройки `suspendUnfocusedActiveTabs` | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 
 ---
@@ -100,6 +100,7 @@
 | 6.2 | Split View завершён → таб может быть discarded | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
 | 6.3 | Chrome без поддержки splitViewId → graceful fallback (нет ошибок) | P2 | Unit | ✅ | `SplitViewProtection.test.ts` |
 | 6.4 | `splitViewId === -1` (не в split view) → таб discardится нормально | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
+| 6.5 | Активный таб НЕ discardится (guard внутри `discardTab()`, Chrome отказывает активным в любом окне) | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
 
 ---
 
@@ -124,7 +125,7 @@
 | 8.3 | Ранг рассчитывается правильно (формула: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 | 8.4 | Закрытый таб попадает в closeHistory (до 300 записей) | P2 | Unit | ❌ | |
 | 8.5 | Общее кол-во табов ≤ лимита → ни один таб не закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
-| 8.6 | Multi-window: активный таб своего окна (даже не-сфокусированного) никогда не кандидат на auto-close | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+| 8.6 | Multi-window: активный таб СЧИТАЕТСЯ в лимите `limitOfOpenedTabs`, но никогда не выбирается для закрытия (даже с худшим рангом при ON) | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 
 ---
 
@@ -136,7 +137,7 @@
 | 9.2 | Таб помечен на восстановление → discard не происходит | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 | 9.3 | `openUnfocusedTabDiscarded=true` → новый фоновый таб сразу дискардится | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
 | 9.4 | Уже discarded таб при активации — корректная навигация на park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
-| 9.5 | Multi-window: discard-guard проверяет `tab.active` (per-window), а не «просматриваемость» — `chrome.tabs.discard` не может дискардить активные табы ни в каком окне | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
+| 9.5 | Multi-window: discard-guard проверяет `tab.active` (per-window); guard также встроен в `discardTab()` для всех вызовов; кейсы расхождения (setting ON / minimized) ловят регрессию guard'а | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 
 ---
 
@@ -161,6 +162,7 @@
 | 11.5 | Валидация цвета фона: правильный hex / неправильный hex | P2 | Unit | ❌ | |
 | 11.6 | Сброс настроек до дефолтных значений | P2 | Unit | ❌ | |
 | 11.7 | Экспорт/импорт roundtrip без потери данных | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
+| 11.8 | Миграция дефолта `suspendUnfocusedActiveTabs`: новая установка → true; существующая (local или sync) → false; выбор пользователя из sync побеждает; sync-stomp при реинсталле исключён | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
 
 ---
 
@@ -284,6 +286,6 @@
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |
-| `SettingsStore.Resilience.test.ts` | 11.3 | ✅ |
+| `SettingsStore.Resilience.test.ts` | 11.3, 11.8 | ✅ |
 | `BGMessageListener.ExportImport.test.ts` | 11.7 | ✅ |
 | `TabRestore.test.ts` | 2.5, 2.7 | ✅ |

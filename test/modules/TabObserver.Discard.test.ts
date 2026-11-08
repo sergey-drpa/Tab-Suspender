@@ -150,12 +150,6 @@ describe('TabObserver — Auto-Discard of Parked Tabs', () => {
   // Mutable tab reference so individual tests can adjust properties between ticks
   let currentTab: chrome.tabs.Tab;
 
-  function setWindowTab(tab: chrome.tabs.Tab, focused = true) {
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused, tabs: [tab] }])
-    );
-  }
-
   async function runTicks(n: number) {
     for (let i = 0; i < n; i++) {
       await tabObserver.tick();
@@ -366,6 +360,30 @@ describe('TabObserver — Auto-Discard of Parked Tabs', () => {
       await runTicks(3);
 
       expect((global as any).discardTab).toHaveBeenCalledWith(currentTab.id);
+    });
+
+    // The two tests above cannot distinguish `!tab.active` from the buggy
+    // `!isTabCurrentlyViewed` guard (with the setting off and a visible window
+    // both skip the discard). These two pin the configurations where the
+    // guards DIVERGE: viewed=false while tab.active=true.
+    it('does NOT discard an ACTIVE parked tab when the setting is ON (guards diverge)', async () => {
+      settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false, 'normal'); // idle per the setting, still active
+
+      await runTicks(5);
+
+      expect((global as any).discardTab).not.toHaveBeenCalled();
+    });
+
+    it('does NOT discard an ACTIVE parked tab in a MINIMIZED window (guards diverge)', async () => {
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false, 'minimized');
+
+      await runTicks(5);
+
+      expect((global as any).discardTab).not.toHaveBeenCalled();
     });
   });
 

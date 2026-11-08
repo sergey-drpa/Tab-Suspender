@@ -306,10 +306,6 @@ function start() {
 				const isAlreadyHasSyncSettings = ((await LocalStore.get(LocalStoreKeys.INSTALLED)) != null && !chrome.extension.inIncognitoContext);
 				if (firstInstallation && !isAlreadyHasSyncSettings) {
 					console.log('EX: Installed!');
-					// Multi-window: new installs suspend the active tab of unfocused
-					// windows by default. DEFAULT_SETTINGS keeps it false so that the
-					// update path never changes behavior for existing users.
-					settings.set('suspendUnfocusedActiveTabs', true).catch(console.error);
 					drawSetupWizardDialog();
 					setTimeout(() => void trackView(LocalStoreKeys.INSTALLED), 5000);
 				} else {

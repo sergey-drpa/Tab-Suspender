@@ -358,6 +358,14 @@ async function discardTab(tabId) {
 	try {
 		const tab = await chrome.tabs.get(tabId);
 
+		// CRITICAL: chrome.tabs.discard refuses ACTIVE tabs in ANY window (the
+		// active tab of an unfocused/minimized window included) — calling it would
+		// fail silently and likely retry forever. Protects ALL callers of discardTab.
+		if (tab.active) {
+			console.log(`[discardTab] Skipping discard for ACTIVE tab ${tabId}`);
+			return;
+		}
+
 		const SPLIT_VIEW_ID_NONE = -1;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const splitViewIdNone = (chrome.tabs as any).SPLIT_VIEW_ID_NONE ?? SPLIT_VIEW_ID_NONE;
