@@ -18,7 +18,7 @@ class PageStateRestoreController {
 	private tabMap = {}; /* Key - actualTabId, Value - {timestamp: expectedTime, storedAsTabId: storedTabId, url: url} */
 
 	constructor() {
-		setInterval(this.cleanup, 60000);
+		setInterval(() => this.cleanup(), 60000);
 	}
 
 	/**
@@ -160,3 +160,8 @@ class PageStateRestoreController {
 	}
 }
 
+// Export to global scope
+// @ts-ignore
+if (typeof global !== "undefined") {
+	(global as any).PageStateRestoreController = PageStateRestoreController;
+}

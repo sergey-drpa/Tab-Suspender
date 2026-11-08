@@ -1,5 +1,14 @@
 @charset "utf-8";
 
+/* Chrome M151/M152 sizes the popup by documentElement.scrollWidth and no longer
+   shrink-fits to <body> width. Pin the width on the html root so the popup stays
+   380px wide; the <hr> with width: calc(100% + 20px) in popup.html must not
+   overflow this width either. */
+html {
+    width: 380px;
+    overflow-x: hidden;
+}
+
 .slider-value {
     font-size: 11px;
 }

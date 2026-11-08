@@ -79,8 +79,36 @@ async function suspendAndRestore(
   const allTabs = await queryChromeTabs(browser);
   const parkTab = allTabs.find(t => t.url && t.url.startsWith(parkUrlPrefix(extensionId)));
   const parkTabId = parkTab?.id ?? tab.id;
+  log(`  [${modeName}] park tab url: ${parkTab?.url?.slice(0, 100)}`);
+
+  // Capture park page console logs for debugging
+  const parkPages = await browser.pages();
+  const parkPage = parkPages.find(p => p.url().includes('park.html'));
+  if (parkPage) {
+    parkPage.on('console', (msg) => {
+      const text = msg.text();
+      if (text.includes('Back') || text.includes('Reload') || text.includes('goBack') || text.includes('Issue #4') || text.includes('No valid restore URL')) {
+        log(`  [${modeName}] park.ts: ${text}`);
+      }
+    });
+  }
 
   log(`  [${modeName}] Restoring tab ${parkTabId}...`);
+  // Wait for the park page to finish loading before unsuspending. park.ts
+  // requests its parkData exactly once at script start; unsuspendTab's
+  // status='loading' branch relies on winning a race against that request
+  // (markForUnsuspend must land first), which is inherently flaky. The
+  // deterministic path — and the realistic user scenario — is unsuspending a
+  // fully loaded park page (unsuspendTab then sends RestoreMessage and
+  // park.ts calls goBack).
+  for (let i = 0; i < 40; i++) {
+    const t = (await queryChromeTabs(browser)).find(x => x.id === parkTabId);
+    if (t && t.status === 'complete') break;
+    await sleep(250);
+  }
+  const preRestoreTabs = await queryChromeTabs(browser);
+  const preRestoreTab = preRestoreTabs.find(t => t.id === parkTabId);
+  log(`  [${modeName}] tab status before restore: ${preRestoreTab?.status}, url: ${preRestoreTab?.url?.slice(0, 80)}`);
   await unsuspendTabById(browser, parkTabId);
 
   const restoredUrl = await waitForAnyTabToLeaveParked(browser, extensionId, '127.0.0.1', 20000)

@@ -19,7 +19,11 @@
     "test:whitelist-ignore": "npx tsx whitelist-ignore.test.ts",
     "test:screenshot-settings": "npx tsx screenshot-settings.test.ts",
     "test:unfocused-tab-discard": "npx tsx unfocused-tab-discard.test.ts",
-    "test:start-discarded": "npx tsx start-discarded.test.ts"
+    "test:start-discarded": "npx tsx start-discarded.test.ts",
+    "test:tab-group-session-restore-collapsed": "npx tsx tab-group-session-restore-collapsed.test.ts",
+    "test:tab-group-session-restore-race": "npx tsx tab-group-session-restore-race.test.ts",
+    "test:tab-group-session-restore-autorestore": "npx tsx tab-group-session-restore-autorestore.test.ts",
+    "test:tab-group-session-restore": "npx tsx tab-group-session-restore.test.ts"
   },
   "dependencies": {
     "puppeteer": "^24.15.0"

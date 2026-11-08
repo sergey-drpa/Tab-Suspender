@@ -438,6 +438,11 @@ describe('Chrome Split View Protection', () => {
 			// Clear module cache to reload TabParkController with real discardTab
 			jest.resetModules();
 
+			// These tests exercise the split-view logic on plain Chrome: the
+			// Vivaldi check must resolve to a definite "not Vivaldi" (the shared
+			// Chrome mock has no windows.getCurrent).
+			(chrome.windows as any).getCurrent = jest.fn().mockResolvedValue({ id: 1 });
+
 			// Re-import TabParkController to get real discardTab function
 			require('../../modules/TabParkController');
 		});

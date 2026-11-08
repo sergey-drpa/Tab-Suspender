@@ -1,10 +1,10 @@
 
 interface ParkPageDataBGResponse {
-	tabInfo: ITabInfo;
+	tabInfo: ITabInfo | null;
 	startDiscarded: boolean;
 	startAt: number;
 	isFirstTimeTabDiscard: boolean;
-	parkedUrl: string;
+	parkedUrl: string | null;
 	isTabMarkedForUnsuspend: boolean;
 	reloadTabOnRestore: boolean;
 	tabIconStatusVisualize: boolean;
@@ -13,6 +13,8 @@ interface ParkPageDataBGResponse {
 	restoreEvent: string;
 	parkBgColor: string;
 	restoreButtonView: string;
+	restoredFromStorage: boolean;
+	isGrouped: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,23 +48,7 @@ class BGMessageListener {
 			} else if (request.method === '[TS:dataForParkPage]') {
 				void (async () => {
 					try {
-						// TODO-v4: Figure out why TabId:  | Cannot read properties of undefined (reading 'toObject') happened ???
-						// TODO-v4: make each parameter extraction in individual try to avoid unexpected errors and ship max data to tab
-						const response: ParkPageDataBGResponse = {
-							startDiscarded: await getStartDiscarted(),
-							startAt: await getStartedAt(),
-							isFirstTimeTabDiscard: isFirstTimeTabDiscard(request.tabId),
-							parkedUrl: tabManager.findReplacedTabById(request.tabId)?.parkedUrl,
-							tabInfo: tabManager.findReplacedTabById(request.tabId).toObject(),
-							isTabMarkedForUnsuspend: isTabMarkedForUnsuspend(request.tabId, request.sessionId, { remove: true }),
-							reloadTabOnRestore: await getReloadTabOnRestore(),
-							tabIconStatusVisualize: await getTabIconStatusVisualize(),
-							tabIconOpacityChange: await getTabIconOpacityChange(),
-							screenshotCssStyle: await getScreenshotCssStyle(),
-							restoreEvent: await getRestoreEvent(),
-							parkBgColor: await getParkBgColor(),
-							restoreButtonView: await getRestoreButtonView(),
-						};
+						const response = await self.buildParkPageData(request.tabId, request.sessionId, sender.tab);
 						sendResponse(response);
 					} catch (e) {
 						sendResponse({});
@@ -444,5 +430,68 @@ class BGMessageListener {
 			console.log("Received message from " + sender + ": ", request);
 			sendResponse({tabId: sender.tab.id});
 		});
+	}
+
+	async buildParkPageData(tabId: number, sessionId: string, senderTab?: chrome.tabs.Tab): Promise<ParkPageDataBGResponse> {
+		const tabInfo = tabManager.findReplacedTabById(tabId);
+		let parkedUrl: string | null = null;
+		let tabInfoObject: ITabInfo | null = null;
+		let restoredFromStorage = false;
+
+		if (tabInfo != null) {
+			if (typeof tabInfo.toObject === 'function') {
+				tabInfoObject = tabInfo.toObject();
+			} else {
+				// Plain object fallback (e.g. after structuredClone corruption)
+				tabInfoObject = tabInfo as unknown as ITabInfo;
+			}
+			parkedUrl = tabInfo.parkedUrl ?? (tabInfoObject as ITabInfo).parkedUrl ?? null;
+			restoredFromStorage = tabInfo.restoredFromStorage === true;
+		}
+
+		// Issue #4: senderTab is the live tab that sent the message. It already
+		// carries the live URL (park.html?...) and groupId — no extra chrome.tabs
+		// call needed. This matters for restore-modes stability: an extra
+		// chrome.tabs.query({}) here delayed parkData delivery enough to make
+		// the restore-modes E2E test flaky when tab.status='loading'.
+		const liveParkHtmlUrl = senderTab?.url != null
+			? TabManager.getParameterByName('url', senderTab.url)
+			: null;
+		const isGrouped = senderTab != null && senderTab.groupId != null && senderTab.groupId > 0;
+
+		// Issue #4: if the persisted TabInfo lost its parkedUrl, recover it from
+		// the live park.html URL that still carries the original URL in its query.
+		if (TabManager.isInvalidRestoreUrl(parkedUrl)) {
+			const fallbackUrl = liveParkHtmlUrl;
+			if (fallbackUrl != null && !TabManager.isInvalidRestoreUrl(fallbackUrl)) {
+				parkedUrl = fallbackUrl;
+				if (tabInfoObject == null) {
+					const minimalTabInfo = new TabInfo(<chrome.tabs.Tab>{ id: tabId, url: fallbackUrl });
+					minimalTabInfo.parkedUrl = fallbackUrl;
+					minimalTabInfo.parked = true;
+					tabInfoObject = minimalTabInfo.toObject();
+				} else {
+					tabInfoObject.parkedUrl = fallbackUrl;
+				}
+			}
+		}
+
+		return {
+			startDiscarded: await getStartDiscarted(),
+			startAt: await getStartedAt(),
+			isFirstTimeTabDiscard: isFirstTimeTabDiscard(tabId),
+			parkedUrl: parkedUrl,
+			tabInfo: tabInfoObject,
+			isTabMarkedForUnsuspend: isTabMarkedForUnsuspend(tabId, sessionId, { remove: true }),
+			reloadTabOnRestore: await getReloadTabOnRestore(),
+			tabIconStatusVisualize: await getTabIconStatusVisualize(),
+			tabIconOpacityChange: await getTabIconOpacityChange(),
+			screenshotCssStyle: await getScreenshotCssStyle(),
+			restoreEvent: await getRestoreEvent(),
+			parkBgColor: await getParkBgColor(),
+			restoreButtonView: await getRestoreButtonView(),
+			restoredFromStorage: restoredFromStorage,
+			isGrouped: isGrouped,
+		};
 	}
 }

@@ -268,8 +268,9 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 		// Check that chrome.tabs.get was called
 		expect(chrome.tabs.get).toHaveBeenCalledWith(tab.id);
 
-		// Wait for promise to resolve
+		// Wait for promise to resolve, then flush the setTimeout(fn, 0) added by circuit breaker
 		await Promise.resolve();
+		await jest.advanceTimersByTimeAsync(1);
 
 		// Check that chrome.tabs.update was called with park URL
 		expect(chrome.tabs.update).toHaveBeenCalledWith(
@@ -361,6 +362,7 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 		// Fast-forward second polling attempt (with favicon)
 		await jest.advanceTimersByTimeAsync(200);
 		await Promise.resolve();
+		await jest.advanceTimersByTimeAsync(1); // flush setTimeout(fn, 0) circuit breaker wrapper
 
 		// Verify second call was made
 		expect(chrome.tabs.get).toHaveBeenCalledTimes(2);
@@ -452,6 +454,7 @@ describe('Ctrl/Cmd+Click Suspend Functionality', () => {
 
 		await jest.advanceTimersByTimeAsync(200);
 		await Promise.resolve();
+		await jest.advanceTimersByTimeAsync(1); // flush setTimeout(fn, 0) circuit breaker wrapper
 
 		// Tab navigated to park.html
 		expect(chrome.tabs.update).toHaveBeenCalledWith(
