@@ -399,18 +399,16 @@ class TabObserver {
 								/*																			*/
 								/* !!!!!!! LOOKS LIKE DEAD CODE !!!!!!! */
 								/*																			*/
-								if (tab.active) {
+								if (isTabCurrentlyViewed) {
 									if (tabInfo != null) {
-										// active_time is the usage weight feeding the close-rank;
-										// it must accrue for EVERY active tab, viewed or not —
-										// otherwise the most-used tab becomes the first close
-										// candidate once it is backgrounded.
+										// active_time accrues for VIEWED tabs only: it feeds the adaptive
+										// suspend threshold (timeout + (active_time+1)×log2(swch+1) + …),
+										// and accruing it for active-but-unfocused tabs makes that threshold
+										// grow in lockstep with `time` — the tab would NEVER be suspended.
+										tabInfo.time = 0;
 										tabInfo.active_time += TabObserver.tickSize * (TabManager.isAudible(tab) ? 1.5 : 1);
-										if (isTabCurrentlyViewed) {
-											tabInfo.time = 0;
-											tabInfo.suspended_time = 0;
-											tabInfo.parkTrys = 0;
-										}
+										tabInfo.suspended_time = 0;
+										tabInfo.parkTrys = 0;
 									}
 								}
 								if (pinnedSettings && tab.pinned)

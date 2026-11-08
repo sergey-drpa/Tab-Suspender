@@ -20,8 +20,11 @@
 | 1.8 | Adaptive timeout grows with visit frequency | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
 | 1.9 | Suspension is idempotent — repeated calls do not break state | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
 | 1.10 | Tab closed during suspension — no errors | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
-| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`; default ON for fresh installs, one-time migration → OFF for pre-existing): with OFF the active tab of an unfocused visible window is protected; with ON it accrues time and is suspended on timeout; `active_time` accrues for every active tab | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`; default ON for fresh installs, one-time migration → OFF for pre-existing): with OFF the active tab of an unfocused visible window is protected; with ON it is suspended on timeout — under the ADAPTIVE timeout too (active_time accrues for VIEWED tabs only, so the threshold converges; lockstep accrual would deadlock suspension) | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 | 1.12 | Minimized window: its active tab is suspended unconditionally, regardless of `suspendUnfocusedActiveTabs` | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.13 | E2E multi-window: fresh install (setting ON via migration) — the ACTIVE tab of an UNFOCUSED window is auto-suspended by the real ticker, while the focused window's active tab is never touched | P1 | E2E | ✅ | `multi-window-suspend.test.ts` |
+| 1.14 | E2E minimized: with the setting OFF, the active tab of a MINIMIZED window is still auto-suspended (real window state) | P1 | E2E | ✅ | `multi-window-suspend.test.ts` |
+| 1.15 | Adaptive timeout (проде-дефолт `adaptiveSuspendTimeout=true`, теперь и дефолт сьюта): active_time заморожен для активных-нефокусных табов; накопленное использование задерживает, но не предотвращает саспенд; minimized саспендится под adaptive | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 
 ---
 

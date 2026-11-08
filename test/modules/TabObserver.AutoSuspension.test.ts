@@ -65,7 +65,7 @@ let settingsOverrides: Record<string, any> = {};
       discardTimeoutFactor: 0.05,
       enableSuspendOnlyIfBattLvlLessValue: false,
       battLvlLessValue: 50,
-      adaptiveSuspendTimeout: false,
+      adaptiveSuspendTimeout: true,
       ignoreCloseGroupedTabs: false,
       ignoreSuspendGroupedTabs: false,
     };
@@ -261,23 +261,30 @@ describe('TabObserver — Auto-Suspension Rules', () => {
         expect((global as any).parkTab).not.toHaveBeenCalled();
       });
 
-      it('still accrues active_time for an active tab in an unfocused window (usage weight)', async () => {
-        // Pre-PR, every active tick accrued active_time regardless of focus —
-        // it feeds the close-rank (active_time² × (swch_cnt+1)); losing it would
-        // make the MOST-used tab the first auto-close candidate after it is
-        // backgrounded.
+      it('suspends an active-unfocused tab under the ADAPTIVE timeout (threshold must converge)', async () => {
+        // active_time feeds the ADAPTIVE suspend threshold:
+        //   timeout + (active_time+1)×log2(swch+1) + (timeout/4)×log2(swch+1)
+        // It accrues for VIEWED tabs only; if it accrued for active-but-unfocused
+        // tabs it would grow in lockstep with `time` and the threshold would stay
+        // forever ahead — the tab would NEVER be suspended. Caught by the
+        // multi-window E2E with the default adaptiveSuspendTimeout=true.
         settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['adaptiveSuspendTimeout'] = true;
+        settingsOverrides['timeout'] = 10;
 
-        const tab = makeTab({ active: true });
-        setWindowTab(tab, false);
-        tabObserver = new TabObserverClass(tabManager);
+        const tab = setupActiveTab(false);
+        // One activation happened (as in real Chrome): swch_cnt=1 makes the
+        // log2 terms non-zero, so active_time actually feeds the threshold.
+        tabManager.getTabInfoOrCreate(tab).swch_cnt = 1;
 
-        await runTicks(4); // 40 s
+        await runTicks(4); // time = 40 s vs frozen threshold 10 + 1 + 2.5 = 13.5
 
         const info = tabManager.getTabInfoById(tab.id);
-        expect(info?.active_time).toBeGreaterThan(0);
-        // the feature itself stays intact: idle time still accumulates
         expect(info?.time).toBe(40);
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
       });
 
       it('resets time when the window becomes focused again', async () => {
@@ -293,6 +300,60 @@ describe('TabObserver — Auto-Suspension Rules', () => {
         await runTicks(1);
 
         expect(tabManager.getTabInfoById(tab.id)?.time).toBe(0);
+      });
+    });
+
+    describe('adaptive timeout interplay (production default adaptiveSuspendTimeout=true)', () => {
+      // The suite default matches production now. These tests pin the invariants
+      // that keep the adaptive threshold CONVERGENT for multi-window idle tabs:
+      //   frame = timeout + timeout×parkedCount + (active_time+1)×log2(swch+1) + (timeout/4)×log2(swch+1)
+
+      it('freezes active_time while the tab is active-but-unfocused (viewed-only accrual)', async () => {
+        // If active_time accrued during unfocused-active ticks, the frame would
+        // grow in lockstep with `time` and the tab would never suspend (the
+        // deadlock the multi-window E2E caught with the production default).
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false);
+        const info = tabManager.getTabInfoOrCreate(tab);
+        info.active_time = 100; // usage accumulated earlier, while the tab was viewed
+        info.swch_cnt = 1;
+
+        await runTicks(5); // 50 s of idle time
+
+        expect(tabManager.getTabInfoById(tab.id)?.active_time).toBe(100); // frozen
+      });
+
+      it('prior usage DELAYS but never prevents suspension (frozen frame converges)', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false);
+        const info = tabManager.getTabInfoOrCreate(tab);
+        info.active_time = 10; // frame = 10 + 11 + 2.5 = 23.5 → constant
+        info.swch_cnt = 1;
+
+        await runTicks(4); // time = 40 s
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+
+      it('suspends the active tab of a minimized window under the adaptive timeout', async () => {
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false, 'minimized');
+        tabManager.getTabInfoOrCreate(tab).swch_cnt = 1; // frame = 10 + 1 + 2.5
+
+        await runTicks(3); // time = 30 s > 13.5
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
       });
     });
 
