@@ -483,4 +483,68 @@ describe('TabObserver — Auto-Close Rules', () => {
       expect((global as any).closeTab).not.toHaveBeenCalled();
     });
   });
+  // ══════════════════════════════════════════════════════════════════════════
+  // 8.6 — Multi-window (PR #64): a tab that is ACTIVE in its window (even an
+  //       unfocused one) must never be an auto-close candidate. Pre-PR its
+  //       time was reset every tick so it could never reach closeTimeout;
+  //       after PR #64 it accumulates time — the close collection must filter
+  //       it out explicitly instead of destroying a tab the user keeps in front.
+  // ══════════════════════════════════════════════════════════════════════════
+  describe('8.6 — Multi-window: active tabs are never auto-close candidates', () => {
+
+    it('does NOT close a tab that is ACTIVE in an UNFOCUSED window even with the lowest rank', async () => {
+      const tabActive = makeTab({ id: 1, url: 'https://active.com', active: true });
+      const tab2      = makeTab({ id: 2, url: 'https://b.com' });
+      const tab3      = makeTab({ id: 3, url: 'https://c.com' });
+
+      const windows = [{ id: 1, focused: false, tabs: [tabActive, tab2, tab3] }];
+      (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) => cb(windows));
+
+      // Active tab gets the LOWEST rank (no active_time, no switches).
+      const infoActive = tabManager.getTabInfoOrCreate(tabActive);
+      infoActive.active_time = 0;
+      infoActive.swch_cnt   = 0;
+
+      const info2 = tabManager.getTabInfoOrCreate(tab2);
+      info2.active_time = 10;
+      info2.swch_cnt   = 1;
+
+      const info3 = tabManager.getTabInfoOrCreate(tab3);
+      info3.active_time = 10;
+      info3.swch_cnt   = 1;
+
+      // 7 ticks → time = 70 ≥ closeTimeout (60) for all tabs.
+      // Buggy behavior: 3 candidates > limit 2 → the active tab has the
+      // lowest rank and is closed. Expected: active tab excluded → only 2
+      // candidates → 2 > 2 is false → nothing is closed.
+      for (let i = 0; i < 7; i++) {
+        await tabObserver.tick();
+        await flushPromises();
+      }
+
+      expect((global as any).closeTab).not.toHaveBeenCalled();
+    });
+
+    it('still closes an INACTIVE tab in an unfocused window when the limit is exceeded', async () => {
+      const tab1 = makeTab({ id: 1, url: 'https://a.com' });
+      const tab2 = makeTab({ id: 2, url: 'https://b.com' });
+      const tab3 = makeTab({ id: 3, url: 'https://c.com' });
+
+      const windows = [{ id: 1, focused: false, tabs: [tab1, tab2, tab3] }];
+      (chrome.windows.getAll as jest.Mock).mockImplementation((_opts: any, cb: any) => cb(windows));
+
+      [tab1, tab2, tab3].forEach(tab => {
+        const info = tabManager.getTabInfoOrCreate(tab);
+        info.time        = 100;
+        info.active_time = 0;
+        info.swch_cnt    = 0;
+        info.parked      = false;
+      });
+
+      await runTick(tabObserver);
+
+      expect((global as any).closeTab).toHaveBeenCalledTimes(1);
+    });
+  });
+
 });

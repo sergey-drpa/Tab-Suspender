@@ -112,7 +112,11 @@ class TabObserver {
 									tab = windows[wi].tabs[j];
 									tabFromTabs = self.tabManager.getTabInfoById(tab.id);
 									if (tabFromTabs) {
-										if (!await self.tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
+										// Never auto-close a tab that is active in its window (even an
+										// unfocused one): the user deliberately keeps it in the front.
+										// After multi-window support such tabs accumulate time, so the
+										// explicit filter is required (previously time stayed at 0).
+										if (!tab.active && !await self.tabManager.isExceptionTab(tab) && TabManager.isPassGroupedTabsRules(tab, ignoreCloseGroupedTabs))
 											tabArray.push(tabFromTabs);
 									}
 								}
@@ -295,7 +299,10 @@ class TabObserver {
 									}
 
 									if (!tabInfo.discarded && discardTabAfterSuspendWithTimeout)
-										if (!isTabCurrentlyViewed) {
+										// NOTE: chrome.tabs.discard refuses ACTIVE tabs in ANY window
+										// (per-window tab.active), not just the viewed one —
+										// so this guard must check tab.active itself, not isTabCurrentlyViewed
+										if (!tab.active) {
 											if (tabInfo.suspended_time >= timeoutSettings * discardTimeoutFactor) {
 												// eslint-disable-next-line no-undef
 												if (!isTabMarkedForUnsuspend(parseUrlParam(tab.url, 'tabId'), parseUrlParam(tab.url, 'sessionId'))) {

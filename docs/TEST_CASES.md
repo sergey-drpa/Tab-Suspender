@@ -20,6 +20,7 @@
 | 1.8 | Адаптивный таймаут увеличивается с ростом частоты посещений | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
 | 1.9 | Приостановка идемпотентна — повторный вызов не ломает состояние | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
 | 1.10 | Таб закрыт во время процесса приостановки — ошибок не должно быть | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+| 1.11 | Multi-window: активный таб не-сфокусированного окна копит время и приостанавливается по таймауту (PR #64) | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 
 ---
 
@@ -122,6 +123,7 @@
 | 8.3 | Ранг рассчитывается правильно (формула: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 | 8.4 | Закрытый таб попадает в closeHistory (до 300 записей) | P2 | Unit | ❌ | |
 | 8.5 | Общее кол-во табов ≤ лимита → ни один таб не закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+| 8.6 | Multi-window: активный таб своего окна (даже не-сфокусированного) никогда не кандидат на auto-close | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 
 ---
 
@@ -133,6 +135,7 @@
 | 9.2 | Таб помечен на восстановление → discard не происходит | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 | 9.3 | `openUnfocusedTabDiscarded=true` → новый фоновый таб сразу дискардится | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
 | 9.4 | Уже discarded таб при активации — корректная навигация на park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
+| 9.5 | Multi-window: discard-guard проверяет `tab.active` (per-window), а не «просматриваемость» — `chrome.tabs.discard` не может дискардить активные табы ни в каком окне | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 
 ---
 
@@ -269,12 +272,12 @@
 |------|---------------------|--------|
 | `CtrlClickSuspend.test.ts` | 10.1, 10.2, 10.3, 4.10 | ✅ |
 | `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4 | ✅ |
-| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10 | ✅ |
+| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10, 1.11 | ✅ |
 | `TabObserver.Battery.test.ts` | 7.1, 7.2, 7.3, 7.4 | ✅ |
 | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
 | `TabObserver.ActiveTabAudible.test.ts` | 5.3, 5.4 | ✅ |
-| `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5 | ✅ |
-| `TabObserver.Discard.test.ts` | 9.1, 9.2 | ✅ |
+| `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5, 8.6  | ✅ |
+| `TabObserver.Discard.test.ts` | 9.1, 9.2, 9.5 | ✅ |
 | `TabObserver.FaviconRetry.test.ts` | 4.9 | ✅ |
 | `TabObserver.SettingsChange.test.ts` | 11.4 | ✅ |
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |

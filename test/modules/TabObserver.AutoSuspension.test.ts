@@ -138,9 +138,9 @@ describe('TabObserver — Auto-Suspension Rules', () => {
   });
 
   /** Set the single tab visible to chrome.windows.getAll mock */
-  function setWindowTab(tab: chrome.tabs.Tab) {
+  function setWindowTab(tab: chrome.tabs.Tab, focused = true) {
     (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused: true, tabs: [tab] }])
+      cb([{ id: 1, focused, tabs: [tab] }])
     );
   }
 
@@ -193,6 +193,63 @@ describe('TabObserver — Auto-Suspension Rules', () => {
         expect.objectContaining({ id: tab.id }),
         tab.id,
       );
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // 1.11 — Multi-window (PR #64): the active tab of an UNFOCUSED window is
+  //        treated as idle — it accumulates time and IS suspended after the
+  //        timeout, while the active tab of the focused window stays protected.
+  // ══════════════════════════════════════════════════════════════════════════
+  describe('1.11 — Multi-window: active tab of an unfocused window is suspended', () => {
+
+    it('suspends the ACTIVE tab of an UNFOCUSED window after the timeout', async () => {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, false); // active, but its window has no focus
+      tabObserver = new TabObserverClass(tabManager);
+
+      await runTicks(4); // 40 s > 30 s timeout
+
+      expect((global as any).parkTab).toHaveBeenCalledWith(
+        expect.objectContaining({ id: tab.id }),
+        tab.id,
+      );
+    });
+
+    it('accumulates time for the ACTIVE tab of an unfocused window', async () => {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, false);
+      tabObserver = new TabObserverClass(tabManager);
+
+      await runTicks(3); // 30 s
+
+      const info = tabManager.getTabInfoById(tab.id);
+      expect(info?.time).toBe(30);
+    });
+
+    it('does NOT suspend the ACTIVE tab of a FOCUSED window (guard for 1.2)', async () => {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, true);
+      tabObserver = new TabObserverClass(tabManager);
+
+      await runTicks(4);
+
+      expect((global as any).parkTab).not.toHaveBeenCalled();
+    });
+
+    it('resets time when the window becomes focused again', async () => {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, false);
+      tabObserver = new TabObserverClass(tabManager);
+
+      await runTicks(3); // time = 30
+      expect(tabManager.getTabInfoById(tab.id)?.time).toBe(30);
+
+      // User focuses the window → next tick must reset the counter
+      setWindowTab(tab, true);
+      await runTicks(1);
+
+      expect(tabManager.getTabInfoById(tab.id)?.time).toBe(0);
     });
   });
 
