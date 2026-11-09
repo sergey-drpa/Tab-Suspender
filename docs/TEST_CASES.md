@@ -170,6 +170,7 @@
 | 11.6 | Reset settings to default values | P2 | Unit | ❌ | `resetToDefaults` function is not implemented in the codebase |
 | 11.7 | Export/import roundtrip without data loss | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
 | 11.8 | `suspendUnfocusedActiveTabs` default migration: fresh install → true; pre-existing (local or sync) → false; the user's synced choice always wins; reinstall sync-stomp excluded | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
+| 11.9 | Concurrent `settingsChanged()` calls leave exactly one live ticker interval (no interval leak) | P1 | Unit | ✅ | `TabObserver.SettingsChange.test.ts` |
 
 ---
 
@@ -300,7 +301,7 @@ Remaining ❌ cases cannot be covered for the following reasons:
 | `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5, 8.6  | ✅ |
 | `TabObserver.Discard.test.ts` | 9.1, 9.2, 9.5 | ✅ |
 | `TabObserver.FaviconRetry.test.ts` | 4.9 | ✅ |
-| `TabObserver.SettingsChange.test.ts` | 11.4 | ✅ |
+| `TabObserver.SettingsChange.test.ts` | 11.4, 11.9 | ✅ |
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |

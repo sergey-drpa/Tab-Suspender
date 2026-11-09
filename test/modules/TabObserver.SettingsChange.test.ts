@@ -300,5 +300,46 @@ describe('TabObserver — Settings Change (11.4)', () => {
         tab.id,
       );
     });
+
+    // ────────────────────────────────────────────────────────────────────────
+    it('concurrent settingsChanged() calls leave exactly one live ticker interval', async () => {
+      // Regression: start() used to clear the old interval BEFORE awaiting settings, so
+      // overlapping calls each created an interval and all but the last leaked. Every leaked
+      // interval ran tick() again, making tabs age N× faster than the configured timeout.
+      const tickerDelay = (global as any).TabObserver.tickSize * 1000;
+      const live = new Set<any>();
+      let tickersCreated = 0;
+      const setSpy = jest.spyOn(global, 'setInterval').mockImplementation(((_fn: any, delay?: number) => {
+        const id = {};
+        if (delay === tickerDelay) {
+          tickersCreated++;
+          live.add(id);
+        }
+        return id;
+      }) as any);
+      const clearSpy = jest.spyOn(global, 'clearInterval').mockImplementation(((id: any) => {
+        live.delete(id);
+      }) as any);
+
+      try {
+        const tab = makeTab({ active: false });
+        setWindowTab(tab);
+        tabObserver = new TabObserverClass(tabManager);
+
+        tabObserver.settingsChanged();
+        tabObserver.settingsChanged();
+        tabObserver.settingsChanged();
+
+        for (let i = 0; i < 10; i++) {
+          await Promise.resolve();
+        }
+
+        expect(tickersCreated).toBe(4);
+        expect(live.size).toBe(1);
+      } finally {
+        setSpy.mockRestore();
+        clearSpy.mockRestore();
+      }
+    });
   });
 });
