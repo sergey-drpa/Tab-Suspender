@@ -20,12 +20,15 @@ class TabObserver {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 
+		const active = await settings.get('active');
+
+		// Clear after the await so concurrent start() calls can't each create an interval and leak all but the last
 		if (TabObserver.ticker) {
 			clearInterval(TabObserver.ticker);
 			TabObserver.ticker = null;
 		}
 
-		if (await settings.get('active'))
+		if (active)
 			TabObserver.ticker = setInterval(
 				()=> {self.tick().catch(console.error)},
 				TabObserver.tickSize * 1000
