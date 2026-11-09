@@ -150,12 +150,6 @@ describe('TabObserver — Favicon Retry for Parked Tabs', () => {
 
   let currentTab: chrome.tabs.Tab;
 
-  function setWindowTab(tab: chrome.tabs.Tab) {
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused: true, tabs: [tab] }])
-    );
-  }
-
   async function runTicks(n: number) {
     for (let i = 0; i < n; i++) {
       await tabObserver.tick();

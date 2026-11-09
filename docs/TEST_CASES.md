@@ -20,6 +20,11 @@
 | 1.8 | Adaptive timeout grows with visit frequency | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
 | 1.9 | Suspension is idempotent — repeated calls do not break state | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
 | 1.10 | Tab closed during suspension — no errors | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+| 1.11 | Multi-window (opt-in `suspendUnfocusedActiveTabs`; default ON for fresh installs, one-time migration → OFF for pre-existing): with OFF the active tab of an unfocused visible window is protected; with ON it is suspended on timeout — under the ADAPTIVE timeout too (active_time accrues for VIEWED tabs only, so the threshold converges; lockstep accrual would deadlock suspension) | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.12 | Minimized window: its active tab is suspended unconditionally, regardless of `suspendUnfocusedActiveTabs` | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
+| 1.13 | E2E multi-window: fresh install (setting ON via migration) — the ACTIVE tab of an UNFOCUSED window is auto-suspended by the real ticker, while the focused window's active tab is never touched | P1 | E2E | ✅ | `multi-window-suspend.test.ts` |
+| 1.14 | E2E minimized: with the setting OFF, the active tab of a MINIMIZED window is still auto-suspended (real window state) | P1 | E2E | ✅ | `multi-window-suspend.test.ts` |
+| 1.15 | Adaptive timeout (проде-дефолт `adaptiveSuspendTimeout=true`, теперь и дефолт сьюта): active_time заморожен для активных-нефокусных табов; накопленное использование задерживает, но не предотвращает саспенд; minimized саспендится под adaptive | P1 | Unit | ✅ | `TabObserver.AutoSuspension.test.ts` |
 
 ---
 
@@ -102,6 +107,7 @@
 | 6.2 | Split View ended → tab can be discarded | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
 | 6.3 | Chrome without `splitViewId` support → graceful fallback (no errors) | P2 | Unit | ✅ | `SplitViewProtection.test.ts` |
 | 6.4 | `splitViewId === -1` (not in split view) → tab discarded normally | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
+| 6.5 | ACTIVE tab is never discarded (guard inside `discardTab()` — Chrome refuses active tabs in any window) | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
 
 ---
 
@@ -126,6 +132,7 @@
 | 8.3 | Rank calculated correctly (formula: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 | 8.4 | Closed tab added to closeHistory (LIFO, capped at 300) | P2 | Unit | ✅ | `TabParkController.History.test.ts` |
 | 8.5 | Total tabs ≤ limit → no tab is closed | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+| 8.6 | Multi-window: the active tab COUNTS toward the `limitOfOpenedTabs` limit but is never selected for closing (even with the lowest rank when the setting is ON) | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
 
 ---
 
@@ -137,6 +144,7 @@
 | 9.2 | Tab marked for restore → discard is skipped | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 | 9.3 | `openUnfocusedTabDiscarded=true` → new background tab discarded immediately | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
 | 9.4 | Already discarded tab on activation — correct navigation to park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
+| 9.5 | Multi-window: the discard guard checks `tab.active` (per-window); the guard also lives inside `discardTab()` for all callers; diverging cases (setting ON / minimized) catch guard regressions | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
 
 ---
 
@@ -161,6 +169,7 @@
 | 11.5 | Background color validation: valid hex / invalid hex | P2 | Unit | ❌ | `getParkBgColor` is a closure in `background.ts` — not unit-testable without heavy background-script side effects |
 | 11.6 | Reset settings to default values | P2 | Unit | ❌ | `resetToDefaults` function is not implemented in the codebase |
 | 11.7 | Export/import roundtrip without data loss | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
+| 11.8 | `suspendUnfocusedActiveTabs` default migration: fresh install → true; pre-existing (local or sync) → false; the user's synced choice always wins; reinstall sync-stomp excluded | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
 
 ---
 
@@ -284,18 +293,18 @@ Remaining ❌ cases cannot be covered for the following reasons:
 |------|--------|--------|
 | `CtrlClickSuspend.test.ts` | 10.1, 10.2, 10.3, 4.10 | ✅ |
 | `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4, 4.11 | ✅ |
-| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10 | ✅ |
+| `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10, 1.11, 1.12 | ✅ |
 | `TabObserver.Battery.test.ts` | 7.1, 7.2, 7.3, 7.4 | ✅ |
 | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
 | `TabObserver.ActiveTabAudible.test.ts` | 5.3, 5.4 | ✅ |
-| `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5 | ✅ |
-| `TabObserver.Discard.test.ts` | 9.1, 9.2 | ✅ |
+| `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5, 8.6  | ✅ |
+| `TabObserver.Discard.test.ts` | 9.1, 9.2, 9.5 | ✅ |
 | `TabObserver.FaviconRetry.test.ts` | 4.9 | ✅ |
 | `TabObserver.SettingsChange.test.ts` | 11.4 | ✅ |
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |
-| `SettingsStore.Resilience.test.ts` | 11.3 | ✅ |
+| `SettingsStore.Resilience.test.ts` | 11.3, 11.8 | ✅ |
 | `BGMessageListener.ExportImport.test.ts` | 11.7 | ✅ |
 | `TabRestore.test.ts` | 2.5, 2.7 | ✅ |
 | `OffscreenDocument.Heartbeat.test.ts` | 16.1, 7.5 | ✅ |

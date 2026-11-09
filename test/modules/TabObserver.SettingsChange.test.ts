@@ -140,12 +140,6 @@ describe('TabObserver — Settings Change (11.4)', () => {
     tabManager = new TabManagerClass();
   });
 
-  function setWindowTab(tab: chrome.tabs.Tab) {
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused: true, tabs: [tab] }])
-    );
-  }
-
   /** Run n real (non-stateOnly) ticks, draining the fire-and-forget callback chain. */
   async function runTicks(n: number) {
     for (let i = 0; i < n; i++) {
