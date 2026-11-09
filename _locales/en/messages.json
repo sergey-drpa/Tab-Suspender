@@ -468,4 +468,10 @@
     "message": "The max. amount of tabs that Tab Suspender will try to keep opened to reduce memory. (if opened tabs count exceeds the selected amount - Tab Suspender will start smoothly close most unused tabs, until the number of opened tabs decreases to the selected amount). If during selected period the tab was activated at least once (was clicked on the tab and it became visible), then the period for this tab starts calculating anew.",
     "description": "Settings page: auto-close max tabs description"
   }
+,
+  "settingDescSuspendUnfocused":
+  {
+    "message": "Suspend the active tab of windows that lost focus after the suspend interval — e.g. a browser window on a second monitor or behind other apps. Tabs in minimized windows are suspended regardless of this setting. Keep it off if you keep live pages (dashboards, statistics) open in unfocused windows.",
+    "description": "Settings page: suspend active tabs in unfocused windows"
+  }
 }

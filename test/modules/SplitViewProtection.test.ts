@@ -438,8 +438,39 @@ describe('Chrome Split View Protection', () => {
 			// Clear module cache to reload TabParkController with real discardTab
 			jest.resetModules();
 
+			// These tests exercise the split-view logic on plain Chrome: the
+			// Vivaldi check must resolve to a definite "not Vivaldi" (the shared
+			// Chrome mock has no windows.getCurrent).
+			(chrome.windows as any).getCurrent = jest.fn().mockResolvedValue({ id: 1 });
+
 			// Re-import TabParkController to get real discardTab function
 			require('../../modules/TabParkController');
+		});
+
+		it('should NEVER discard an ACTIVE tab (chrome.tabs.discard refuses it in any window)', async () => {
+			(chrome.tabs as any).SPLIT_VIEW_ID_NONE = -1;
+
+			// Active tab of some (possibly unfocused) window — not in Split View
+			(chrome.tabs.get as jest.Mock).mockResolvedValue({
+				id: 100,
+				active: true, // ACTIVE in its window
+				splitViewId: -1,
+				url: 'https://example.com',
+				windowId: 1,
+				index: 0,
+				pinned: false,
+				discarded: false,
+				autoDiscardable: true
+			});
+
+			const mockDiscard = jest.fn();
+			(chrome.tabs as any).discard = mockDiscard;
+
+			await (global as any).discardTab(100);
+
+			// chrome.tabs.discard cannot discard active tabs — the call must be
+			// skipped inside discardTab() so every caller is protected
+			expect(mockDiscard).not.toHaveBeenCalled();
 		});
 
 		it('should NEVER discard tab in ACTIVE Split View (independent of setting)', async () => {
