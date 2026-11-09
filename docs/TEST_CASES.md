@@ -157,6 +157,7 @@
 | 11.5 | Валидация цвета фона: правильный hex / неправильный hex | P2 | Unit | ❌ | |
 | 11.6 | Сброс настроек до дефолтных значений | P2 | Unit | ❌ | |
 | 11.7 | Экспорт/импорт roundtrip без потери данных | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
+| 11.8 | Конкурентные вызовы `settingsChanged()` оставляют ровно один живой интервал тикера (без утечки setInterval) | P1 | Unit | ✅ | `TabObserver.SettingsChange.test.ts` |
 
 ---
 
@@ -276,7 +277,7 @@
 | `TabObserver.AutoClose.test.ts` | 8.1, 8.2, 8.3, 8.5 | ✅ |
 | `TabObserver.Discard.test.ts` | 9.1, 9.2 | ✅ |
 | `TabObserver.FaviconRetry.test.ts` | 4.9 | ✅ |
-| `TabObserver.SettingsChange.test.ts` | 11.4 | ✅ |
+| `TabObserver.SettingsChange.test.ts` | 11.4, 11.8 | ✅ |
 | `WhiteList.test.ts` | 3.1, 3.2, 3.3, 3.6, 3.7 | ✅ |
 | `GroupRestoreFix.test.ts` | 15.4 | ✅ |
 | `SettingsExportImport.test.ts` | 11.2 | ✅ |

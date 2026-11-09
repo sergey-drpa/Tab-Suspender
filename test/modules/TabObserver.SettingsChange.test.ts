@@ -345,7 +345,6 @@ describe('TabObserver — Settings Change (11.4)', () => {
       } finally {
         setSpy.mockRestore();
         clearSpy.mockRestore();
-        (TabObserverClass as any).ticker = null;
       }
     });
   });
