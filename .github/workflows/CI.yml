@@ -136,3 +136,43 @@ jobs:
       - name: Run pinned tab protection test
         run: DISPLAY=:99 npx tsx pinned-tab-protection.test.ts
         working-directory: test/puppeteer
+
+      - name: Run multi-window suspend test (PR #64)
+        run: DISPLAY=:99 npx tsx multi-window-suspend.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run URL parameter preserve test
+        run: DISPLAY=:99 npx tsx url-param-preserve.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run extension icon test
+        run: DISPLAY=:99 npx tsx extension-icon.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run service worker alive test
+        run: DISPLAY=:99 npx tsx service-worker-alive.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group session restore test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-session-restore.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group session restore collapsed test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-session-restore-collapsed.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group session restore autorestore test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-session-restore-autorestore.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group blank endstate regression test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-blank-endstate-regression.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group blank URL revert regression test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-blank-url-revert.test.ts
+        working-directory: test/puppeteer
+
+      - name: Run tab group restart blank recovery test (issue #4)
+        run: DISPLAY=:99 npx tsx tab-group-restart-blank-recovery.test.ts
+        working-directory: test/puppeteer
