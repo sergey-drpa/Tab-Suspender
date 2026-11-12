@@ -160,8 +160,15 @@ async function main(): Promise<void> {
     await evalInSW(browser, `chrome.windows.update(${win1Id}, { focused: true })`);
     await sleep(1000);
 
+    // Wait for window to actually reach minimized state (can be async on CI)
     const minJson = await evalInSW<string>(browser, `(async () => {
-      const w = await chrome.windows.get(${win3.id});
+      let w = await chrome.windows.get(${win3.id});
+      let tries = 0;
+      while (w.state !== 'minimized' && tries < 30) {
+        await new Promise(r => setTimeout(r, 500));
+        w = await chrome.windows.get(${win3.id});
+        tries++;
+      }
       return JSON.stringify({ state: w.state, focused: w.focused });
     })()`);
     const minState = JSON.parse(minJson) as { state: string; focused: boolean };
