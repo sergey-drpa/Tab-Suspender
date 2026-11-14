@@ -41,6 +41,7 @@ import {
   waitForAnyTabToLeaveParked,
   isTabParked,
   parkUrlPrefix,
+  waitForExtensionInit,
 } from './base/ExtensionHelper.js';
 import { createTestRunner } from './base/AssertHelper.js';
 
@@ -58,6 +59,10 @@ async function main(): Promise<void> {
 
   const browser = await launchBrowser(SESSION_DIR);
   log('Browser launched');
+
+  // Wait for extension to fully initialize before communicating with it
+  await waitForExtensionInit(browser);
+  log('Extension initialized');
 
   // Store original timeout for cleanup (needs to be accessible in finally)
   const originalTimeout = await getSetting(browser, 'timeout');
