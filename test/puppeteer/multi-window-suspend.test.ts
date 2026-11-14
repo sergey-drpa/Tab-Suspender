@@ -59,12 +59,12 @@ async function main(): Promise<void> {
   const browser = await launchBrowser(SESSION_DIR);
   log('Browser launched');
 
+  // Store original timeout for cleanup (needs to be accessible in finally)
+  const originalTimeout = await getSetting(browser, 'timeout');
+
   try {
     const extensionId = await getExtensionId(browser);
     log(`Extension ID: ${extensionId}`);
-
-    // Store original timeout for cleanup
-    const originalTimeout = await getSetting(browser, 'timeout');
 
     // Short timeout (10s) so test completes in reasonable time
     await setSetting(browser, 'timeout', 10);
