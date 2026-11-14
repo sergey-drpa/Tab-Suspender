@@ -156,7 +156,19 @@ async function main(): Promise<void> {
     const win3 = JSON.parse(win3Json) as { id: number; tabId: number };
     await sleep(3000);
 
-    await evalInSW(browser, `chrome.windows.update(${win3.id}, { state: 'minimized' })`);
+    // Minimize window 3, then refocus window 1
+    // In headless/CI, chrome.windows.update({state: 'minimized'}) may fail silently
+    const updateResult = await evalInSW<string>(browser, `(async () => {
+      try {
+        const win = await chrome.windows.update(${win3.id}, { state: 'minimized' });
+        return JSON.stringify({ success: true, state: win.state, focused: win.focused });
+      } catch (e) {
+        return JSON.stringify({ success: false, error: String(e) });
+      }
+    })()`);
+    log(`  minimize window 3 result: ${updateResult}`);
+
+    // Refocus window 1 (so window 3 is unfocused + minimized)
     await evalInSW(browser, `chrome.windows.update(${win1Id}, { focused: true })`);
     await sleep(1000);
 
