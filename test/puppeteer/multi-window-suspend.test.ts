@@ -116,22 +116,27 @@ async function main(): Promise<void> {
     })()`);
     log(`  windows: ${windows}`);
     const wins = JSON.parse(windows) as Array<{ id: number; focused: boolean; state: string }>;
-    const win1 = wins.find(w => w.focused === true);
-    const win2Obj = wins.find(w => !w.focused);
-    runner.assert(win1 != null && win2Obj != null, 'window 1 focused, window 2 unfocused (real focus state)');
+    const focusedWin = wins.find(w => w.focused === true);
+    const unfocusedWin = wins.find(w => !w.focused);
+    runner.assert(focusedWin != null && unfocusedWin != null, 'one window focused, one unfocused (real focus state)');
+
+    // The UNFOCUSED window is window 1 (example.com), its tab is tab1Id
+    // The FOCUSED window is window 2 (example.org), its tab is win2.tabId
+    const unfocusedTabId = unfocusedWin.id === win2.id ? win2.tabId : tab1Id;
+    const focusedTabId = focusedWin.id === win2.id ? win2.tabId : tab1Id;
 
     // Wait for unfocused window's active tab to be auto-suspended
-    log('  Waiting for example.org (unfocused window) to be auto-suspended...');
+    log(`  Waiting for unfocused window's active tab (tabId=${unfocusedTabId}) to be auto-suspended...`);
     const deadlineA = Date.now() + 120000; // 120s max (CI with parallel jobs can be slower)
     let orgParked = false;
     while (Date.now() < deadlineA && !orgParked) {
-      orgParked = await isTabParked(browser, win2.tabId, parkUrlPrefix(extensionId));
+      orgParked = await isTabParked(browser, unfocusedTabId, parkUrlPrefix(extensionId));
       if (!orgParked) await sleep(1000);
     }
-    runner.assert(orgParked, `active tab of the UNFOCUSED window was auto-suspended (tabId=${win2.tabId})`);
+    runner.assert(orgParked, `active tab of the UNFOCUSED window was auto-suspended (tabId=${unfocusedTabId})`);
 
     // A5. The focused window's active tab must stay untouched
-    const comParked = await isTabParked(browser, tab1Id, parkUrlPrefix(extensionId));
+    const comParked = await isTabParked(browser, focusedTabId, parkUrlPrefix(extensionId));
     runner.assert(!comParked, 'active tab of the FOCUSED window was NOT suspended');
 
     // =====================================================================
@@ -161,9 +166,9 @@ async function main(): Promise<void> {
     })()`);
     log(`  minimize window 3 result: ${updateResult}`);
 
-    // Refocus window 1
-    const win1Id = win1!.id;
-    await evalInSW(browser, `chrome.windows.update(${win1Id}, { focused: true })`);
+    // Refocus window 1 (the originally focused window)
+    const focusedWinId = focusedWin!.id;
+    await evalInSW(browser, `chrome.windows.update(${focusedWinId}, { focused: true })`);
     await sleep(1000);
 
     // Check if minimization actually worked
@@ -252,7 +257,18 @@ async function main(): Promise<void> {
     }
 
     // The focused window's active tab is still untouchable
-    const comParkedB = await isTabParked(browser, tab1Id, parkUrlPrefix(extensionId));
+    // Note: tab1Id (window 1) was suspended in Phase A, so we need to unsuspend it first
+    // since we refocused window 1. The currently focused window is focusedWin.
+    const focusedTabIdNow = focusedWin!.id === win2.id ? win2.tabId : tab1Id;
+
+    // If the focused window's tab was suspended in Phase A, unsuspend it first
+    const isFocusedTabParked = await isTabParked(browser, focusedTabIdNow, parkUrlPrefix(extensionId));
+    if (isFocusedTabParked) {
+      await unsuspendTabById(browser, focusedTabIdNow);
+      await sleep(1000);
+    }
+
+    const comParkedB = await isTabParked(browser, focusedTabIdNow, parkUrlPrefix(extensionId));
     runner.assert(!comParkedB, 'focused window active tab still NOT suspended after phase B');
 
   } finally {
