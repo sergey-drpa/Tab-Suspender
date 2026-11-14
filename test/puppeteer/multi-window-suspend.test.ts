@@ -161,19 +161,23 @@ async function main(): Promise<void> {
     await sleep(1000);
 
     // Wait for window to actually reach minimized state (can be async on CI)
-    const minJson = await evalInSW<string>(browser, `(async () => {
-      let w = await chrome.windows.get(${win3.id});
-      let tries = 0;
-      while (w.state !== 'minimized' && tries < 30) {
-        await new Promise(r => setTimeout(r, 500));
-        w = await chrome.windows.get(${win3.id});
-        tries++;
-      }
-      return JSON.stringify({ state: w.state, focused: w.focused });
-    })()`);
-    const minState = JSON.parse(minJson) as { state: string; focused: boolean };
+    // Poll from test side so we can log each attempt
+    let minState: { state: string; focused: boolean };
+    let tries = 0;
+    const maxTries = 60; // 60 * 500ms = 30 seconds max
+    while (tries < maxTries) {
+      const minJson = await evalInSW<string>(browser, `(async () => {
+        const w = await chrome.windows.get(${win3.id});
+        return JSON.stringify({ state: w.state, focused: w.focused });
+      })()`);
+      minState = JSON.parse(minJson) as { state: string; focused: boolean };
+      log(`  window 3 state check ${tries + 1}/${maxTries}: ${JSON.stringify(minState)}`);
+      if (minState.state === 'minimized') break;
+      await sleep(500);
+      tries++;
+    }
     log(`  window 3: ${JSON.stringify(minState)}`);
-    runner.assert(minState.state === 'minimized', 'window 3 is minimized (real window state)');
+    runner.assert(minState!.state === 'minimized', 'window 3 is minimized (real window state)');
 
     log('  Waiting for example.net (minimized window) to be auto-suspended...');
     const deadlineB = Date.now() + 40000;
