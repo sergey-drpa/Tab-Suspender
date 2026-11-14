@@ -37,11 +37,11 @@ jobs:
 
   puppeteer-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
 
@@ -76,7 +76,7 @@ jobs:
           sleep 1
         working-directory: test/puppeteer
 
-      - name: Run puppeteer tests (shard ${{ matrix.shard }}/3)
+      - name: Run puppeteer tests (shard ${{ matrix.shard }}/5)
         run: |
           # Define test groups for each shard
           if [ ${{ matrix.shard }} -eq 1 ]; then
@@ -86,19 +86,25 @@ jobs:
               "basic-suspend-restore.test.ts"
               "auto-restore-tab.test.ts"
               "restore-modes.test.ts"
+            )
+          elif [ ${{ matrix.shard }} -eq 2 ]; then
+            TESTS=(
               "form-data-restore.test.ts"
               "protected-urls.test.ts"
               "whitelist-ignore.test.ts"
               "favicon-loss.test.ts"
               "favicon-nav-stress.test.ts"
             )
-          elif [ ${{ matrix.shard }} -eq 2 ]; then
+          elif [ ${{ matrix.shard }} -eq 3 ]; then
             TESTS=(
               "screenshot-settings.test.ts"
               "discard-tab-id-change.test.ts"
               "unfocused-tab-discard.test.ts"
               "start-discarded.test.ts"
               "bulk-tab-operations.test.ts"
+            )
+          elif [ ${{ matrix.shard }} -eq 4 ]; then
+            TESTS=(
               "adaptive-timeout.test.ts"
               "pinned-tab-protection.test.ts"
               "multi-window-suspend.test.ts"

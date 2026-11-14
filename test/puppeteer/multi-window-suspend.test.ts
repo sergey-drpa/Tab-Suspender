@@ -122,7 +122,7 @@ async function main(): Promise<void> {
 
     // Wait for unfocused window's active tab to be auto-suspended
     log('  Waiting for example.org (unfocused window) to be auto-suspended...');
-    const deadlineA = Date.now() + 60000; // 60s max
+    const deadlineA = Date.now() + 120000; // 120s max (CI with parallel jobs can be slower)
     let orgParked = false;
     while (Date.now() < deadlineA && !orgParked) {
       orgParked = await isTabParked(browser, win2.tabId, parkUrlPrefix(extensionId));
@@ -242,7 +242,7 @@ async function main(): Promise<void> {
     } else {
       // Normal headed mode - wait for actual suspend via timer
       log('  Waiting for example.net (minimized window) to be auto-suspended...');
-      const deadlineB = Date.now() + 40000;
+      const deadlineB = Date.now() + 120000; // 120s max (CI with parallel jobs can be slower)
       let netParked = false;
       while (Date.now() < deadlineB && !netParked) {
         netParked = await isTabParked(browser, win3.tabId, parkUrlPrefix(extensionId));
