@@ -65,7 +65,7 @@ let settingsOverrides: Record<string, any> = {};
       discardTimeoutFactor: 0.05,
       enableSuspendOnlyIfBattLvlLessValue: false,
       battLvlLessValue: 50,
-      adaptiveSuspendTimeout: false,
+      adaptiveSuspendTimeout: true,
       ignoreCloseGroupedTabs: false,
       ignoreSuspendGroupedTabs: false,
     };
@@ -137,13 +137,6 @@ describe('TabObserver — Auto-Suspension Rules', () => {
     tabManager = new TabManagerClass();
   });
 
-  /** Set the single tab visible to chrome.windows.getAll mock */
-  function setWindowTab(tab: chrome.tabs.Tab) {
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused: true, tabs: [tab] }])
-    );
-  }
-
   async function runTicks(n: number, stateOnly = false) {
     for (let i = 0; i < n; i++) {
       await tabObserver.tick(stateOnly);
@@ -196,6 +189,197 @@ describe('TabObserver — Auto-Suspension Rules', () => {
     });
   });
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // 1.11 — Multi-window: suspending the active tab of an unfocused window is
+  //        OPT-IN (suspendUnfocusedActiveTabs, default OFF for pre-existing
+  //        installs). Minimized windows are suspended unconditionally: the
+  //        active tab of a minimized window can never be "viewed".
+  // ══════════════════════════════════════════════════════════════════════════
+  describe('1.11 — Multi-window: unfocused-window suspension is opt-in; minimized is unconditional', () => {
+
+    /** makeTab(active) + setWindowTab + fresh observer — the shared 1.11 setup */
+    function setupActiveTab(focused: boolean, state?: string) {
+      const tab = makeTab({ active: true });
+      setWindowTab(tab, focused, state);
+      tabObserver = new TabObserverClass(tabManager);
+      return tab;
+    }
+
+    describe('setting OFF (default): visible unfocused windows are protected', () => {
+
+      it('does NOT suspend the active tab of an unfocused VISIBLE window', async () => {
+        setupActiveTab(false, 'normal'); // second monitor / behind other apps
+
+        await runTicks(5); // 50 s > 30 s timeout
+
+        expect((global as any).parkTab).not.toHaveBeenCalled();
+      });
+
+      it('does NOT accumulate time for the active tab of an unfocused visible window', async () => {
+        const tab = setupActiveTab(false, 'normal');
+
+        await runTicks(4);
+
+        const info = tabManager.getTabInfoById(tab.id);
+        expect(info == null || info.time === 0).toBe(true);
+      });
+    });
+
+    describe('setting ON: unfocused windows are suspended (opt-in)', () => {
+
+      it('suspends the ACTIVE tab of an UNFOCUSED window after the timeout', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+        const tab = setupActiveTab(false, 'normal');
+
+        await runTicks(4); // 40 s > 30 s timeout
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+
+      it('accumulates time for the ACTIVE tab of an unfocused window', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+        const tab = setupActiveTab(false);
+
+        await runTicks(3); // 30 s
+
+        const info = tabManager.getTabInfoById(tab.id);
+        expect(info?.time).toBe(30);
+      });
+
+      it('does NOT suspend the ACTIVE tab of a FOCUSED window even with the setting on', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+        setupActiveTab(true, 'normal');
+
+        await runTicks(4);
+
+        expect((global as any).parkTab).not.toHaveBeenCalled();
+      });
+
+      it('suspends an active-unfocused tab under the ADAPTIVE timeout (threshold must converge)', async () => {
+        // active_time feeds the ADAPTIVE suspend threshold:
+        //   timeout + (active_time+1)×log2(swch+1) + (timeout/4)×log2(swch+1)
+        // It accrues for VIEWED tabs only; if it accrued for active-but-unfocused
+        // tabs it would grow in lockstep with `time` and the threshold would stay
+        // forever ahead — the tab would NEVER be suspended. Caught by the
+        // multi-window E2E with the default adaptiveSuspendTimeout=true.
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['adaptiveSuspendTimeout'] = true;
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false);
+        // One activation happened (as in real Chrome): swch_cnt=1 makes the
+        // log2 terms non-zero, so active_time actually feeds the threshold.
+        tabManager.getTabInfoOrCreate(tab).swch_cnt = 1;
+
+        await runTicks(4); // time = 40 s vs frozen threshold 10 + 1 + 2.5 = 13.5
+
+        const info = tabManager.getTabInfoById(tab.id);
+        expect(info?.time).toBe(40);
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+
+      it('resets time when the window becomes focused again', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+        const tab = setupActiveTab(false);
+
+        await runTicks(3); // time = 30
+        expect(tabManager.getTabInfoById(tab.id)?.time).toBe(30);
+
+        // User focuses the window → next tick must reset the counter
+        setWindowTab(tab, true);
+        await runTicks(1);
+
+        expect(tabManager.getTabInfoById(tab.id)?.time).toBe(0);
+      });
+    });
+
+    describe('adaptive timeout interplay (production default adaptiveSuspendTimeout=true)', () => {
+      // The suite default matches production now. These tests pin the invariants
+      // that keep the adaptive threshold CONVERGENT for multi-window idle tabs:
+      //   frame = timeout + timeout×parkedCount + (active_time+1)×log2(swch+1) + (timeout/4)×log2(swch+1)
+
+      it('freezes active_time while the tab is active-but-unfocused (viewed-only accrual)', async () => {
+        // If active_time accrued during unfocused-active ticks, the frame would
+        // grow in lockstep with `time` and the tab would never suspend (the
+        // deadlock the multi-window E2E caught with the production default).
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false);
+        const info = tabManager.getTabInfoOrCreate(tab);
+        info.active_time = 100; // usage accumulated earlier, while the tab was viewed
+        info.swch_cnt = 1;
+
+        await runTicks(5); // 50 s of idle time
+
+        expect(tabManager.getTabInfoById(tab.id)?.active_time).toBe(100); // frozen
+      });
+
+      it('prior usage DELAYS but never prevents suspension (frozen frame converges)', async () => {
+        settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false);
+        const info = tabManager.getTabInfoOrCreate(tab);
+        info.active_time = 10; // frame = 10 + 11 + 2.5 = 23.5 → constant
+        info.swch_cnt = 1;
+
+        await runTicks(4); // time = 40 s
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+
+      it('suspends the active tab of a minimized window under the adaptive timeout', async () => {
+        settingsOverrides['timeout'] = 10;
+
+        const tab = setupActiveTab(false, 'minimized');
+        tabManager.getTabInfoOrCreate(tab).swch_cnt = 1; // frame = 10 + 1 + 2.5
+
+        await runTicks(3); // time = 30 s > 13.5
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+    });
+
+    describe('minimized windows: suspended unconditionally (even with setting OFF)', () => {
+
+      it('suspends the active tab of a MINIMIZED window', async () => {
+        const tab = setupActiveTab(false, 'minimized');
+
+        await runTicks(4); // 40 s > 30 s timeout
+
+        expect((global as any).parkTab).toHaveBeenCalledWith(
+          expect.objectContaining({ id: tab.id }),
+          tab.id,
+        );
+      });
+
+      it('accumulates time for the active tab of a minimized window', async () => {
+        const tab = setupActiveTab(false, 'minimized');
+
+        await runTicks(3);
+
+        const info = tabManager.getTabInfoById(tab.id);
+        expect(info?.time).toBe(30);
+      });
+    });
+  });
   // ══════════════════════════════════════════════════════════════════════════
   // 1.3 — tabInfo.time resets to 0 when the tab becomes active
   // ══════════════════════════════════════════════════════════════════════════

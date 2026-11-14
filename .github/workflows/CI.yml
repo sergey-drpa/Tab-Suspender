@@ -26,18 +26,22 @@ jobs:
           echo "Jest config:"
           cat jest.config.cjs
 
-      - name: Warm up Jest cache (silent unit-test run)
+      - name: Prepare Jest cache
         run: npm run testCacheCreate
         continue-on-error: true
 
-      - name: Run unit tests (Jest, test/modules + test/lib)
+      - name: Run tests with verbose output
         run: npm test -- --verbose
 
       - run: npm run build --if-present
 
   puppeteer-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
 
@@ -66,93 +70,61 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get install -y xvfb
 
-      - name: Run suspend-discard integration test
+      - name: Start Xvfb
         run: |
           Xvfb :99 -screen 0 1280x720x24 -ac &
           sleep 1
-          DISPLAY=:99 npx tsx suspend-discard.test.ts
         working-directory: test/puppeteer
 
-      - name: Run corrupt-storage regression test
-        run: DISPLAY=:99 npx tsx corrupt-storage.test.ts
-        working-directory: test/puppeteer
+      - name: Run puppeteer tests (shard ${{ matrix.shard }}/5)
+        run: |
+          # Define test groups for each shard
+          if [ ${{ matrix.shard }} -eq 1 ]; then
+            TESTS=(
+              "suspend-discard.test.ts"
+              "corrupt-storage.test.ts"
+              "basic-suspend-restore.test.ts"
+              "auto-restore-tab.test.ts"
+              "restore-modes.test.ts"
+            )
+          elif [ ${{ matrix.shard }} -eq 2 ]; then
+            TESTS=(
+              "form-data-restore.test.ts"
+              "protected-urls.test.ts"
+              "whitelist-ignore.test.ts"
+              "favicon-loss.test.ts"
+              "favicon-nav-stress.test.ts"
+            )
+          elif [ ${{ matrix.shard }} -eq 3 ]; then
+            TESTS=(
+              "screenshot-settings.test.ts"
+              "discard-tab-id-change.test.ts"
+              "unfocused-tab-discard.test.ts"
+              "start-discarded.test.ts"
+              "bulk-tab-operations.test.ts"
+            )
+          elif [ ${{ matrix.shard }} -eq 4 ]; then
+            TESTS=(
+              "adaptive-timeout.test.ts"
+              "pinned-tab-protection.test.ts"
+              "multi-window-suspend.test.ts"
+              "url-param-preserve.test.ts"
+              "extension-icon.test.ts"
+            )
+          else
+            TESTS=(
+              "service-worker-alive.test.ts"
+              "tab-group-session-restore.test.ts"
+              "tab-group-session-restore-collapsed.test.ts"
+              "tab-group-session-restore-autorestore.test.ts"
+              "tab-group-blank-endstate-regression.test.ts"
+              "tab-group-blank-url-revert.test.ts"
+              "tab-group-restart-blank-recovery.test.ts"
+            )
+          fi
 
-      - name: Run basic suspend/restore test
-        run: DISPLAY=:99 npx tsx basic-suspend-restore.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run auto-restore tab test
-        run: DISPLAY=:99 npx tsx auto-restore-tab.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run restore modes test
-        run: DISPLAY=:99 npx tsx restore-modes.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run form data restore test
-        run: DISPLAY=:99 npx tsx form-data-restore.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run protected URLs test
-        run: DISPLAY=:99 npx tsx protected-urls.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run whitelist/ignore test
-        run: DISPLAY=:99 npx tsx whitelist-ignore.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run favicon loss test
-        run: DISPLAY=:99 npx tsx favicon-loss.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run favicon navigation stress test
-        run: DISPLAY=:99 npx tsx favicon-nav-stress.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run screenshot settings test
-        run: DISPLAY=:99 npx tsx screenshot-settings.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run discard tab ID change test
-        run: DISPLAY=:99 npx tsx discard-tab-id-change.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run unfocused tab discard test
-        run: DISPLAY=:99 npx tsx unfocused-tab-discard.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run start discarded test
-        run: DISPLAY=:99 npx tsx start-discarded.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run bulk tab operations test
-        run: DISPLAY=:99 npx tsx bulk-tab-operations.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run adaptive timeout test
-        run: DISPLAY=:99 npx tsx adaptive-timeout.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run pinned tab protection test
-        run: DISPLAY=:99 npx tsx pinned-tab-protection.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run issue #4 blank end-state regression test
-        run: DISPLAY=:99 npx tsx tab-group-blank-endstate-regression.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run issue #4 blank URL revert regression test
-        run: DISPLAY=:99 npx tsx tab-group-blank-url-revert.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run issue #4 real-restart blank recovery test
-        run: DISPLAY=:99 npx tsx tab-group-restart-blank-recovery.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run collapsed group session restore test
-        run: DISPLAY=:99 npx tsx tab-group-session-restore-collapsed.test.ts
-        working-directory: test/puppeteer
-
-      - name: Run autorestore group session restore test
-        run: DISPLAY=:99 npx tsx tab-group-session-restore-autorestore.test.ts
+          for test in "${TESTS[@]}"; do
+            echo "=== Running $test ==="
+            DISPLAY=:99 npx tsx "$test"
+          done
         working-directory: test/puppeteer

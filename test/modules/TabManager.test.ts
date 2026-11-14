@@ -28,6 +28,7 @@ import '../typing/global.d';
 
 (global as any).discardTab = jest.fn();
 (global as any).markForUnsuspend = jest.fn();
+(global as any).formRestoreController = { expectRestore: jest.fn() };
 
 // Mock global objects
 (global as any).settings = {
@@ -1196,6 +1197,7 @@ describe('TabManager', () => {
           if (key === 'reloadTabOnRestore') return Promise.resolve(true);
           return Promise.resolve(false);
         });
+        (global as any).formRestoreController.expectRestore.mockClear();
       });
 
       afterEach(() => {
@@ -1209,6 +1211,11 @@ describe('TabManager', () => {
         await tabManager.unsuspendTab(tab);
 
         expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/page' });
+        // Direct navigation bypasses park.ts, so its BG-side effects must be
+        // reproduced: unsuspend bookkeeping + form-restore handshake.
+        expect((global as any).formRestoreController.expectRestore).toHaveBeenCalledWith(
+          tab.id, tab.id, 'https://example.com/page'
+        );
       });
 
       it('falls back to tabInfo.parkedUrl when url= is blank', async () => {
@@ -1219,6 +1226,9 @@ describe('TabManager', () => {
         await tabManager.unsuspendTab(tab);
 
         expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/parked-fallback' });
+        expect((global as any).formRestoreController.expectRestore).toHaveBeenCalledWith(
+          tab.id, tab.id, 'https://example.com/parked-fallback'
+        );
       });
 
       it('falls back to tabInfo.lstCapUrl when url= and parkedUrl are both invalid', async () => {
@@ -1230,6 +1240,9 @@ describe('TabManager', () => {
         await tabManager.unsuspendTab(tab);
 
         expect(chrome.tabs.update).toHaveBeenCalledWith(tab.id, { url: 'https://example.com/lstCap-fallback' });
+        expect((global as any).formRestoreController.expectRestore).toHaveBeenCalledWith(
+          tab.id, tab.id, 'https://example.com/lstCap-fallback'
+        );
       });
 
       it('aborts navigation (no chrome.tabs.update) when no valid URL is available', async () => {

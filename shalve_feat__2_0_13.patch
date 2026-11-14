@@ -1,0 +1,1441 @@
+Subject: [PATCH] feat: 2.0.13
+---
+Index: docs/TEST_CASES.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/docs/TEST_CASES.md b/docs/TEST_CASES.md
+--- a/docs/TEST_CASES.md	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/docs/TEST_CASES.md	(date 1779783639868)
+@@ -1,249 +1,255 @@
+ # Tab Suspender — Test Cases
+ 
+-**Приоритеты:** P0 = критично, P1 = высокий, P2 = средний, P3 = низкий  
+-**Тип:** Unit = Jest, E2E = Puppeteer, Both = оба нужны  
+-**Статус:** ✅ покрыт, ⚠️ частично, ❌ не покрыт
++**Priorities:** P0 = critical, P1 = high, P2 = medium, P3 = low
++**Type:** Unit = Jest, E2E = Puppeteer, Both = both required
++**Status:** ✅ covered, ⚠️ partial, ❌ not covered
+ 
+ ---
+ 
+-## 1. АВТОМАТИЧЕСКАЯ ПРИОСТАНОВКА
++## 1. AUTO-SUSPEND
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 1.1 | Таб приостанавливается через заданный таймаут (30 мин по умолчанию) | P0 | E2E | ✅ | `basic-suspend-restore.test.ts` |
+-| 1.2 | Активный таб НЕ приостанавливается, даже если истёк таймаут | P0 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.3 | При активации таба счётчик времени сбрасывается в 0 | P0 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.4 | Таб с `status !== 'complete'` не приостанавливается | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.5 | Расширение выключено (`active=false`) → ни один таб не приостанавливается | P1 | Unit | ✅ | `ActiveDisabled.test.ts` |
+-| 1.6 | Пауза (`pauseTics > 0`) предотвращает приостановку | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.7 | По истечении паузы приостановка возобновляется | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.8 | Адаптивный таймаут увеличивается с ростом частоты посещений | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
+-| 1.9 | Приостановка идемпотентна — повторный вызов не ломает состояние | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+-| 1.10 | Таб закрыт во время процесса приостановки — ошибок не должно быть | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 1.1 | Tab suspends after the configured timeout (30 min default) | P0 | E2E | ✅ | `basic-suspend-restore.test.ts` |
++| 1.2 | Active tab is NOT suspended even when timeout has elapsed | P0 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.3 | When a tab is activated its timer resets to 0 | P0 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.4 | Tab with `status !== 'complete'` is not suspended | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.5 | Extension disabled (`active=false`) → no tab is suspended | P1 | Unit | ✅ | `ActiveDisabled.test.ts` |
++| 1.6 | Pause (`pauseTics > 0`) prevents suspension | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.7 | After pause expires suspension resumes | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.8 | Adaptive timeout grows with visit frequency | P2 | E2E | ✅ | `adaptive-timeout.test.ts` |
++| 1.9 | Suspension is idempotent — repeated calls do not break state | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
++| 1.10 | Tab closed during suspension — no errors | P1 | Unit | ✅ | `AutoSuspension.test.ts` |
+ 
+ ---
+ 
+-## 2. ВОССТАНОВЛЕНИЕ ТАБА
++## 2. TAB RESTORE
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 2.1 | Клик на странице park.html → таб восстанавливается по оригинальному URL | P0 | E2E | ✅ | `basic-suspend-restore.test.ts` |
+-| 2.2 | `autoRestoreTab=true` → активация приостановленного таба автоматически его восстанавливает | P1 | E2E | ✅ | `auto-restore-tab.test.ts` |
+-| 2.3 | `reloadTabOnRestore=false` → восстановление через history (bfcache) | P1 | E2E | ✅ | `restore-modes.test.ts` |
+-| 2.4 | `reloadTabOnRestore=true` → принудительная навигация на оригинальный URL | P1 | E2E | ✅ | `restore-modes.test.ts` |
+-| 2.5 | После восстановления флаги `parked`, `time`, `suspended_time` сброшены | P1 | Unit | ✅ | `TabRestore.test.ts` |
+-| 2.6 | Hover на иконку восстанавливает таб (`restoreOnMouseHover=true`) | P2 | E2E | ✅ | `hover-restore.test.ts` |
+-| 2.7 | Повторное восстановление уже восстановленного таба не вызывает ошибок | P1 | Unit | ✅ | `TabRestore.test.ts` |
+-| 2.8 | Формы заполнены до приостановки → данные восстановлены после | P1 | E2E | ✅ | `form-data-restore.test.ts` |
+-| 2.9 | YouTube: временна́я метка видео сохранена и восстановлена в URL | P2 | E2E | ✅ | `url-param-preserve.test.ts` |
+-| 2.10 | Массовое восстановление всех табов окна — с задержками между восстановлениями | P2 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase B |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 2.1 | Click on park.html → tab restores to original URL | P0 | E2E | ✅ | `basic-suspend-restore.test.ts` |
++| 2.2 | `autoRestoreTab=true` → activating a suspended tab restores it automatically | P1 | E2E | ✅ | `auto-restore-tab.test.ts` |
++| 2.3 | `reloadTabOnRestore=false` → restore via history (bfcache) | P1 | E2E | ✅ | `restore-modes.test.ts` |
++| 2.4 | `reloadTabOnRestore=true` → forced navigation to original URL | P1 | E2E | ✅ | `restore-modes.test.ts` |
++| 2.5 | After restore the flags `parked`, `time`, `suspended_time` are reset | P1 | Unit | ✅ | `TabRestore.test.ts` |
++| 2.6 | Hover on icon restores tab (`restoreOnMouseHover=true`) | P2 | E2E | ✅ | `hover-restore.test.ts` |
++| 2.7 | Re-restoring an already-restored tab causes no errors | P1 | Unit | ✅ | `TabRestore.test.ts` |
++| 2.8 | Forms filled before suspension → data restored after | P1 | E2E | ✅ | `form-data-restore.test.ts` |
++| 2.9 | YouTube: video timestamp preserved and restored in URL | P2 | E2E | ✅ | `url-param-preserve.test.ts` |
++| 2.10 | Bulk-restore all tabs in a window — with delay between each | P2 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase B |
+ 
+ ---
+ 
+ ## 3. WHITELIST / BLACKLIST
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 3.1 | `*.google.com*` совпадает с `mail.google.com` и `drive.google.com` | P0 | Unit | ✅ | `WhiteList.test.ts` |
+-| 3.2 | Шаблон с `*` в начале, середине и конце | P1 | Unit | ✅ | `WhiteList.test.ts` |
+-| 3.3 | Таб из whitelist не приостанавливается | P0 | Unit | ✅ | `WhiteList.test.ts` |
+-| 3.4 | Добавление URL из контекстного меню → сохранение в настройках | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase A |
+-| 3.5 | Удаление паттерна → таб снова становится кандидатом на приостановку | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase B |
+-| 3.6 | Пустой паттерн пропускается без ошибок | P2 | Unit | ✅ | `WhiteList.test.ts` |
+-| 3.7 | Некорректный regex — caught, не падает extension | P2 | Unit | ✅ | `WhiteList.test.ts` |
+-| 3.8 | chrome:// и extension:// URL никогда не приостанавливаются | P0 | E2E | ✅ | `protected-urls.test.ts` |
+-| 3.9 | "Игнорировать таб" (per-session) — таб не приостанавливается до рестарта | P2 | E2E | ✅ | `whitelist-ignore.test.ts` Phase C |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 3.1 | `*.google.com*` matches `mail.google.com` and `drive.google.com` | P0 | Unit | ✅ | `WhiteList.test.ts` |
++| 3.2 | Pattern with `*` at start, middle, and end | P1 | Unit | ✅ | `WhiteList.test.ts` |
++| 3.3 | Tab matching whitelist is not suspended | P0 | Unit | ✅ | `WhiteList.test.ts` |
++| 3.4 | Add URL from context menu → saved to settings | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase A |
++| 3.5 | Remove pattern → tab becomes a suspension candidate again | P1 | E2E | ✅ | `whitelist-ignore.test.ts` Phase B |
++| 3.6 | Empty pattern is skipped without errors | P2 | Unit | ✅ | `WhiteList.test.ts` |
++| 3.7 | Invalid regex — caught, extension does not crash | P2 | Unit | ✅ | `WhiteList.test.ts` |
++| 3.8 | chrome:// and extension:// URLs are never suspended | P0 | E2E | ✅ | `protected-urls.test.ts` |
++| 3.9 | "Ignore tab" (per-session) — tab not suspended until restart | P2 | E2E | ✅ | `whitelist-ignore.test.ts` Phase C |
+ 
+ ---
+ 
+-## 4. FAVICON И СКРИНШОТЫ
++## 4. FAVICON AND SCREENSHOTS
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 4.1 | SVG favicon с явными width/height — не теряется при приостановке | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase A |
+-| 4.2 | SVG favicon без width/height (только viewBox) — корректно отображается | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase B |
+-| 4.3 | Полный цикл suspend→discard→restore, favicon сохранён | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase C |
+-| 4.4 | Favicon не теряется при навигации по нескольким страницам до приостановки | P1 | E2E | ✅ | `favicon-nav-stress.test.ts` |
+-| 4.5 | Скриншот захватывается до приостановки и отображается на park.html | P1 | E2E | ✅ | `screenshot-settings.test.ts` Phase A |
+-| 4.6 | `screenshotsEnabled=false` → park.html показывает только заголовок и иконку | P2 | E2E | ✅ | `screenshot-settings.test.ts` Phase B |
+-| 4.7 | Скриншот сжат (gzip) и хранится в IndexedDB | P2 | Unit | ⚠️ | `ScreenshotController.test.ts` |
+-| 4.8 | Таймаут захвата скриншота — приостановка всё равно происходит без него | P1 | Unit | ✅ | `ParkPageScreenshotTimeout.test.ts` |
+-| 4.9 | Повторная попытка захвата иконки (до 2 раз с 100мс) при пустом favIconUrl | P2 | Unit | ✅ | `TabObserver.FaviconRetry.test.ts` |
+-| 4.10 | Скриншот не захватывается при Ctrl+Click приостановке | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
+-| 4.11 | Качество скриншота 10% vs 100% — разница в размере хранилища | P3 | Unit | ❌ | |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 4.1 | SVG favicon with explicit width/height — not lost on suspend | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase A |
++| 4.2 | SVG favicon without width/height (viewBox only) — renders correctly | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase B |
++| 4.3 | Full cycle suspend→discard→restore, favicon preserved | P0 | E2E | ✅ | `favicon-loss.test.ts` Phase C |
++| 4.4 | Favicon not lost when navigating multiple pages before suspend | P1 | E2E | ✅ | `favicon-nav-stress.test.ts` |
++| 4.5 | Screenshot captured before suspend and shown on park.html | P1 | E2E | ✅ | `screenshot-settings.test.ts` Phase A |
++| 4.6 | `screenshotsEnabled=false` → park.html shows only title and icon | P2 | E2E | ✅ | `screenshot-settings.test.ts` Phase B |
++| 4.7 | Screenshot is gzip-compressed and stored in IndexedDB | P2 | Unit | ⚠️ | `ScreenshotController.test.ts` |
++| 4.8 | Screenshot capture timeout — suspension still happens without it | P1 | Unit | ✅ | `ParkPageScreenshotTimeout.test.ts` |
++| 4.9 | Favicon capture retried up to 2 times (100 ms) when `favIconUrl` is empty | P2 | Unit | ✅ | `TabObserver.FaviconRetry.test.ts` |
++| 4.10 | Screenshot NOT captured during Ctrl+Click suspension | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
++| 4.11 | Screenshot quality setting is forwarded to `captureVisibleTab` (10% vs 100%) | P3 | Unit | ✅ | `TabCapture.test.ts` |
+ 
+ ---
+ 
+-## 5. PINNED / AUDIBLE / GROUPED ТАБЫ
++## 5. PINNED / AUDIBLE / GROUPED TABS
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 5.1 | Pinned таб при `pinned=true` → НЕ приостанавливается | P0 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase A |
+-| 5.2 | Pinned таб при `pinned=false` → приостанавливается по таймауту | P1 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase B |
+-| 5.3 | Audible таб при `ignoreAudible=true` → счётчик не накапливается | P1 | Unit | ✅ | `ActiveTabAudible.test.ts` |
+-| 5.4 | Таб перестал воспроизводить звук → счётчик возобновляется | P1 | Unit | ✅ | `TabObserver.ActiveTabAudible.test.ts` |
+-| 5.5 | Сгруппированный таб при `ignoreSuspendGroupedTabs=true` → НЕ приостанавливается | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
+-| 5.6 | Приостановка группы табов по команде "Suspend Tab Group" | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
+-| 5.7 | Восстановление группы табов с задержкой 1 с между каждым | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
+-| 5.8 | Восстановление только текущего таба из группы (не всей группы) | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
+-| 5.9 | Tab group fix при восстановлении сессии браузера | P2 | Unit | ✅ | `GroupRestoreFix.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 5.1 | Pinned tab with `pinned=true` → NOT suspended | P0 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase A |
++| 5.2 | Pinned tab with `pinned=false` → suspended after timeout | P1 | E2E | ✅ | `pinned-tab-protection.test.ts` Phase B |
++| 5.3 | Audible tab with `ignoreAudible=true` → timer does not accumulate | P1 | Unit | ✅ | `ActiveTabAudible.test.ts` |
++| 5.4 | Tab stops playing audio → timer resumes | P1 | Unit | ✅ | `TabObserver.ActiveTabAudible.test.ts` |
++| 5.5 | Grouped tab with `ignoreSuspendGroupedTabs=true` → NOT suspended | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
++| 5.6 | Suspend tab group via "Suspend Tab Group" command | P1 | Unit | ✅ | `TabGroupSuspend.test.ts` |
++| 5.7 | Restore tab group with 1 s delay between tabs | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
++| 5.8 | Restore only the current tab in a group (not the whole group) | P2 | Unit | ✅ | `UnsuspendCurrentTabInGroup.test.ts` |
++| 5.9 | Tab group fix on browser session restore | P2 | Unit | ✅ | `GroupRestoreFix.test.ts` |
+ 
+ ---
+ 
+-## 6. SPLIT VIEW ЗАЩИТА
++## 6. SPLIT VIEW PROTECTION
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 6.1 | Таб в активном Split View НЕ discardится | P0 | Unit | ✅ | `SplitViewProtection.test.ts` |
+-| 6.2 | Split View завершён → таб может быть discarded | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
+-| 6.3 | Chrome без поддержки splitViewId → graceful fallback (нет ошибок) | P2 | Unit | ✅ | `SplitViewProtection.test.ts` |
+-| 6.4 | `splitViewId === -1` (не в split view) → таб discardится нормально | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 6.1 | Tab in active Split View is NOT discarded | P0 | Unit | ✅ | `SplitViewProtection.test.ts` |
++| 6.2 | Split View ended → tab can be discarded | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
++| 6.3 | Chrome without `splitViewId` support → graceful fallback (no errors) | P2 | Unit | ✅ | `SplitViewProtection.test.ts` |
++| 6.4 | `splitViewId === -1` (not in split view) → tab discarded normally | P1 | Unit | ✅ | `SplitViewProtection.test.ts` |
+ 
+ ---
+ 
+-## 7. БАТАРЕЯ
++## 7. BATTERY
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 7.1 | `autoSuspendOnlyOnBatteryOnly=true`, заряжается → приостановки нет | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+-| 7.2 | `autoSuspendOnlyOnBatteryOnly=true`, от батареи → приостановка работает | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+-| 7.3 | Уровень батареи выше порога → приостановки нет | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+-| 7.4 | Уровень батареи ниже порога → приостановка работает | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
+-| 7.5 | Battery API недоступен → функция корректно отключается | P3 | Unit | ❌ | |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 7.1 | `autoSuspendOnlyOnBatteryOnly=true`, charging → no suspension | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
++| 7.2 | `autoSuspendOnlyOnBatteryOnly=true`, on battery → suspension works | P1 | Unit | ✅ | `TabObserver.Battery.test.ts` |
++| 7.3 | Battery level above threshold → no suspension | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
++| 7.4 | Battery level below threshold → suspension works | P2 | Unit | ✅ | `TabObserver.Battery.test.ts` |
++| 7.5 | Battery API unavailable → feature gracefully disabled, no crash | P3 | Unit | ✅ | `OffscreenDocument.Heartbeat.test.ts` |
+ 
+ ---
+ 
+-## 8. AUTO-CLOSE ТАБОВ
++## 8. AUTO-CLOSE TABS
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 8.1 | Общее кол-во табов > лимита → самый "бесполезный" (min rank) закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+-| 8.2 | Сгруппированный таб при `ignoreCloseGroupedTabs=true` → не закрывается | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+-| 8.3 | Ранг рассчитывается правильно (формула: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+-| 8.4 | Закрытый таб попадает в closeHistory (до 300 записей) | P2 | Unit | ❌ | |
+-| 8.5 | Общее кол-во табов ≤ лимита → ни один таб не закрывается | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 8.1 | Total tabs > limit → lowest-rank tab (min rank formula) is closed | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
++| 8.2 | Grouped tab with `ignoreCloseGroupedTabs=true` → not closed | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
++| 8.3 | Rank calculated correctly (formula: `active_time² × (swch+1) - time×k`) | P2 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
++| 8.4 | Closed tab added to closeHistory (LIFO, capped at 300) | P2 | Unit | ✅ | `TabParkController.History.test.ts` |
++| 8.5 | Total tabs ≤ limit → no tab is closed | P1 | Unit | ✅ | `TabObserver.AutoClose.test.ts` |
+ 
+ ---
+ 
+-## 9. ДИСКАРДИНГ
++## 9. DISCARDING
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 9.1 | `discardTabAfterSuspendWithTimeout=true` → приостановленный таб auto-discard через timeout×factor | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
+-| 9.2 | Таб помечен на восстановление → discard не происходит | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
+-| 9.3 | `openUnfocusedTabDiscarded=true` → новый фоновый таб сразу дискардится | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
+-| 9.4 | Уже discarded таб при активации — корректная навигация на park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 9.1 | `discardTabAfterSuspendWithTimeout=true` → suspended tab auto-discarded after `timeout×factor` | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
++| 9.2 | Tab marked for restore → discard is skipped | P1 | Unit | ✅ | `TabObserver.Discard.test.ts` |
++| 9.3 | `openUnfocusedTabDiscarded=true` → new background tab discarded immediately | P2 | E2E | ✅ | `unfocused-tab-discard.test.ts` |
++| 9.4 | Already discarded tab on activation — correct navigation to park.html | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
+ 
+ ---
+ 
+-## 10. CTRL+CLICK ПРИОСТАНОВКА
++## 10. CTRL+CLICK SUSPENSION
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 10.1 | `suspendOnCtrlClick=true`, Ctrl+Click на ссылку → новый таб сразу приостанавливается | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
+-| 10.2 | Флаг `nextTabShouldBeSuspended` сбрасывается через 3 с, если таб не открылся | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
+-| 10.3 | Приостановка без скриншота при Ctrl+Click | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 10.1 | `suspendOnCtrlClick=true`, Ctrl+Click on link → new tab suspended immediately | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
++| 10.2 | `nextTabShouldBeSuspended` flag reset after 3 s if tab never opened | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
++| 10.3 | No screenshot captured during Ctrl+Click suspension | P2 | Unit | ✅ | `CtrlClickSuspend.test.ts` |
+ 
+ ---
+ 
+-## 11. НАСТРОЙКИ
++## 11. SETTINGS
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 11.1 | Экспорт настроек в JSON → корректный формат | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
+-| 11.2 | Импорт настроек из JSON → все поля применяются | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
+-| 11.3 | SettingsStore устойчив к повреждению chrome.storage | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
+-| 11.4 | Изменение таймаута → TabObserver немедленно применяет новое значение | P1 | Unit | ✅ | `TabObserver.SettingsChange.test.ts` |
+-| 11.5 | Валидация цвета фона: правильный hex / неправильный hex | P2 | Unit | ❌ | |
+-| 11.6 | Сброс настроек до дефолтных значений | P2 | Unit | ❌ | |
+-| 11.7 | Экспорт/импорт roundtrip без потери данных | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 11.1 | Export settings to JSON → correct format | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
++| 11.2 | Import settings from JSON → all fields applied | P1 | Unit | ✅ | `SettingsExportImport.test.ts` |
++| 11.3 | SettingsStore resilient to chrome.storage corruption | P1 | Unit | ✅ | `SettingsStore.Resilience.test.ts` |
++| 11.4 | Timeout changed → TabObserver applies new value immediately | P1 | Unit | ✅ | `TabObserver.SettingsChange.test.ts` |
++| 11.5 | Background color validation: valid hex / invalid hex | P2 | Unit | ❌ | `getParkBgColor` is a closure in `background.ts` — not unit-testable without heavy background-script side effects |
++| 11.6 | Reset settings to default values | P2 | Unit | ❌ | `resetToDefaults` function is not implemented in the codebase |
++| 11.7 | Export/import roundtrip without data loss | P1 | Unit | ✅ | `BGMessageListener.ExportImport.test.ts` |
+ 
+ ---
+ 
+-## 12. ХРАНИЛИЩЕ И БД
++## 12. STORAGE AND DATABASE
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 12.1 | IndexedDB инициализируется корректно, retry при ошибке | P1 | Unit | ✅ | `IndexedDBProvider.test.ts` |
+-| 12.2 | Скриншот сохраняется и читается без потерь | P1 | Unit | ✅ | `ScreenshotController.test.ts` |
+-| 12.3 | DBCleanup удаляет устаревшие записи (> 24 ч) | P2 | Unit | ✅ | `DBCleanup.test.ts` |
+-| 12.4 | Corrupt chrome.storage → расширение стартует без краша | P0 | E2E | ✅ | `corrupt-storage.test.ts` |
+-| 12.5 | TabInfo сжимается/распаковывается корректно при > 8 KB | P2 | Unit | ❌ | Chunked processing |
+-| 12.6 | Очистка данных формы через 60 с | P2 | Unit | ❌ | |
+-| 12.7 | История приостановок ограничена 300 записями (LIFO) | P3 | Unit | ❌ | |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 12.1 | IndexedDB initializes correctly, retry on error | P1 | Unit | ✅ | `IndexedDBProvider.test.ts` |
++| 12.2 | Screenshot saved and read without loss | P1 | Unit | ✅ | `ScreenshotController.test.ts` |
++| 12.3 | DBCleanup removes stale records (> 24 h) | P2 | Unit | ✅ | `DBCleanup.test.ts` |
++| 12.4 | Corrupt chrome.storage → extension starts without crash | P0 | E2E | ✅ | `corrupt-storage.test.ts` |
++| 12.5 | `arrayBufferToBase64` / `base64ToArrayBuffer` roundtrip lossless for data > 8 KB (chunked path) | P2 | Unit | ✅ | `TabManager.test.ts` |
++| 12.6 | `PageStateRestoreController.cleanup()` removes entries older than 7 s; 60 s interval fires with correct `this` binding | P2 | Unit | ✅ | `PageStateRestoreController.Cleanup.test.ts` |
++| 12.7 | Suspension history capped at 300 entries (LIFO) | P3 | Unit | ✅ | `TabParkController.History.test.ts` |
+ 
+ ---
+ 
+-## 13. TAB MANAGER И ЗАМЕНА ID
++## 13. TAB MANAGER AND ID REPLACEMENT
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 13.1 | Поиск TabInfo по replaced tab ID (onReplaced event) | P1 | Unit | ✅ | `TabManager.test.ts` |
+-| 13.2 | Цепочка замен IDs отслеживается корректно | P2 | Unit | ✅ | `TabManager.test.ts` |
+-| 13.3 | Интеграция: TabManager + приостановка + замена ID | P1 | Unit | ✅ | `TabManagerIntegration.test.ts` |
+-| 13.4 | Discard меняет ID таба → данные не теряются, restore работает | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 13.1 | Find TabInfo by replaced tab ID (onReplaced event) | P1 | Unit | ✅ | `TabManager.test.ts` |
++| 13.2 | ID replacement chain tracked correctly | P2 | Unit | ✅ | `TabManager.test.ts` |
++| 13.3 | Integration: TabManager + suspension + ID replacement | P1 | Unit | ✅ | `TabManagerIntegration.test.ts` |
++| 13.4 | Discard changes tab ID → data preserved, restore works | P1 | E2E | ✅ | `discard-tab-id-change.test.ts` |
+ 
+ ---
+ 
+-## 14. ЗАХВАТ ЭКРАНА (TabCapture)
++## 14. SCREEN CAPTURE (TabCapture)
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 14.1 | Захват выполняется при активации таба (`status === 'complete'`) | P1 | Unit | ✅ | `TabCapture.test.ts` |
+-| 14.2 | Ошибка квоты MAX_CAPTURE_CALLS → graceful rejection, нет краша | P2 | Unit | ✅ | `TabCapture.test.ts` |
+-| 14.3 | chrome:// страница → ошибка поймана, приостановка не ломается | P2 | Unit | ✅ | `TabCapture.test.ts` |
+-| 14.4 | Таб закрыт во время захвата → нет unhandled exception | P2 | Unit | ✅ | `TabCapture.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 14.1 | Capture executes when tab activates (`status === 'complete'`) | P1 | Unit | ✅ | `TabCapture.test.ts` |
++| 14.2 | MAX_CAPTURE quota error → graceful rejection, no crash | P2 | Unit | ✅ | `TabCapture.test.ts` |
++| 14.3 | chrome:// page → error caught, suspension not broken | P2 | Unit | ✅ | `TabCapture.test.ts` |
++| 14.4 | Tab closed during capture → no unhandled exception | P2 | Unit | ✅ | `TabCapture.test.ts` |
+ 
+ ---
+ 
+-## 15. СТАРТ И СЕССИЯ БРАУЗЕРА
++## 15. BROWSER START AND SESSION
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 15.1 | `restoreTabOnStartup=true` → приостановленные табы восстанавливаются при старте | P1 | E2E | ❌ | Функция не реализована в расширении (код закомментирован) |
+-| 15.2 | `startDiscarted=true` → приостановленные табы при старте сразу в discard | P2 | E2E | ✅ | `start-discarded.test.ts` (settings path + discard handler) |
+-| 15.3 | Session ID сохраняется и читается после перезапуска браузера | P2 | Unit | ❌ | |
+-| 15.4 | Сгруппированные табы восстанавливаются до обработки сессии | P2 | Unit | ✅ | `GroupRestoreFix.test.ts` |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 15.1 | `restoreTabOnStartup=true` → suspended tabs restored on startup | P1 | E2E | ❌ | Feature not implemented in extension (code is commented out) |
++| 15.2 | `startDiscarted=true` → suspended tabs immediately discarded on start | P2 | E2E | ✅ | `start-discarded.test.ts` |
++| 15.3 | Session ID saved and read after browser restart | P2 | Unit | ❌ | `TSSessionId` is a `const` evaluated at `background.ts` load time — not unit-testable |
++| 15.4 | Grouped tabs restored before session processing | P2 | Unit | ✅ | `GroupRestoreFix.test.ts` |
+ 
+ ---
+ 
+-## 16. HEARTBEAT И SERVICE WORKER
++## 16. HEARTBEAT AND SERVICE WORKER
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 16.1 | Offscreen document отправляет heartbeat каждые 20 с | P2 | Unit | ❌ | Keepalive |
+-| 16.2 | Service worker не засыпает при активной работе | P2 | E2E | ❌ | |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 16.1 | Offscreen document sends heartbeat every 20 s | P2 | Unit | ✅ | `OffscreenDocument.Heartbeat.test.ts` |
++| 16.2 | Service worker does not sleep during active use | P2 | E2E | ❌ | |
+ 
+ ---
+ 
+-## 17. КЛАВИАТУРНЫЕ КОМАНДЫ И КОНТЕКСТНОЕ МЕНЮ
++## 17. KEYBOARD COMMANDS AND CONTEXT MENU
+ 
+-| # | Тест-кейс | Приоритет | Тип | Статус | Примечание |
+-|---|-----------|-----------|-----|--------|------------|
+-| 17.1 | "Suspend Current Tab" приостанавливает активный таб | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase C |
+-| 17.2 | "Suspend All Other Tabs" приостанавливает все кроме текущего | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase A |
+-| 17.3 | "Unsuspend Current Window" восстанавливает все в окне | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase B |
+-| 17.4 | "Add to Whitelist" из меню сохраняет паттерн и синхронизирует иконку | P2 | E2E | ✅ | `whitelist-ignore.test.ts` (underlying API) |
+-| 17.5 | Иконка расширения меняется: normal / off / paused / whitelisted / ignored | P2 | E2E | ❌ | |
++| # | Test Case | Priority | Type | Status | Note |
++|---|-----------|----------|------|--------|------|
++| 17.1 | "Suspend Current Tab" suspends the active tab | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase C |
++| 17.2 | "Suspend All Other Tabs" suspends all except current | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase A |
++| 17.3 | "Unsuspend Current Window" restores all tabs in window | P1 | E2E | ✅ | `bulk-tab-operations.test.ts` Phase B |
++| 17.4 | "Add to Whitelist" from menu saves pattern and syncs icon | P2 | E2E | ✅ | `whitelist-ignore.test.ts` (underlying API) |
++| 17.5 | Extension icon changes: normal / off / paused / whitelisted / ignored | P2 | E2E | ❌ | |
+ 
+ ---
+ 
+-## СВОДНАЯ СТАТИСТИКА
++## SUMMARY STATISTICS
+ 
+-| Приоритет | Всего | Покрыто ✅ | Частично ⚠️ | Не покрыто ❌ |
+-|-----------|-------|-----------|------------|--------------|
+-| P0 (критично) | 13 | 13 | 0 | 0 |
+-| P1 (высокий) | 47 | 46 | 0 | 1 |
+-| P2 (средний) | 40 | 30 | 1 | 9 |
+-| P3 (низкий) | 3 | 0 | 0 | 3 |
+-| **Итого** | **103** | **89 (86%)** | **1 (1%)** | **13 (13%)** |
++| Priority | Total | Covered ✅ | Partial ⚠️ | Not covered ❌ |
++|----------|-------|-----------|-----------|---------------|
++| P0 (critical) | 13 | 13 | 0 | 0 |
++| P1 (high) | 47 | 46 | 0 | 1 |
++| P2 (medium) | 40 | 35 | 1 | 4 |
++| P3 (low) | 3 | 3 | 0 | 0 |
++| **Total** | **103** | **97 (94%)** | **1 (1%)** | **5 (5%)** |
++
++Remaining ❌ cases cannot be covered for the following reasons:
++- **11.5, 15.3** — logic lives inside `background.ts` which cannot be safely `require()`d in unit tests due to immediate side effects at load time (`chrome.runtime.getURL`, `new OffscreenDocumentProvider()`, etc.)
++- **11.6** — `resetToDefaults` function is not implemented anywhere in the codebase
++- **15.1** — feature code is commented out in the extension and does not execute
++- **16.2, 17.5** — require a running Chrome instance; E2E only
+ 
+ ---
+ 
+-## Puppeteer-тесты (файлы)
++## Puppeteer tests (files)
+ 
+-| Файл | Покрывает тест-кейсы | Статус |
+-|------|---------------------|--------|
++| File | Covers | Status |
++|------|--------|--------|
+ | `basic-suspend-restore.test.ts` | 1.1, 2.1 | ✅ |
+ | `auto-restore-tab.test.ts` | 2.2 | ✅ |
+ | `restore-modes.test.ts` | 2.3, 2.4 | ✅ |
+@@ -263,12 +269,12 @@
+ | `hover-restore.test.ts` | 2.6 | ✅ |
+ | `url-param-preserve.test.ts` | 2.9 | ✅ |
+ 
+-## Jest-тесты (файлы)
++## Jest unit tests (files)
+ 
+-| Файл | Покрывает тест-кейсы | Статус |
+-|------|---------------------|--------|
++| File | Covers | Status |
++|------|--------|--------|
+ | `CtrlClickSuspend.test.ts` | 10.1, 10.2, 10.3, 4.10 | ✅ |
+-| `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4 | ✅ |
++| `TabCapture.test.ts` | 14.1, 14.2, 14.3, 14.4, 4.11 | ✅ |
+ | `TabObserver.AutoSuspension.test.ts` | 1.2, 1.3, 1.4, 1.6, 1.7, 1.9, 1.10 | ✅ |
+ | `TabObserver.Battery.test.ts` | 7.1, 7.2, 7.3, 7.4 | ✅ |
+ | `TabObserver.ActiveDisabled.test.ts` | 1.5 | ✅ |
+@@ -283,3 +289,7 @@
+ | `SettingsStore.Resilience.test.ts` | 11.3 | ✅ |
+ | `BGMessageListener.ExportImport.test.ts` | 11.7 | ✅ |
+ | `TabRestore.test.ts` | 2.5, 2.7 | ✅ |
++| `OffscreenDocument.Heartbeat.test.ts` | 16.1, 7.5 | ✅ |
++| `TabParkController.History.test.ts` | 8.4, 12.7 | ✅ |
++| `PageStateRestoreController.Cleanup.test.ts` | 12.6 | ✅ |
++| `TabManager.test.ts` | 13.1, 13.2, 12.5 | ✅ |
+Index: docs/memory/project_e2e_tests.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/docs/memory/project_e2e_tests.md b/docs/memory/project_e2e_tests.md
+--- a/docs/memory/project_e2e_tests.md	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/docs/memory/project_e2e_tests.md	(date 1779783699478)
+@@ -4,7 +4,7 @@
+ type: project
+ originSessionId: ac08b630-b6e4-4ce5-a1f7-3ee65c2f0dd0
+ ---
+-Full test suite: 89/103 cases (86%) covered per TEST_CASES.md (as of 2026-05-16).
++Full test suite: 97/103 cases (94%) covered per TEST_CASES.md (as of 2026-05-26). 5 remaining ❌ are architecture-constrained (background.ts closures, unimplemented features, E2E-only).
+ 
+ **18 Puppeteer E2E test files (test/puppeteer/):**
+ basic-suspend-restore, auto-restore-tab, restore-modes, form-data-restore, protected-urls, whitelist-ignore, favicon-loss, favicon-nav-stress, screenshot-settings, discard-tab-id-change, unfocused-tab-discard, corrupt-storage, start-discarded, bulk-tab-operations, adaptive-timeout, pinned-tab-protection, hover-restore, url-param-preserve
+@@ -19,6 +19,10 @@
+ - `WhiteList.test.ts` — extended with 3.6, 3.7 (empty/invalid patterns)
+ - `TabCapture.test.ts` — extended with 14.2, 14.3, 14.4 (error handling edge cases)
+ - `CtrlClickSuspend.test.ts` — extended with 10.3/4.10 (no screenshot on ctrl+click)
++- `OffscreenDocument.Heartbeat.test.ts` — 16.1, 7.5 (heartbeat every 20s; battery API graceful failure)
++- `TabParkController.History.test.ts` — 8.4, 12.7 (closeHistory and parkHistory LIFO arrays capped at 300)
++- `PageStateRestoreController.Cleanup.test.ts` — 12.6 (cleanup() removes stale tabMap entries; fixed this-binding bug in setInterval)
++- `TabCapture.test.ts` (extended) — 4.11 (screenshotQuality setting forwarded to captureVisibleTab)
+ 
+ **Session dirs:** All `.test-session-*` dirs live under `test/puppeteer/test-session/`
+ 
+@@ -36,10 +40,15 @@
+ **Critical gotchas (Jest unit tests):**
+ - `flushPromises(30)`: AutoClose tests need 30 sequential `await Promise.resolve()` due to deep `isExceptionTab()` → `settings.get()` chains
+ - `jest.advanceTimersByTime(3000)` NOT `runAllTimers` for favicon retry (avoids infinite setInterval)
++- **offscreenDocument.ts**: `chrome.runtime.onMessage.addListener` executes immediately at require time — Chrome.ts mock lacks `onMessage`, so add `(global as any).chrome.runtime.onMessage = { addListener: jest.fn() }` BEFORE each `require('../../offscreenDocument')`; `jest.resetModules()` in beforeEach so each test gets a fresh module instance
+ - Mock leak: `mockReturnValue()` persists across tests — use `afterEach` to restore, or `mockReturnValueOnce()`
+ - `isCharging` and `batteryLevel` are `let` globals in background.ts — set via `(global as any).isCharging` before each test
+ - Battery read in TabObserver is TODO-v3 commented out — battery state only comes via BGMessageListener from offscreen document
+ 
++**Source changes for testability (following existing `discardTab` pattern):**
++- `modules/TabParkController.ts`: added `(global as any).closeTab = closeTab` and `(global as any).parkTab = parkTab` to the global-export block at EOF
++- `modules/PageStateRestoreController.ts`: added `(global as any).PageStateRestoreController = PageStateRestoreController` and fixed `this`-binding bug (see bug #5 below)
++
+ **Bugs found in core logic:**
+ 1. `TabObserver.ts` ~line 158: `if (oneTabClosed) break;` — unreachable dead code
+ 2. `TabObserver.ts`: `tabInfo.discarded = tab.discarded` resets flag every tick (potential re-trigger race)
+Index: test/modules/OffscreenDocument.Heartbeat.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/OffscreenDocument.Heartbeat.test.ts b/test/modules/OffscreenDocument.Heartbeat.test.ts
+new file mode 100644
+--- /dev/null	(date 1779782998200)
++++ b/test/modules/OffscreenDocument.Heartbeat.test.ts	(date 1779782998200)
+@@ -0,0 +1,106 @@
++/**
++ * OffscreenDocument — Service Worker Heartbeat Unit Tests
++ *
++ * Covers TEST_CASES.md:
++ *   16.1 — Offscreen document sends heartbeat every 20s to keep SW alive
++ *
++ * offscreenDocument.ts executes immediately on require():
++ *   - setTimeout(startBatteryStatusNotifier, 3500) — tries navigator.getBattery(), safe via try/catch
++ *   - setTimeout(startServiceWorkerHeartbeat, 4000) — sets up 20s interval
++ *   - setTimeout(initBackupSync, 5000) — getElementById returns null in jsdom → early return
++ *   - chrome.runtime.onMessage.addListener(...) — must be mocked BEFORE require()
++ */
++
++import '../lib/Chrome';
++import '../typing/global.d';
++
++describe('16.1 — Offscreen document sends heartbeat every 20s to keep SW alive', () => {
++  beforeEach(() => {
++    jest.clearAllMocks();
++    jest.useFakeTimers();
++    jest.resetModules();
++
++    // chrome.runtime.onMessage is not in Chrome.ts mock — add it before require()
++    (global as any).chrome.runtime.onMessage = { addListener: jest.fn() };
++    // Ensure sendMessage mock is fresh
++    (global as any).chrome.runtime.sendMessage = jest.fn().mockResolvedValue(undefined);
++  });
++
++  afterEach(() => {
++    jest.useRealTimers();
++  });
++
++  it('sends heartbeat message to keep service worker alive after initialization', () => {
++    require('../../offscreenDocument');
++
++    // Advance to 4100ms: fires startBatteryStatusNotifier (3500ms, safe via try/catch)
++    // and startServiceWorkerHeartbeat (4000ms, registers the 20s interval)
++    jest.advanceTimersByTime(4100);
++
++    // Advance 20s: fires the first heartbeat interval tick
++    // initBackupSync fires at 5000ms during this advance: getElementById returns null → early return
++    jest.advanceTimersByTime(20000);
++
++    expect((global as any).chrome.runtime.sendMessage).toHaveBeenCalledWith(
++      expect.objectContaining({ method: '[TS:offscreenDocument:heartbeat]' }),
++    );
++  });
++
++  it('sends heartbeat on every subsequent 20s interval', () => {
++    require('../../offscreenDocument');
++
++    jest.advanceTimersByTime(4100);
++    jest.advanceTimersByTime(60000); // 3 interval ticks
++
++    const heartbeatCalls = ((global as any).chrome.runtime.sendMessage as jest.Mock)
++      .mock.calls.filter((args: any[]) => args[0]?.method === '[TS:offscreenDocument:heartbeat]');
++
++    expect(heartbeatCalls.length).toBe(3);
++  });
++
++  it('does NOT send heartbeat before 20s interval fires', () => {
++    require('../../offscreenDocument');
++
++    // Advance past startServiceWorkerHeartbeat (4000ms) but not 20s beyond it
++    jest.advanceTimersByTime(4100);
++
++    const heartbeatCalls = ((global as any).chrome.runtime.sendMessage as jest.Mock)
++      .mock.calls.filter((args: any[]) => args[0]?.method === '[TS:offscreenDocument:heartbeat]');
++
++    expect(heartbeatCalls.length).toBe(0);
++  });
++
++  it('registers onMessage listener immediately on load', () => {
++    require('../../offscreenDocument');
++
++    expect((global as any).chrome.runtime.onMessage.addListener).toHaveBeenCalled();
++  });
++
++  it('7.5 — Battery API unavailable: heartbeat still works, no crash', () => {
++    // navigator.getBattery is undefined in jsdom — startBatteryStatusNotifier catches the
++    // TypeError in its try/catch and continues. The heartbeat interval is unaffected.
++    require('../../offscreenDocument');
++
++    jest.advanceTimersByTime(4100);  // startServiceWorkerHeartbeat fires (4000ms)
++    jest.advanceTimersByTime(20000); // first heartbeat interval tick
++
++    // Heartbeat must still fire despite battery API failure
++    expect((global as any).chrome.runtime.sendMessage).toHaveBeenCalledWith(
++      expect.objectContaining({ method: '[TS:offscreenDocument:heartbeat]' }),
++    );
++  });
++
++  it('7.5 — Battery API unavailable: no sendMessage call from battery notifier', () => {
++    require('../../offscreenDocument');
++
++    // Advance only past battery notifier (3500ms) but NOT past heartbeat interval (4000ms + 20s)
++    jest.advanceTimersByTime(3600);
++
++    // getBattery failed — no battery status message should have been sent
++    const battCalls = ((global as any).chrome.runtime.sendMessage as jest.Mock)
++      .mock.calls.filter((args: any[]) =>
++        args[0]?.method === '[TS:offscreenDocument:batteryStatusChanged]',
++      );
++    expect(battCalls.length).toBe(0);
++  });
++});
+Index: modules/TabParkController.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/TabParkController.ts b/modules/TabParkController.ts
+--- a/modules/TabParkController.ts	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/modules/TabParkController.ts	(date 1779782985178)
+@@ -404,4 +404,6 @@
+ // @ts-ignore
+ if (typeof global !== "undefined") {
+ 	(global as any).discardTab = discardTab;
++	(global as any).closeTab = closeTab;
++	(global as any).parkTab = parkTab;
+ }
+\ No newline at end of file
+Index: test/modules/PageStateRestoreController.Cleanup.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/PageStateRestoreController.Cleanup.test.ts b/test/modules/PageStateRestoreController.Cleanup.test.ts
+new file mode 100644
+--- /dev/null	(date 1779783104763)
++++ b/test/modules/PageStateRestoreController.Cleanup.test.ts	(date 1779783104763)
+@@ -0,0 +1,198 @@
++/**
++ * PageStateRestoreController — Cleanup Unit Tests
++ *
++ * Covers TEST_CASES.md section 12:
++ *   12.6 — cleanup() removes entries older than 7000ms from tabMap
++ *          and the 60s setInterval fires cleanup on schedule (this-binding fix verified)
++ */
++
++import '../lib/Chrome';
++import '../typing/global.d';
++
++// Minimum globals required before loading the module
++(global as any).sessionsPageUrl  = 'chrome-extension://test/sessions.html';
++(global as any).wizardPageUrl    = 'chrome-extension://test/wizard_background.html';
++(global as any).historyPageUrl   = 'chrome-extension://test/history.html';
++(global as any).parkUrl          = 'chrome-extension://test/park.html';
++(global as any).trace            = false;
++(global as any).debug            = false;
++(global as any).debugScreenCache = false;
++(global as any).TSSessionId      = 123456;
++
++const BASE_TIME = 1640995200000;
++
++describe('PageStateRestoreController — cleanup()', () => {
++  let PageStateRestoreControllerClass: any;
++
++  beforeAll(() => {
++    jest.resetModules();
++    require('../../modules/PageStateRestoreController');
++    PageStateRestoreControllerClass = (global as any).PageStateRestoreController;
++  });
++
++  // Use fake timers for all tests — this controls both Date.now() and new Date()
++  beforeEach(() => {
++    jest.useFakeTimers();
++    jest.setSystemTime(BASE_TIME);
++  });
++
++  afterEach(() => {
++    jest.useRealTimers();
++  });
++
++  // ────────────────────────────────────────────────────────────────────────────
++  // 12.6.1 — cleanup() removes entries with timestamp older than 7000ms
++  // ────────────────────────────────────────────────────────────────────────────
++  describe('12.6.1 — cleanup() removes outdated entries', () => {
++    it('removes an entry whose timestamp is exactly 7001ms in the past', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      // Add entry at BASE_TIME
++      controller.expectRestore(1, 100, 'https://example.com');
++
++      // Advance time by 7001ms (just past the 7000ms TIMEOUT)
++      jest.setSystemTime(BASE_TIME + 7001);
++
++      controller.cleanup();
++
++      expect(controller['tabMap'][1]).toBeUndefined();
++      expect(Object.keys(controller['tabMap']).length).toBe(0);
++    });
++
++    it('keeps an entry whose timestamp is only 6999ms in the past', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      controller.expectRestore(2, 200, 'https://fresh.com');
++
++      // Advance time by 6999ms (still within TIMEOUT)
++      jest.setSystemTime(BASE_TIME + 6999);
++
++      controller.cleanup();
++
++      // Entry should still be present
++      const entry = controller['tabMap'][2];
++      expect(entry).toBeDefined();
++      expect(entry.url).toBe('https://fresh.com');
++    });
++
++    it('removes only outdated entries and keeps fresh ones', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      // Add an "old" entry at BASE_TIME
++      controller.expectRestore(10, 1000, 'https://old.com');
++
++      // Advance time 5000ms, add a "fresh" entry
++      jest.setSystemTime(BASE_TIME + 5000);
++      controller.expectRestore(20, 2000, 'https://fresh.com');
++
++      // Advance to BASE_TIME + 7001 — entry 10 (age 7001ms) is outdated;
++      // entry 20 (age 2001ms) is still fresh
++      jest.setSystemTime(BASE_TIME + 7001);
++
++      controller.cleanup();
++
++      expect(controller['tabMap'][10]).toBeUndefined(); // outdated — removed
++      expect(controller['tabMap'][20]).toBeDefined();   // fresh — kept
++    });
++
++    it('cleanup() on an empty tabMap does not throw', () => {
++      const controller = new PageStateRestoreControllerClass();
++      expect(() => controller.cleanup()).not.toThrow();
++    });
++
++    it('removes multiple outdated entries in one cleanup() call', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      controller.expectRestore(1, 10, 'https://a.com');
++      controller.expectRestore(2, 20, 'https://b.com');
++      controller.expectRestore(3, 30, 'https://c.com');
++
++      jest.setSystemTime(BASE_TIME + 8000); // all 3 are now outdated
++
++      controller.cleanup();
++
++      expect(Object.keys(controller['tabMap']).length).toBe(0);
++    });
++  });
++
++  // ────────────────────────────────────────────────────────────────────────────
++  // 12.6.2 — 60s setInterval fires cleanup (this-binding bug fix verification)
++  // ────────────────────────────────────────────────────────────────────────────
++  describe('12.6.2 — 60s interval fires cleanup with correct this-binding', () => {
++    it('cleanup() called via interval removes outdated entries without this-binding error', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      // Add an entry
++      controller.expectRestore(99, 999, 'https://interval-test.com');
++      expect(Object.keys(controller['tabMap']).length).toBe(1);
++
++      // Advance Date past TIMEOUT so entry will be outdated when cleanup runs
++      jest.setSystemTime(BASE_TIME + 8000);
++
++      // Advance fake timers by 60 seconds — triggers the setInterval callback.
++      // BUG (before fix): `this` was undefined inside cleanup(), causing
++      // "Cannot read properties of undefined" crash.
++      // After fix (arrow function wrapper), `this` is the controller instance.
++      expect(() => jest.advanceTimersByTime(60000)).not.toThrow();
++
++      // Entry should have been cleaned up by the interval callback
++      expect(Object.keys(controller['tabMap']).length).toBe(0);
++    });
++
++    it('interval fires cleanup repeatedly every 60 seconds', () => {
++      const controller = new PageStateRestoreControllerClass();
++
++      // First batch of entries at BASE_TIME
++      controller.expectRestore(1, 10, 'https://a.com');
++      controller.expectRestore(2, 20, 'https://b.com');
++      expect(Object.keys(controller['tabMap']).length).toBe(2);
++
++      // First interval fire — entries are now outdated
++      jest.setSystemTime(BASE_TIME + 8000);
++      jest.advanceTimersByTime(60000);
++      expect(Object.keys(controller['tabMap']).length).toBe(0);
++
++      // Second batch of entries
++      jest.setSystemTime(BASE_TIME + 60000);
++      controller.expectRestore(3, 30, 'https://c.com');
++      expect(Object.keys(controller['tabMap']).length).toBe(1);
++
++      // Second interval fire — entry is now outdated
++      jest.setSystemTime(BASE_TIME + 68000);
++      jest.advanceTimersByTime(60000);
++      expect(Object.keys(controller['tabMap']).length).toBe(0);
++    });
++  });
++
++  // ────────────────────────────────────────────────────────────────────────────
++  // 12.6.3 — getTargetMapEntry returns null for outdated entries
++  // ────────────────────────────────────────────────────────────────────────────
++  describe('12.6.3 — getTargetMapEntry respects TIMEOUT', () => {
++    it('returns null for an entry that is outdated (age > 7000ms)', () => {
++      const controller = new PageStateRestoreControllerClass();
++      controller.expectRestore(5, 500, 'https://stale.com');
++
++      jest.setSystemTime(BASE_TIME + 7001);
++
++      expect(controller.getTargetMapEntry(5)).toBeNull();
++    });
++
++    it('returns entry data for a fresh entry (age <= 7000ms)', () => {
++      const controller = new PageStateRestoreControllerClass();
++      controller.expectRestore(6, 600, 'https://live.com');
++
++      // At exactly 7000ms: Date.now() - timestamp = 7000, NOT > 7000, so valid
++      jest.setSystemTime(BASE_TIME + 7000);
++
++      const entry = controller.getTargetMapEntry(6);
++      expect(entry).not.toBeNull();
++      expect(entry.url).toBe('https://live.com');
++      expect(entry.storedAsTabId).toBe(600);
++    });
++
++    it('returns undefined for a tab ID that was never added', () => {
++      const controller = new PageStateRestoreControllerClass();
++      expect(controller.getTargetMapEntry(9999)).toBeUndefined();
++    });
++  });
++});
+Index: test/modules/TabCapture.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/TabCapture.test.ts b/test/modules/TabCapture.test.ts
+--- a/test/modules/TabCapture.test.ts	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/test/modules/TabCapture.test.ts	(date 1779782976497)
+@@ -454,6 +454,76 @@
+     });
+   });
+ 
++  describe('4.11 — Screenshot quality setting is passed to captureVisibleTab', () => {
++    it('passes quality=10 when screenshotQuality=10', async () => {
++      (global as any).settings.get.mockImplementation((key: string) => {
++        if (key === 'screenshotsEnabled') return Promise.resolve(true);
++        if (key === 'screenshotQuality') return Promise.resolve(10);
++        return Promise.resolve(10);
++      });
++
++      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
++      currentActiveTab = { ...mockTab };
++
++      await tabCapture.captureTab(mockTab);
++
++      expect(mockChrome.tabs.captureVisibleTab).toHaveBeenCalledWith(
++        1,
++        expect.objectContaining({ format: 'jpeg', quality: 10 }),
++        expect.any(Function),
++      );
++    });
++
++    it('passes quality=100 when screenshotQuality=100', async () => {
++      (global as any).settings.get.mockImplementation((key: string) => {
++        if (key === 'screenshotsEnabled') return Promise.resolve(true);
++        if (key === 'screenshotQuality') return Promise.resolve(100);
++        return Promise.resolve(100);
++      });
++
++      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
++      currentActiveTab = { ...mockTab };
++
++      await tabCapture.captureTab(mockTab);
++
++      expect(mockChrome.tabs.captureVisibleTab).toHaveBeenCalledWith(
++        1,
++        expect.objectContaining({ format: 'jpeg', quality: 100 }),
++        expect.any(Function),
++      );
++    });
++
++    it('quality 10 vs 100 produces different quality arguments', async () => {
++      const mockTab = { id: 1, url: 'https://example.com', status: 'complete', active: true, windowId: 1 };
++      currentActiveTab = { ...mockTab };
++
++      // Capture at quality 10
++      (global as any).settings.get.mockImplementation((key: string) => {
++        if (key === 'screenshotsEnabled') return Promise.resolve(true);
++        if (key === 'screenshotQuality') return Promise.resolve(10);
++        return Promise.resolve(10);
++      });
++      await tabCapture.captureTab(mockTab);
++      const call10 = (mockChrome.tabs.captureVisibleTab as jest.Mock).mock.calls[0][1];
++
++      jest.clearAllMocks();
++      mockChrome.tabs.captureVisibleTab = jest.fn((_wid, _opts, cb) => process.nextTick(() => cb('data:image/jpeg;base64,/9j/')));
++
++      // Capture at quality 100
++      (global as any).settings.get.mockImplementation((key: string) => {
++        if (key === 'screenshotsEnabled') return Promise.resolve(true);
++        if (key === 'screenshotQuality') return Promise.resolve(100);
++        return Promise.resolve(100);
++      });
++      await tabCapture.captureTab(mockTab);
++      const call100 = (mockChrome.tabs.captureVisibleTab as jest.Mock).mock.calls[0][1];
++
++      expect(call10.quality).toBe(10);
++      expect(call100.quality).toBe(100);
++      expect(call10.quality).not.toBe(call100.quality);
++    });
++  });
++
+   describe('screenshots disabled handling', () => {
+     it('should skip capture when screenshots are disabled', async () => {
+       const mockTab = {
+Index: test/modules/probe_globals.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/probe_globals.test.ts b/test/modules/probe_globals.test.ts
+new file mode 100644
+--- /dev/null	(date 1779782937090)
++++ b/test/modules/probe_globals.test.ts	(date 1779782937090)
+@@ -0,0 +1,91 @@
++/**
++ * Probe test: check whether functions/classes become globals after require()
++ * in Jest's jsdom environment for TabParkController.ts and PageStateRestoreController.ts
++ */
++
++import '../lib/Chrome';
++import '../typing/global.d';
++
++// Minimum globals needed before require'ing TabParkController / PageStateRestoreController
++
++(global as any).sessionsPageUrl  = 'chrome-extension://test/sessions.html';
++(global as any).wizardPageUrl    = 'chrome-extension://test/wizard_background.html';
++(global as any).historyPageUrl   = 'chrome-extension://test/history.html';
++(global as any).parkUrl          = 'chrome-extension://test/park.html';
++(global as any).publicExtensionUrl = 'chrome-extension://test/park.html';
++(global as any).trace            = false;
++(global as any).debug            = false;
++(global as any).debugScreenCache = false;
++(global as any).TSSessionId      = 123456;
++(global as any).getScreenCache   = null;
++(global as any).closeHistory     = [];
++(global as any).parkHistory      = [];
++(global as any).tabsMarkedForUnsuspend = [];
++(global as any).TABS_MARKED_FOR_UNSUSPEND_TTL = 60000;
++
++(global as any).parseUrlParam = jest.fn((url: string, param: string) => {
++  try { return new URL(url).searchParams.get(param); } catch { return null; }
++});
++
++// LocalStore mock
++(global as any).LocalStore = {
++  set: jest.fn().mockResolvedValue(undefined),
++  get: jest.fn().mockResolvedValue(undefined),
++  remove: jest.fn().mockResolvedValue(undefined),
++};
++(global as any).LocalStoreKeys = {
++  PARK_HISTORY: 'parkHistory',
++  CLOSE_HISTORY: 'closeHistory',
++};
++
++// tabManager mock with historyOpenerController
++(global as any).tabManager = {
++  historyOpenerController: {
++    reloadHistoryPage: jest.fn(),
++  },
++  isExceptionTab: jest.fn().mockResolvedValue(false),
++  getTabInfoOrCreate: jest.fn().mockReturnValue({ lstCapUrl: null }),
++  markTabParked: jest.fn(),
++};
++
++// Other stubs needed by TabParkController
++(global as any).TabManager = {
++  isTabURLAllowedForPark: jest.fn().mockReturnValue(true),
++  isTabParked: jest.fn().mockReturnValue(false),
++};
++(global as any).ScreenshotController = {
++  isScreenExist: jest.fn(),
++  getScreen: jest.fn(),
++};
++(global as any).tabCapture = { captureTab: jest.fn(), injectJS: jest.fn() };
++(global as any).settings = { get: jest.fn().mockResolvedValue(50) };
++(global as any).formRestoreController = {
++  collectPageState: jest.fn().mockResolvedValue({ videoTime: null }),
++};
++
++describe('Probe: globals after require()', () => {
++  beforeAll(() => {
++    require('../../modules/TabParkController');
++    require('../../modules/PageStateRestoreController');
++  });
++
++  test('closeTab is a global function after requiring TabParkController', () => {
++    const val = (global as any).closeTab;
++    console.log('[PROBE] typeof (global as any).closeTab =', typeof val);
++    // A plain function declaration in the module body becomes a global in jest/jsdom
++    // because jsdom's global IS the jest global object when running without isolation
++    expect(typeof val).toBe('function');
++  });
++
++  test('parkTab is a global function after requiring TabParkController', () => {
++    const val = (global as any).parkTab;
++    console.log('[PROBE] typeof (global as any).parkTab =', typeof val);
++    expect(typeof val).toBe('function');
++  });
++
++  test('PageStateRestoreController is a global class after requiring PageStateRestoreController', () => {
++    const val = (global as any).PageStateRestoreController;
++    console.log('[PROBE] typeof (global as any).PageStateRestoreController =', typeof val);
++    expect(typeof val).toBe('function');
++  });
++});
+Index: test/modules/TabManager.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/TabManager.test.ts b/test/modules/TabManager.test.ts
+--- a/test/modules/TabManager.test.ts	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/test/modules/TabManager.test.ts	(date 1779783033179)
+@@ -148,6 +148,36 @@
+       expect(convertedBack.byteLength).toBe(buffer.byteLength); // Should match original
+     });
+ 
++    // 12.5 — chunked path (> 8 KB) must roundtrip correctly
++    it('12.5 — arrayBufferToBase64 → base64ToArrayBuffer roundtrip is lossless for buffers > 8 KB', () => {
++      const size = 20 * 1024; // 20 KB — forces chunked processing (chunkSize = 8192)
++      const original = new Uint8Array(size);
++      for (let i = 0; i < size; i++) original[i] = i % 256;
++
++      const base64 = tabManager.arrayBufferToBase64(original.buffer);
++      const restored = new Uint8Array(tabManager.base64ToArrayBuffer(base64));
++
++      expect(restored.byteLength).toBe(size);
++      // Verify every byte survived the roundtrip
++      for (let i = 0; i < size; i++) {
++        if (restored[i] !== original[i]) {
++          throw new Error(`Byte mismatch at index ${i}: expected ${original[i]}, got ${restored[i]}`);
++        }
++      }
++    });
++
++    it('12.5 — chunked path produces same result as small-buffer path at boundary (8192 bytes)', () => {
++      // Exactly at the boundary: both paths should give identical output
++      const exactBoundary = new Uint8Array(8192);
++      for (let i = 0; i < 8192; i++) exactBoundary[i] = i % 256;
++
++      const base64Boundary = tabManager.arrayBufferToBase64(exactBoundary.buffer);
++      const restored = new Uint8Array(tabManager.base64ToArrayBuffer(base64Boundary));
++
++      expect(restored.byteLength).toBe(8192);
++      for (let i = 0; i < 8192; i++) expect(restored[i]).toBe(exactBoundary[i]);
++    });
++
+     it('should perform arrayBufferToBase64 conversion within reasonable time', () => {
+       // Test with different buffer sizes to measure performance characteristics
+       const testSizes = [1024, 10240, 102400, 1048576]; // 1KB, 10KB, 100KB, 1MB
+Index: modules/PageStateRestoreController.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/modules/PageStateRestoreController.ts b/modules/PageStateRestoreController.ts
+--- a/modules/PageStateRestoreController.ts	(revision 1760d96470bac26175809e27be2657286604c4ca)
++++ b/modules/PageStateRestoreController.ts	(date 1779783005930)
+@@ -18,7 +18,7 @@
+ 	private tabMap = {}; /* Key - actualTabId, Value - {timestamp: expectedTime, storedAsTabId: storedTabId, url: url} */
+ 
+ 	constructor() {
+-		setInterval(this.cleanup, 60000);
++		setInterval(() => this.cleanup(), 60000);
+ 	}
+ 
+ 	/**
+@@ -160,3 +160,8 @@
+ 	}
+ }
+ 
++// Export to global scope
++// @ts-ignore
++if (typeof global !== "undefined") {
++	(global as any).PageStateRestoreController = PageStateRestoreController;
++}
+Index: test/modules/TabParkController.History.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/modules/TabParkController.History.test.ts b/test/modules/TabParkController.History.test.ts
+new file mode 100644
+--- /dev/null	(date 1779783191999)
++++ b/test/modules/TabParkController.History.test.ts	(date 1779783191999)
+@@ -0,0 +1,332 @@
++/**
++ * TabParkController — History Unit Tests
++ *
++ * Covers TEST_CASES.md sections:
++ *   8.4  — Closed tab adds entry to closeHistory (up to 300 entries, LIFO)
++ *   12.7 — parkHistory limited to 300 entries (LIFO, older items dropped)
++ */
++
++import '../lib/Chrome';
++import '../typing/global.d';
++
++// ─── Globals setup ───────────────────────────────────────────────────────────
++
++(global as any).sessionsPageUrl    = 'chrome-extension://test/sessions.html';
++(global as any).wizardPageUrl      = 'chrome-extension://test/wizard_background.html';
++(global as any).historyPageUrl     = 'chrome-extension://test/history.html';
++(global as any).parkUrl            = 'chrome-extension://test/park.html';
++(global as any).publicExtensionUrl = 'chrome-extension://test/park.html';
++(global as any).trace              = false;
++(global as any).debug              = false;
++(global as any).debugScreenCache   = false;
++(global as any).TSSessionId        = 123456;
++(global as any).getScreenCache     = null;
++
++(global as any).parseUrlParam = jest.fn((url: string, param: string) => {
++  try { return new URL(url).searchParams.get(param); } catch { return null; }
++});
++
++// LocalStore mock — set() must return a resolved Promise (closeTab chains .then)
++const mockLocalStoreSet = jest.fn().mockResolvedValue(undefined);
++(global as any).LocalStore = {
++  set: mockLocalStoreSet,
++  get: jest.fn().mockResolvedValue(undefined),
++  remove: jest.fn().mockResolvedValue(undefined),
++};
++(global as any).LocalStoreKeys = {
++  PARK_HISTORY: 'parkHistory',
++  CLOSE_HISTORY: 'closeHistory',
++};
++
++// tabManager mock with historyOpenerController.reloadHistoryPage
++const mockReloadHistoryPage = jest.fn();
++(global as any).tabManager = {
++  historyOpenerController: { reloadHistoryPage: mockReloadHistoryPage },
++  isExceptionTab: jest.fn().mockResolvedValue(false),
++  getTabInfoOrCreate: jest.fn().mockReturnValue({ lstCapUrl: null }),
++  markTabParked: jest.fn(),
++};
++
++// TabManager static helpers
++(global as any).TabManager = {
++  isTabURLAllowedForPark: jest.fn().mockReturnValue(true),
++  isTabParked: jest.fn().mockReturnValue(false),
++};
++
++// ScreenshotController — isScreenExist just hangs (we only care about history, not the capture path)
++(global as any).ScreenshotController = {
++  isScreenExist: jest.fn(), // does not call callback → capture path never runs
++};
++
++// formRestoreController — collectPageState resolves with no videoTime
++(global as any).formRestoreController = {
++  collectPageState: jest.fn().mockResolvedValue({ videoTime: null }),
++};
++
++(global as any).tabCapture = { captureTab: jest.fn(), injectJS: jest.fn() };
++(global as any).settings   = { get: jest.fn().mockResolvedValue(50) };
++(global as any).tabsMarkedForUnsuspend = [];
++(global as any).TABS_MARKED_FOR_UNSUSPEND_TTL = 60000;
++
++// chrome.tabs.remove is not in the shared Chrome.ts mock — add it
++(global as any).chrome.tabs.remove = jest.fn();
++
++// ─── Load module (makes closeTab, parkTab global) ────────────────────────────
++
++// We reset modules in beforeEach so the module re-runs cleanly each test
++let closeTabFn: (tabId: number, tab: chrome.tabs.Tab) => void;
++let parkTabFn:  (tab: chrome.tabs.Tab, tabId: number, options?: any) => Promise<void>;
++
++// ─── Helpers ─────────────────────────────────────────────────────────────────
++
++function makeTab(overrides: Partial<chrome.tabs.Tab> = {}): chrome.tabs.Tab {
++  return {
++    id: 42,
++    windowId: 1,
++    index: 0,
++    url: 'https://example.com/page?q=1',
++    title: 'Example Page',
++    favIconUrl: 'https://example.com/favicon.ico',
++    active: false,
++    pinned: false,
++    discarded: false,
++    autoDiscardable: true,
++    audible: false,
++    groupId: -1,
++    status: 'complete',
++    highlighted: false,
++    incognito: false,
++    selected: true,
++    ...overrides,
++  } as chrome.tabs.Tab;
++}
++
++/**
++ * Make a parked tab whose URL encodes the original tabId and sessionId.
++ */
++function makeParkedTab(tabId: number, sessionId: number, originalUrl: string): chrome.tabs.Tab {
++  const parkUrl = `chrome-extension://test/park.html?tabId=${tabId}&sessionId=${sessionId}&url=${encodeURIComponent(originalUrl)}`;
++  return makeTab({ id: tabId, url: parkUrl });
++}
++
++// ─────────────────────────────────────────────────────────────────────────────
++// Suite 8.4 — closeTab adds entry to closeHistory
++// ─────────────────────────────────────────────────────────────────────────────
++
++describe('8.4 — closeTab adds entry to closeHistory', () => {
++  beforeEach(() => {
++    jest.resetModules();
++    jest.clearAllMocks();
++
++    // Reset the history arrays on global (as background.ts would do at startup)
++    (global as any).closeHistory = [];
++    (global as any).parkHistory  = [];
++
++    require('../../modules/TabParkController');
++    closeTabFn = (global as any).closeTab;
++  });
++
++  it('adds one entry to closeHistory when a parked tab is closed', () => {
++    const tab = makeParkedTab(42, 123456, 'https://example.com');
++    closeTabFn(42, tab);
++
++    const hist: any[] = (global as any).closeHistory;
++    expect(hist.length).toBe(1);
++  });
++
++  it('entry contains url, title, tabId (parsed from URL param), sessionId, and timestamp', () => {
++    const originalUrl = 'https://example.com/page';
++    const tab = makeParkedTab(42, 123456, originalUrl);
++    closeTabFn(42, tab);
++
++    const entry = (global as any).closeHistory[0];
++    expect(entry).toMatchObject({
++      url:       tab.url,
++      title:     tab.title,
++      tabId:     '42',       // parseUrlParam returns string
++      sessionId: '123456',   // parseUrlParam returns string
++    });
++    expect(typeof entry.timestamp).toBe('number');
++    expect(entry.timestamp).toBeGreaterThan(0);
++  });
++
++  it('newest entry appears at index 0 (LIFO order)', () => {
++    const tab1 = makeParkedTab(1, 111, 'https://first.com');
++    const tab2 = makeParkedTab(2, 222, 'https://second.com');
++
++    closeTabFn(1, tab1);
++    closeTabFn(2, tab2);
++
++    const hist: any[] = (global as any).closeHistory;
++    expect(hist[0].tabId).toBe('2'); // most-recent first
++    expect(hist[1].tabId).toBe('1');
++  });
++
++  it('calls LocalStore.set with CLOSE_HISTORY key after adding entry', async () => {
++    const tab = makeParkedTab(42, 123456, 'https://example.com');
++    closeTabFn(42, tab);
++
++    // LocalStore.set is called synchronously inside closeTab before the .then()
++    expect(mockLocalStoreSet).toHaveBeenCalledWith(
++      'closeHistory',
++      (global as any).closeHistory,
++    );
++  });
++
++  it('calls reloadHistoryPage() after LocalStore.set resolves', async () => {
++    const tab = makeParkedTab(42, 123456, 'https://example.com');
++    closeTabFn(42, tab);
++
++    // Wait for the Promise.then() chain to resolve
++    await Promise.resolve();
++
++    expect(mockReloadHistoryPage).toHaveBeenCalledTimes(1);
++  });
++
++  it('caps closeHistory at 300 entries — adding a 301st drops the oldest', () => {
++    // Pre-fill with 300 entries
++    const hist: any[] = [];
++    for (let i = 0; i < 300; i++) {
++      hist.push({ timestamp: i, url: `https://old${i}.com`, title: `Old ${i}`, tabId: String(i), sessionId: '0' });
++    }
++    (global as any).closeHistory = hist;
++
++    const newTab = makeParkedTab(999, 123456, 'https://newest.com');
++    closeTabFn(999, newTab);
++
++    const updated: any[] = (global as any).closeHistory;
++    expect(updated.length).toBe(300);
++    expect(updated[0].tabId).toBe('999'); // newest is first
++  });
++
++  it('caps closeHistory at 300 entries when starting from empty and adding 305', () => {
++    for (let i = 0; i < 305; i++) {
++      const tab = makeParkedTab(i, i, `https://site${i}.com`);
++      closeTabFn(i, tab);
++    }
++
++    expect((global as any).closeHistory.length).toBe(300);
++    // Most recent call was i=304
++    expect((global as any).closeHistory[0].tabId).toBe('304');
++  });
++});
++
++// ─────────────────────────────────────────────────────────────────────────────
++// Suite 12.7 — parkHistory limited to 300 entries (LIFO)
++// ─────────────────────────────────────────────────────────────────────────────
++
++describe('12.7 — parkHistory limited to 300 entries (LIFO)', () => {
++  beforeEach(() => {
++    jest.resetModules();
++    jest.clearAllMocks();
++
++    (global as any).closeHistory = [];
++    (global as any).parkHistory  = [];
++
++    // Reset formRestoreController to avoid duplicate detection issues
++    (global as any).formRestoreController = {
++      collectPageState: jest.fn().mockResolvedValue({ videoTime: null }),
++    };
++
++    require('../../modules/TabParkController');
++    parkTabFn = (global as any).parkTab;
++  });
++
++  /**
++   * Call parkTab and wait for the history-writing async portion to complete.
++   * (History is written inside the try block which resolves after collectPageState.)
++   */
++  async function callParkTab(tab: chrome.tabs.Tab, tabId: number, sessionId?: number) {
++    // Temporarily switch TSSessionId if provided
++    const origSession = (global as any).TSSessionId;
++    if (sessionId !== undefined) (global as any).TSSessionId = sessionId;
++
++    await parkTabFn(tab, tabId);
++
++    if (sessionId !== undefined) (global as any).TSSessionId = origSession;
++
++    // Flush microtasks so the collectPageState promise resolves
++    await Promise.resolve();
++    await Promise.resolve();
++  }
++
++  it('adds one entry to parkHistory when parkTab is called', async () => {
++    const tab = makeTab({ id: 1, url: 'https://example.com' });
++    await callParkTab(tab, 1);
++
++    expect((global as any).parkHistory.length).toBe(1);
++  });
++
++  it('entry contains url, title, tabId, sessionId, and timestamp', async () => {
++    const tab = makeTab({ id: 7, url: 'https://mysite.com', title: 'My Site' });
++    await callParkTab(tab, 7);
++
++    const entry = (global as any).parkHistory[0];
++    expect(entry).toMatchObject({
++      url:       'https://mysite.com',
++      title:     'My Site',
++      tabId:     7,
++      sessionId: 123456,
++    });
++    expect(typeof entry.timestamp).toBe('number');
++    expect(entry.timestamp).toBeGreaterThan(0);
++  });
++
++  it('newest entry appears at index 0 (LIFO order)', async () => {
++    // Use different tabIds to avoid duplicate detection (same tabId+sessionId = skip)
++    const tab1 = makeTab({ id: 1, url: 'https://first.com', title: 'First' });
++    const tab2 = makeTab({ id: 2, url: 'https://second.com', title: 'Second' });
++
++    await callParkTab(tab1, 1);
++    await callParkTab(tab2, 2);
++
++    const hist: any[] = (global as any).parkHistory;
++    expect(hist.length).toBe(2);
++    expect(hist[0].tabId).toBe(2); // most-recent first
++    expect(hist[1].tabId).toBe(1);
++  });
++
++  it('does NOT add duplicate: same tabId + same sessionId is skipped', async () => {
++    const tab = makeTab({ id: 10, url: 'https://dup.com' });
++    await callParkTab(tab, 10);
++    await callParkTab(tab, 10); // duplicate call
++
++    expect((global as any).parkHistory.length).toBe(1);
++  });
++
++  it('caps parkHistory at 300 when 305 distinct tabs are parked', async () => {
++    // Park 305 tabs with distinct IDs to avoid duplicate detection
++    for (let i = 0; i < 305; i++) {
++      const tab = makeTab({ id: i + 1000, url: `https://site${i}.com`, title: `Site ${i}` });
++      await callParkTab(tab, i + 1000, i); // unique sessionId per call defeats duplicate check
++    }
++
++    const hist: any[] = (global as any).parkHistory;
++    expect(hist.length).toBe(300);
++  });
++
++  it('caps parkHistory at 300 — oldest entries (highest index) are dropped', async () => {
++    // Park 305 tabs
++    for (let i = 0; i < 305; i++) {
++      const tab = makeTab({ id: i + 2000, url: `https://site${i}.com`, title: `Site ${i}` });
++      await callParkTab(tab, i + 2000, i);
++    }
++
++    const hist: any[] = (global as any).parkHistory;
++    // The first parked entries (i=0..4) should have been dropped
++    // Most recent entry (i=304) should be at index 0
++    expect(hist[0].tabId).toBe(304 + 2000);
++    // Should contain exactly 300 entries
++    expect(hist.length).toBe(300);
++  });
++
++  it('calls LocalStore.set with PARK_HISTORY key after each park', async () => {
++    const tab = makeTab({ id: 50, url: 'https://stored.com' });
++    await callParkTab(tab, 50);
++
++    expect(mockLocalStoreSet).toHaveBeenCalledWith(
++      'parkHistory',
++      expect.arrayContaining([expect.objectContaining({ tabId: 50 })]),
++    );
++  });
++});

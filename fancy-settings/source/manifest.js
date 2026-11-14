@@ -221,6 +221,20 @@ this.manifest = {
 			'type': 'description',
 			'text': 'Automatically suspend background tabs opened with Ctrl+Click (Windows/Linux) or Cmd+Click (Mac) without taking a screenshot to save memory'
 		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Advanced',
+			'name': 'suspendUnfocusedActiveTabs',
+			'type': 'checkbox',
+			'label': 'Suspend tabs in unfocused windows <font color="#0099FF">(New)</font>'
+		},
+		{
+			'tab': 'Suspend Settings',
+			'group': 'Advanced',
+			'name': 'suspendUnfocusedActiveTabs-description',
+			'type': 'description',
+			'text': '__MSG_settingDescSuspendUnfocused__'
+		},
 
 
 

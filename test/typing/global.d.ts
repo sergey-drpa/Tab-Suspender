@@ -15,6 +15,7 @@ declare global {
   function parseUrlParam(url: string, param: string): string;
   function extractHostname(url: string): string;
   function discardTab(tabId: number): void;
+  function setWindowTab(tab: chrome.tabs.Tab, focused?: boolean, state?: string): void;
   function markForUnsuspend(tab: chrome.tabs.Tab): void;
 
   // Global objects
