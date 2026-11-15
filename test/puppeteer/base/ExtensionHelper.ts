@@ -322,6 +322,14 @@ export async function getParkPageByTabId(browser: Browser, extensionId: string, 
   return pages.find(p => p.url().includes(needle)) ?? null;
 }
 
+/**
+ * Check if a tab is currently parked (its park.html page exists)
+ */
+export async function isTabParked(browser: Browser, tabId: number, parkPrefix: string): Promise<boolean> {
+  const pages = await browser.pages();
+  return pages.some(p => p.url().startsWith(parkPrefix) && p.url().includes(`tabId=${tabId}`));
+}
+
 // ─── Settings helpers ─────────────────────────────────────────────────────────
 
 export async function getSetting(browser: Browser, key: string): Promise<unknown> {
