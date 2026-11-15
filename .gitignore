@@ -15,3 +15,20 @@ build_dir/
 test/puppeteer/.test-session*
 test/puppeteer/.test-state.json
 /test/puppeteer/test-session/
+/tmp/
+
+# Local analysis reports, patches and tooling (not part of the project)
+/.mcp.json
+/*.patch
+/CLAUDE.md
+
+# TLS private keys/certs (never commit)
+backup-server/.certs/
+/DIAGNOSTIC_OBSERVATIONS.md
+/FEATURE_REQUESTS_ANALYSIS.md
+/ROOT_CAUSE_ISSUE_4.md
+/SPLIT_VIEW_PROTECTION.md
+/SUPPORT_TICKETS_REPORT.md
+/TAB_RESTORE_PROBLEM_ANALYSIS.md
+/TAB_SUSPENDER_REVIEWS_REPORT.md
+/TESTING_TAB_GROUP_SUSPEND.md
