@@ -40,7 +40,6 @@ import {
   waitForParkPages,
   waitForAnyTabToLeaveParked,
   isTabParked,
-  parkUrlPrefix,
   waitForExtensionInit,
   suspendTabById,
   unsuspendTabById,
@@ -132,13 +131,13 @@ async function main(): Promise<void> {
     const deadlineA = Date.now() + 120000; // 120s max (CI with parallel jobs can be slower)
     let orgParked = false;
     while (Date.now() < deadlineA && !orgParked) {
-      orgParked = await isTabParked(browser, unfocusedTabId, parkUrlPrefix(extensionId));
+      orgParked = await isTabParked(browser, unfocusedTabId);
       if (!orgParked) await sleep(1000);
     }
     runner.assert(orgParked, `active tab of the UNFOCUSED window was auto-suspended (tabId=${unfocusedTabId})`);
 
     // A5. The focused window's active tab must stay untouched
-    const comParked = await isTabParked(browser, focusedTabId, parkUrlPrefix(extensionId));
+    const comParked = await isTabParked(browser, focusedTabId);
     runner.assert(!comParked, 'active tab of the FOCUSED window was NOT suspended');
 
     // =====================================================================
@@ -199,7 +198,7 @@ async function main(): Promise<void> {
       const deadlineB = Date.now() + 30000;
       let netParked = false;
       while (Date.now() < deadlineB && !netParked) {
-        netParked = await isTabParked(browser, win3.tabId, parkUrlPrefix(extensionId));
+        netParked = await isTabParked(browser, win3.tabId);
         if (!netParked) await sleep(1000);
       }
       runner.assert(netParked, `minimized-window suspend logic executed successfully (tabId=${win3.tabId})`);
@@ -210,7 +209,7 @@ async function main(): Promise<void> {
       const deadlineB = Date.now() + 120000; // 120s max (CI with parallel jobs can be slower)
       let netParked = false;
       while (Date.now() < deadlineB && !netParked) {
-        netParked = await isTabParked(browser, win3.tabId, parkUrlPrefix(extensionId));
+        netParked = await isTabParked(browser, win3.tabId);
         if (!netParked) await sleep(1000);
       }
       runner.assert(netParked, `active tab of the MINIMIZED window was auto-suspended despite setting OFF (tabId=${win3.tabId})`);
@@ -222,13 +221,13 @@ async function main(): Promise<void> {
     const focusedTabIdNow = focusedWin!.id === win2.id ? win2.tabId : tab1Id;
 
     // If the focused window's tab was suspended in Phase A, unsuspend it first
-    const isFocusedTabParked = await isTabParked(browser, focusedTabIdNow, parkUrlPrefix(extensionId));
+    const isFocusedTabParked = await isTabParked(browser, focusedTabIdNow);
     if (isFocusedTabParked) {
       await unsuspendTabById(browser, focusedTabIdNow);
       await sleep(1000);
     }
 
-    const comParkedB = await isTabParked(browser, focusedTabIdNow, parkUrlPrefix(extensionId));
+    const comParkedB = await isTabParked(browser, focusedTabIdNow);
     runner.assert(!comParkedB, 'focused window active tab still NOT suspended after phase B');
 
   } finally {

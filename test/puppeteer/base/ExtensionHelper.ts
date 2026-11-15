@@ -325,17 +325,15 @@ export async function getParkPageByTabId(browser: Browser, extensionId: string, 
 /**
  * Check if a tab is currently parked (its park.html page exists)
  */
-export async function isTabParked(browser: Browser, tabId: number, parkPrefix: string): Promise<boolean> {
-  const pages = await browser.pages();
-  return pages.some(p => {
-    if (!p.url().startsWith(parkPrefix)) return false;
-    try {
-      // Exact param match: `tabId=15` must not match `tabId=155`.
-      return new URL(p.url()).searchParams.get('tabId') === String(tabId);
-    } catch {
-      return false; // malformed page URL — not a park page we can attribute
-    }
-  });
+export async function isTabParked(browser: Browser, tabId: number): Promise<boolean> {
+  // Call the REAL core implementation (TabManager.isTabParked) instead of
+  // re-implementing the parked-URL predicate in the test — the two would
+  // drift apart as the extension evolves (project rule: never re-implement
+  // module logic in tests).
+  return evalInSW<boolean>(browser, `(async () => {
+    const tab = await chrome.tabs.get(${tabId}).catch(() => null);
+    return tab != null ? TabManager.isTabParked(tab) : false;
+  })()`);
 }
 
 // ─── Settings helpers ─────────────────────────────────────────────────────────
