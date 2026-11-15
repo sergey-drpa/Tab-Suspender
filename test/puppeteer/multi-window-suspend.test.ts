@@ -42,6 +42,8 @@ import {
   isTabParked,
   parkUrlPrefix,
   waitForExtensionInit,
+  suspendTabById,
+  unsuspendTabById,
 } from './base/ExtensionHelper.js';
 import { createTestRunner } from './base/AssertHelper.js';
 
@@ -179,28 +181,19 @@ async function main(): Promise<void> {
     const minState = JSON.parse(minJson) as { state: string; focused: boolean };
     log(`  window 3 state after minimize attempt: ${JSON.stringify(minState)}`);
 
-    if (minState.state !== 'minimized') {
+    // Set TS_MULTI_WINDOW_FORCE_ADAPTIVE=1 to exercise the headless/CI adaptive
+    // branch even on machines where minimization works (e.g. local macOS).
+    const forceAdaptive = process.env.TS_MULTI_WINDOW_FORCE_ADAPTIVE === '1';
+    if (minState.state !== 'minimized' || forceAdaptive) {
       // In headless CI (Xvfb), window minimization doesn't work.
-      // Test the extension's minimized-window suspend logic by sending
-      // a suspend message which will trigger parkTab with minimized window state.
+      // Invoke the extension's real parkTab() implementation directly in the
+      // service worker context (same mechanism as suspendTabById used by the
+      // other e2e tests). NOTE: chrome.runtime.sendMessage cannot be used from
+      // the SW to itself — Chrome never delivers a message back to its sender.
       log('  Window minimization not supported in this environment (headless Xvfb).');
-      log('  Testing minimized-window suspend logic via extension message API...');
+      log('  Testing minimized-window suspend logic by invoking parkTab directly...');
 
-      // Get the tab object first
-      const tabJson = await evalInSW<string>(browser, `(async () => {
-        const tab = await chrome.tabs.get(${win3.tabId});
-        return JSON.stringify(tab);
-      })()`);
-      const targetTab = JSON.parse(tabJson);
-
-      // Send suspend message - the extension will check isWindowViewed and suspend if minimized
-      // We need to mock the window state as minimized in the tab object
-      if (targetTab) {
-        targetTab.windowId = win3.id;
-        // The extension checks window state in isWindowViewed, but we can't easily mock that.
-        // Instead, directly call parkTab via the message handler which suspends regardless.
-        await evalInSW(browser, `chrome.runtime.sendMessage({ method: '[AutomaticTabCleaner:suspendTab]', tab: ${JSON.stringify(targetTab)} })`);
-      }
+      await suspendTabById(browser, win3.tabId);
 
       // Wait for the tab to be parked
       const deadlineB = Date.now() + 30000;
