@@ -150,12 +150,6 @@ describe('TabObserver — Auto-Discard of Parked Tabs', () => {
   // Mutable tab reference so individual tests can adjust properties between ticks
   let currentTab: chrome.tabs.Tab;
 
-  function setWindowTab(tab: chrome.tabs.Tab) {
-    (global as any).chrome.windows.getAll = jest.fn((_opts: any, cb: any) =>
-      cb([{ id: 1, focused: true, tabs: [tab] }])
-    );
-  }
-
   async function runTicks(n: number) {
     for (let i = 0; i < n; i++) {
       await tabObserver.tick();
@@ -320,6 +314,72 @@ describe('TabObserver — Auto-Discard of Parked Tabs', () => {
       (global as any).isTabMarkedForUnsuspend = jest.fn().mockReturnValue(true);
       currentTab = makeParkedTab({ active: true });
       setWindowTab(currentTab);
+
+      await runTicks(5);
+
+      expect((global as any).discardTab).not.toHaveBeenCalled();
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // 9.5 — Multi-window (PR #64): chrome.tabs.discard refuses ACTIVE tabs in
+  //       ANY window (per-window tab.active), so the discard guard must check
+  //       `tab.active` itself — NOT "is tab currently viewed" (active &&
+  //       window.focused). Otherwise the doomed discard call retries every tick.
+  // ══════════════════════════════════════════════════════════════════════════
+  describe('9.5 — Multi-window: discard guard must respect per-window active state', () => {
+
+    it('does NOT call discardTab for a parked tab that is ACTIVE in an UNFOCUSED window', async () => {
+      // A parked tab remains the active tab of its (background) window.
+      // chrome.tabs.discard cannot discard active tabs in any window, so
+      // calling it fails silently and would retry forever — it must be skipped.
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false); // window focused=false
+
+      await runTicks(5); // suspended_time = 50 >= 30 → threshold passed
+
+      expect((global as any).discardTab).not.toHaveBeenCalled();
+    });
+
+    it('does NOT set tabInfo.discarded=true for an active-in-background parked tab', async () => {
+      // discarded=true while the real discard never happened would lie about
+      // state and mask the retry loop.
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false);
+
+      await runTicks(4);
+
+      const tabInfo = tabManager.getTabInfoById(currentTab.id);
+      expect(tabInfo?.discarded).toBe(false);
+    });
+
+    it('still discards an INACTIVE parked tab in an unfocused window (fix must not over-block)', async () => {
+      currentTab = makeParkedTab({ active: false });
+      setWindowTab(currentTab, false);
+
+      await runTicks(3);
+
+      expect((global as any).discardTab).toHaveBeenCalledWith(currentTab.id);
+    });
+
+    // The two tests above cannot distinguish `!tab.active` from the buggy
+    // `!isTabCurrentlyViewed` guard (with the setting off and a visible window
+    // both skip the discard). These two pin the configurations where the
+    // guards DIVERGE: viewed=false while tab.active=true.
+    it('does NOT discard an ACTIVE parked tab when the setting is ON (guards diverge)', async () => {
+      settingsOverrides['suspendUnfocusedActiveTabs'] = true;
+
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false, 'normal'); // idle per the setting, still active
+
+      await runTicks(5);
+
+      expect((global as any).discardTab).not.toHaveBeenCalled();
+    });
+
+    it('does NOT discard an ACTIVE parked tab in a MINIMIZED window (guards diverge)', async () => {
+      currentTab = makeParkedTab({ active: true });
+      setWindowTab(currentTab, false, 'minimized');
 
       await runTicks(5);
 

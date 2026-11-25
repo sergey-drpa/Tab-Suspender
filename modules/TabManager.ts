@@ -859,6 +859,14 @@ class TabManager {
 				if (reloadTabOnRestore === true) {
 					const restoreUrl = this.resolveValidRestoreUrl(tab.url, tab.id);
 					if (restoreUrl != null) {
+						// The park page is still loading, so it never receives
+						// RestoreMessage and never sends [AutomaticTabCleaner:TabUnsuspended] —
+						// its BG-side effects (unsuspend bookkeeping + form-restore
+						// expectation) must happen here, BEFORE the navigation, or
+						// inject.ts's getFormRestoreDataAndRemove() finds no tabMap
+						// entry and the saved form data is silently lost.
+						this.setTabUnsuspended(tab);
+						formRestoreController.expectRestore(tab.id, tab.id, restoreUrl);
 						chrome.tabs.update(tab.id, { 'url': restoreUrl }).catch(console.error);
 					} else {
 						console.error(`[unsuspendTab] No valid restore URL for tab ${tab.id}, aborting navigation`, tab.url);

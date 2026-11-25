@@ -63,6 +63,8 @@ class Settings {
 	sendErrors: boolean;
 	ignoreCloseGroupedTabs: boolean;
 	ignoreSuspendGroupedTabs: boolean;
+	suspendUnfocusedActiveTabs: boolean;
+	suspendUnfocusedActiveTabs_migrated: boolean;
 	ignoreSuspendSplitViewTabs: boolean;
 	screenshotsEnabled: boolean;
 	popup_showWindowSessionByDefault: boolean;
@@ -113,6 +115,12 @@ const DEFAULT_SETTINGS: Settings = {
 	sendErrors: true,
 	ignoreCloseGroupedTabs: true,
 	ignoreSuspendGroupedTabs: false,
+	// Suspends the ACTIVE tab of unfocused windows (multi-window memory saver).
+	// Default true (fresh installs); a one-time migration in the settings store
+	// sets false for pre-existing installs so an update never changes behavior.
+	// Minimized windows are suspended regardless of this setting.
+	suspendUnfocusedActiveTabs: true,
+	suspendUnfocusedActiveTabs_migrated: null,
 	ignoreSuspendSplitViewTabs: true, // Prevent black screen in Split View tabs (Chrome 145+)
 	screenshotsEnabled: true,
 	popup_showWindowSessionByDefault: false,

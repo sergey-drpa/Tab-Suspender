@@ -271,6 +271,20 @@ class SettingsStore extends SettingsStoreClient {
             }
         }
 
+        // Multi-window default (PR #64): detect a genuinely fresh install BEFORE
+        // the defaults loop fills the new key. An existing install has either a
+        // local copy of the settings or a synced one (sync uses bare key names).
+        let isFreshInstall = (await this.get('timeout')) == null;
+        if (isFreshInstall) {
+            try {
+                const fromSync = await chrome.storage.sync.get(['timeout']);
+                if (fromSync['timeout'] !== undefined)
+                    isFreshInstall = false;
+            } catch (e) {
+                // sync unavailable — cannot distinguish, defaults apply
+            }
+        }
+
         // Hotfix migration: reset suspendOnCtrlClick to false for users who got wrong default
         if (!await this.get('suspendOnCtrlClick_hotfix_migrated')) {
             console.log('Applying suspendOnCtrlClick hotfix migration...');
@@ -316,6 +330,23 @@ class SettingsStore extends SettingsStoreClient {
 										});
 								})(key);*/
             }
+        }
+
+        // Multi-window default migration (PR #64): fresh installs keep the new
+        // default (true); pre-existing installs keep the old behavior (false).
+        // A value the user actually chose always wins (checkbox writes are
+        // mirrored to sync by setSync under the bare key name).
+        if (!await this.get('suspendUnfocusedActiveTabs_migrated')) {
+            let userChoseValue = false;
+            try {
+                const fromSync = await chrome.storage.sync.get(['suspendUnfocusedActiveTabs']);
+                userChoseValue = fromSync['suspendUnfocusedActiveTabs'] !== undefined;
+            } catch (e) {
+                // sync unavailable — fall back to the install-type default
+            }
+            if (!userChoseValue)
+                await this.set('suspendUnfocusedActiveTabs', isFreshInstall, true);
+            await this.set('suspendUnfocusedActiveTabs_migrated', true, true);
         }
     }
 

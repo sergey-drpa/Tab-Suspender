@@ -283,7 +283,7 @@ describe('Settings Export/Import Functionality', () => {
             const allDefaults = Object.keys((global as any).DEFAULT_SETTINGS);
 
             // Keys that are set by migrations and should be excluded from default value check
-            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned'];
+            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned', 'suspendUnfocusedActiveTabs_migrated'];
 
             for (const key of allDefaults) {
                 const value = await settingsStore.get(key);
@@ -333,7 +333,7 @@ describe('Settings Export/Import Functionality', () => {
             }
 
             // Keys that are set by migrations and should be excluded from default value check
-            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned'];
+            const migrationKeys = ['suspendOnCtrlClick_hotfix_migrated', 'localStorageMigrated', 'localStorageFormDataCleaned', 'suspendUnfocusedActiveTabs_migrated'];
 
             // Verify settings not customized maintain defaults
             const defaultOnlyKeys = Object.keys((global as any).DEFAULT_SETTINGS)

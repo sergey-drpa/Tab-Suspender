@@ -233,4 +233,56 @@ describe('SettingsStore - Resilience to storage corruption and failures', () => 
       expect(await store.get('timeout')).toBe(3600);
     });
   });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Multi-window default migration (PR #64):
+  //   fresh install           → suspendUnfocusedActiveTabs = true
+  //   pre-existing install    → false (pre-PR behavior preserved)
+  //   wiped local + sync copy → existing user's value wins (never stomped)
+  //   user's explicit choice  → always wins (checkbox writes mirror to sync)
+  // ══════════════════════════════════════════════════════════════════════════
+  describe('Multi-window default migration (suspendUnfocusedActiveTabs)', () => {
+
+    it('fresh install (empty local + empty sync) gets suspendUnfocusedActiveTabs=true', async () => {
+      const storage = makeMockStorage({}, {});
+      const store = await createStore(storage);
+      expect(await store.get('suspendUnfocusedActiveTabs')).toBe(true);
+    });
+
+    it('pre-existing install (local settings present) keeps suspendUnfocusedActiveTabs=false', async () => {
+      const localData: Record<string, any> = {
+        'store.tabSuspenderSettings.timeout': 1800,
+        'store.tabSuspenderSettings.active': true,
+      };
+      const storage = makeMockStorage(localData, {});
+      const store = await createStore(storage);
+      expect(await store.get('suspendUnfocusedActiveTabs')).toBe(false);
+    });
+
+    it('wiped local + synced settings (existing user) is NOT treated as fresh install', async () => {
+      // The exact scenario the sync-recovery fallback exists for: local LevelDB
+      // wiped, sync holds the existing user's settings. Must stay false — not
+      // be force-enabled like the old background.ts firstInstallation branch did.
+      const syncData: Record<string, any> = {
+        // sync storage uses bare setting names (setSync writes {name: value})
+        'timeout': 1800,
+        'active': true,
+      };
+      const storage = makeMockStorage({}, syncData);
+      const store = await createStore(storage);
+      expect(await store.get('suspendUnfocusedActiveTabs')).toBe(false);
+    });
+
+    it("user's explicit choice in sync wins over the install-type default", async () => {
+      // User enabled the checkbox on another synced device (sync mirrors it);
+      // local was wiped. The migration must not flip their choice off.
+      const syncData: Record<string, any> = {
+        'timeout': 1800,
+        'suspendUnfocusedActiveTabs': true, // user's chosen value
+      };
+      const storage = makeMockStorage({}, syncData);
+      const store = await createStore(storage);
+      expect(await store.get('suspendUnfocusedActiveTabs')).toBe(true);
+    });
+  });
 });
